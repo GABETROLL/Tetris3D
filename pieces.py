@@ -98,9 +98,9 @@ class Board:
                     self.board[(ci, ri)] = self.piece.color
                     # And append the squares to the board.
 
-    def landed(self):
+    def landing_handler(self):
         split_piece = self.piece.piece.split("\n")
-        for xpos, square in enumerate(self.piece.piece.split("\n")):
+        for xpos, square in enumerate(split_piece[-1]):
             # Check every square in the piece's bottom row.
             if self.board.get((xpos + self.piece.pos[0], self.piece.pos[1] + len(split_piece))):
                 # If there's a square in the board under it,
@@ -108,7 +108,7 @@ class Board:
                 self.init_random_piece()
 
     def play(self):
-        self.landed()
+        self.landing_handler()
 
         if self.piece.pos[1] + len(self.piece.piece.split("\n")) == ROWS:
             # If the piece is touching the bottom,
