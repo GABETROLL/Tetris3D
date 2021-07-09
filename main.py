@@ -20,27 +20,43 @@ class Window:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        self.fps = 10
+        self.fps = 60
 
         self.game = Board()
 
+        self.fall_rate = 60
+
         while self.running:
-            self.clock.tick(self.fps)
+            for frame in range(self.fall_rate):
+                self.clock.tick(self.fps)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
 
-            self.WINDOW.fill(BLACK)
+                self.WINDOW.fill(BLACK)
 
-            self.draw_board()
-            self.draw_piece()
+                self.draw_board()
+                self.draw_piece()
 
+                self.input_handler()
+
+                pygame.display.update()
             self.game.play()
 
-            pygame.display.update()
-
         pygame.quit()
+
+    def input_handler(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            self.game.try_move(LEFT)
+        if keys[pygame.K_s]:
+            self.game.try_move(SOFT_DROP)
+        if keys[pygame.K_d]:
+            self.game.try_move(RIGHT)
+
+        if keys[pygame.K_SPACE]:
+            self.game.try_move(HARD_DROP)
 
     @property
     def board_pos(self):
