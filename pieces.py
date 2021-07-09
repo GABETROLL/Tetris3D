@@ -87,15 +87,33 @@ class Board:
         split_piece = self.piece.piece.split("\n")
 
         if move == "l" and self.piece.pos[0] > 0:
-            self.piece.pos[0] -= 1
+            will_move = True
+            for ri, row in enumerate(split_piece):
+                for ci, square in enumerate(row):
+                    if square == "#" and self.board.get((self.piece.pos[0] + ri, self.piece.pos[1] + ci - 1)):
+                        will_move = False
+
+            if will_move:
+                self.piece.pos[0] -= 1
+
         if move == "r" and self.piece.pos[0] < COLUMNS - len(split_piece[0]):
-            self.piece.pos[0] += 1
-        # If the move is left or right, check if the piece won't leave the board.
+            will_move = True
+            for ri, row in enumerate(split_piece):
+                for ci, square in enumerate(row):
+                    if square == "#" and self.board.get((self.piece.pos[0] + ri, self.piece.pos[1] + ci + 1)):
+                        will_move = False
+
+            if will_move:
+                self.piece.pos[0] += 1
+        # If the piece has a square in the board left or right of one of its squares,
+        # We can't move there.
+
         if move == "h":
             # If the move is a hard drop,
             while not self.landed():
                 self.move_piece_down()
             # We move the piece down until it lands.
+
         if move == "s" and not self.landed():
             # Id the move is a soft drop and we haven't landed,
             self.move_piece_down()
@@ -127,12 +145,15 @@ class Board:
     def landed(self):
         """Checks if the piece landed."""
         split_piece = self.piece.piece.split("\n")
-        for xpos, square in enumerate(split_piece[-1]):
-            # Check every square in the piece's bottom row.
-            if self.board.get((xpos + self.piece.pos[0], self.piece.pos[1] + len(split_piece))) or \
-                    self.piece.pos[1] + len(self.piece.piece.split("\n")) == ROWS:
-                # If there's a square in the board under a square in the piece...
-                return True
+        for ypos, row in enumerate(split_piece):
+            for xpos, square in enumerate(row):
+                # Check every square in the piece's bottom row.
+                if square == "#":
+                    if self.board.get((xpos + self.piece.pos[0], self.piece.pos[1] + ypos + 1)) or \
+                            self.piece.pos[1] + len(self.piece.piece.split("\n")) == ROWS:
+                        # If there's a square in the board under a square in the piece...
+                        print(xpos, (xpos + self.piece.pos[0], self.piece.pos[1] + len(split_piece)))
+                        return True
         return False
 
     def landing_handler(self):
