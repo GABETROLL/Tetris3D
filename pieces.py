@@ -90,7 +90,7 @@ class Board:
             will_move = True
             for ri, row in enumerate(split_piece):
                 for ci, square in enumerate(row):
-                    if square == "#" and self.board.get((self.piece.pos[0] + ri, self.piece.pos[1] + ci - 1)):
+                    if square == "#" and self.board.get((self.piece.pos[0] + ci - 1, self.piece.pos[1] + ri)):
                         will_move = False
 
             if will_move:
@@ -100,7 +100,7 @@ class Board:
             will_move = True
             for ri, row in enumerate(split_piece):
                 for ci, square in enumerate(row):
-                    if square == "#" and self.board.get((self.piece.pos[0] + ri, self.piece.pos[1] + ci + 1)):
+                    if square == "#" and self.board.get((self.piece.pos[0] + ci + 1, self.piece.pos[1] + ri)):
                         will_move = False
 
             if will_move:
