@@ -2,43 +2,127 @@ import random
 
 START_POS = [3, 0]
 
-I = ("####",
-     "#\n#\n#\n#",
+I = (["    ",
+      "####",
+      "    ",
+      "    "],
+
+     ["  # ",
+      "  # ",
+      "  # ",
+      "  # "],
+
+     ["    ",
+      "####",
+      "    ",
+      "    "],
+
+     [" #  ",
+      " #  ",
+      " #  ",
+      " #  "],
+
      START_POS,
      (0, 255, 255))
 
-J = ("#  \n###",
-     "##\n# \n# ",
-     "###\n  #",
-     " #\n #\n##",
+J = (["#  ",
+      "###",
+      "   "],
+
+     [" ##",
+      " # ",
+      " # "],
+
+     ["   ",
+      "###",
+      "  #"],
+
+     [" # ",
+      " # ",
+      "## "],
+
      START_POS,
      (0, 0, 255))
 
-L = ("  #\n###",
-     "# \n# \n##",
-     "###\n#  ",
-     "##\n #\n #",
+L = (["  #",
+      "###",
+      "   "],
+
+     [" # ",
+      " # ",
+      " ##"],
+
+     ["   ",
+      "###",
+      "#  "],
+
+     ["## ",
+      " # ",
+      " # "],
+
      START_POS,
      (255, 128, 0))
 
-O = ("##\n##",
+O = (["##",
+      "##"],
+
      [4, 0],
      (255, 255, 0))
 
-S = (" ##\n## ",
-     "# \n##\n #",
+S = ([" ##",
+      "## ",
+      "   "],
+
+     [" # ",
+      " ##",
+      "  #"],
+
+     ["   ",
+      " ##",
+      "## "],
+
+     ["#  ",
+      "## ",
+      " # "],
+
      START_POS,
      (0, 255, 0))
 
-T = (" # \n###",
-     "# \n##\n# ",
-     "###\n # ",
-     " #\n##\n #",
+T = ([" # ",
+      "###",
+      "   "],
+
+     [" # ",
+      " ##",
+      " # "],
+
+     ["   ",
+      "###",
+      " # "],
+
+     [" # ",
+      "## ",
+      " # "],
+
      START_POS,
      (128, 0, 255))
 
-Z = ("## \n ##",
-     " #\n##\n# ",
+Z = (["## ",
+      " ##",
+      "   "],
+
+     ["  #",
+      " ##",
+      " # "],
+
+     ["   ",
+      "## ",
+      " ##"],
+
+     [" # ",
+      "## ",
+      "#  "],
+
      START_POS,
      (255, 0, 0))
 # Pieces data. Line-by-line data of piece's squares. Start positions and colors.
@@ -84,11 +168,10 @@ class Board:
         """Tries to move piece down.
 
         Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP."""
-        split_piece = self.piece.piece.split("\n")
 
         if move == "l" and self.piece.pos[0] > 0:
             will_move = True
-            for ri, row in enumerate(split_piece):
+            for ri, row in enumerate(self.piece.piece):
                 for ci, square in enumerate(row):
                     if square == "#" and self.board.get((self.piece.pos[0] + ci - 1, self.piece.pos[1] + ri)):
                         will_move = False
@@ -96,9 +179,9 @@ class Board:
             if will_move:
                 self.piece.pos[0] -= 1
 
-        if move == "r" and self.piece.pos[0] < COLUMNS - len(split_piece[0]):
+        if move == "r" and self.piece.pos[0] < COLUMNS - len(self.piece.piece[0]):
             will_move = True
-            for ri, row in enumerate(split_piece):
+            for ri, row in enumerate(self.piece.piece):
                 for ci, square in enumerate(row):
                     if square == "#" and self.board.get((self.piece.pos[0] + ci + 1, self.piece.pos[1] + ri)):
                         will_move = False
@@ -121,10 +204,8 @@ class Board:
 
     def set_down(self):
         """Makes piece inbeded in board."""
-        split_piece = self.piece.piece.split("\n")
-        # Splits pieces format row by row.
 
-        for ri, row in zip(range(self.piece.pos[1], self.piece.pos[1] + len(split_piece)), split_piece):
+        for ri, row in zip(range(self.piece.pos[1], self.piece.pos[1] + len(self.piece.piece)), self.piece.piece):
             for ci, square in zip(range(self.piece.pos[0], self.piece.pos[0] + len(row)), row):
                 # We iterate over both the positions of the squares in the piece
                 # Based on it's position and each square,
@@ -144,15 +225,14 @@ class Board:
 
     def landed(self):
         """Checks if the piece landed."""
-        split_piece = self.piece.piece.split("\n")
-        for ypos, row in enumerate(split_piece):
+        for ypos, row in enumerate(self.piece.piece):
             for xpos, square in enumerate(row):
                 # Check every square in the piece's bottom row.
                 if square == "#":
                     if self.board.get((xpos + self.piece.pos[0], self.piece.pos[1] + ypos + 1)) or \
-                            self.piece.pos[1] + len(self.piece.piece.split("\n")) == ROWS:
+                            self.piece.pos[1] + len(self.piece.piece) == ROWS:
                         # If there's a square in the board under a square in the piece...
-                        print(xpos, (xpos + self.piece.pos[0], self.piece.pos[1] + len(split_piece)))
+                        print(xpos, (xpos + self.piece.pos[0], self.piece.pos[1] + len(self.piece.piece)))
                         return True
         return False
 

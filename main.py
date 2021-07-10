@@ -103,10 +103,8 @@ class Window:
 
     def draw_piece(self):
         """Draws piece in the position in the screen in the board."""
-        split_piece = self.game.piece.piece.split("\n")
-        # Splits pieces format row by row.
 
-        for ri, row in zip(range(self.game.piece.pos[1], self.game.piece.pos[1] + len(split_piece)), split_piece):
+        for ri, row in zip(range(self.game.piece.pos[1], self.game.piece.pos[1] + len(self.game.piece.piece)), self.game.piece.piece):
             for ci, square in zip(range(self.game.piece.pos[0], self.game.piece.pos[0] + len(row)), row):
                 # We iterate over both the positions of the squares in the piece
                 # Based on it's position and each square,
