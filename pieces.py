@@ -225,14 +225,17 @@ class Board:
 
     def landed(self):
         """Checks if the piece landed."""
-        for ypos, row in enumerate(self.piece.piece):
+        for ypos, row in zip(range(len(self.piece.piece), 0, -1), self.piece.piece):
             for xpos, square in enumerate(row):
-                # Check every square in the piece's bottom row.
+                # Check every square in the piece from the bottom to top rows.
+
                 if square == "#":
-                    if self.board.get((xpos + self.piece.pos[0], self.piece.pos[1] + ypos + 1)) or \
-                            self.piece.pos[1] + len(self.piece.piece) == ROWS:
-                        # If there's a square in the board under a square in the piece...
-                        print(xpos, (xpos + self.piece.pos[0], self.piece.pos[1] + len(self.piece.piece)))
+                    # If that square is full...
+                    square_pos = (self.piece.pos[0] + xpos, self.piece.pos[1] + len(self.piece.piece) - ypos)
+                    if self.board.get((square_pos[0], square_pos[1] + 1)) or\
+                            square_pos[1] == ROWS - 1:
+                        # If there's a block or the wall underneath it...
+                        # Return True.
                         return True
         return False
 
