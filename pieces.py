@@ -136,7 +136,7 @@ class Board:
 
     def rotate(self, clockwise=True):
         self.piece.rotation += 1 if clockwise else -1
-        self.piece.rotation = abs(self.piece.rotation % len(self.piece.all_rotations[:-2]))
+        self.piece.rotation = abs(self.piece.rotation % len(self.piece.all_rotations))
         # Loops trough rotations in self.complete piece.
 
         # Uses mod operator to loop through piece rotations,

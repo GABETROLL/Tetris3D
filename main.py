@@ -26,6 +26,9 @@ class Window:
 
         self.fall_rate = 60
 
+        self.rotated_clockwise = False
+        self.rotated_counter_clockwise = False
+
         while self.running:
             for frame in range(self.fall_rate):
                 self.clock.tick(self.fps)
@@ -57,6 +60,19 @@ class Window:
 
         if keys[pygame.K_SPACE]:
             self.game.try_move(HARD_DROP)
+
+        if keys[pygame.K_PERIOD] and not self.rotated_clockwise:
+            self.game.rotate()
+            self.rotated_clockwise = True
+        elif self.rotated_clockwise and not keys[pygame.K_PERIOD]:
+            self.rotated_clockwise = False
+
+        if keys[pygame.K_COMMA] and not self.rotated_counter_clockwise:
+            self.game.rotate(False)
+            self.rotated_counter_clockwise = True
+        elif self.rotated_counter_clockwise and not keys[pygame.K_COMMA]:
+            self.rotated_counter_clockwise = False
+
 
     @property
     def board_pos(self):
