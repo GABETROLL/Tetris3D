@@ -137,6 +137,11 @@ SOFT_DROP = "s"
 
 
 class Piece:
+    """piece player can currently control. (piece data, pos)
+    Must be one of these:
+
+    I, J, L, O, S, T or Z.
+    """
     def __init__(self, piece: tuple):
         piece = list(piece)
         self.pos = list(piece.pop(-2))
@@ -159,7 +164,6 @@ class Board:
 
     def init_random_piece(self):
         self.piece = Piece(random.choice(self.pieces))
-        """piece player can currently control. (piece data, pos)"""
 
     def move_piece_down(self):
         self.piece.pos[1] += 1
@@ -169,26 +173,38 @@ class Board:
 
         Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP."""
 
-        if move == "l" and self.piece.pos[0] > 0:
+        if move == "l":
             will_move = True
+
             for ri, row in enumerate(self.piece.piece):
                 for ci, square in enumerate(row):
-                    if square == "#" and self.board.get((self.piece.pos[0] + ci - 1, self.piece.pos[1] + ri)):
-                        will_move = False
+
+                    if square == "#":
+                        xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+
+                        if self.board.get((xpos - 1, ypos)) or \
+                                xpos == 0:
+                            will_move = False
 
             if will_move:
                 self.piece.pos[0] -= 1
 
-        if move == "r" and self.piece.pos[0] < COLUMNS - len(self.piece.piece[0]):
+        if move == "r":
             will_move = True
+
             for ri, row in enumerate(self.piece.piece):
                 for ci, square in enumerate(row):
-                    if square == "#" and self.board.get((self.piece.pos[0] + ci + 1, self.piece.pos[1] + ri)):
-                        will_move = False
+
+                    if square == "#":
+                        xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+
+                        if self.board.get((xpos + 1, ypos)) or\
+                                xpos == COLUMNS - 1:
+                            will_move = False
 
             if will_move:
                 self.piece.pos[0] += 1
-        # If the piece has a square in the board left or right of one of its squares,
+        # If the piece has a square or the wall left or right of one of its squares,
         # We can't move there.
 
         if move == "h":
