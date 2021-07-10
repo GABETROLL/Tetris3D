@@ -29,34 +29,90 @@ class Window:
         self.rotated_clockwise = False
         self.rotated_counter_clockwise = False
 
+        self.das_bar = [15, 6]
+        self.das = {LEFT: {"previous_frame": False, "first_das": False, "charge": 0},
+                    RIGHT: {"previous_frame": False, "first_das": False, "charge": 0}}
+        # {direction: (has reached das, charge)}
+
+        self.frame_count = 0
+
         while self.running:
-            for frame in range(self.fall_rate):
-                self.clock.tick(self.fps)
+            self.frame_count += 1
 
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.running = False
+            self.clock.tick(self.fps)
 
-                self.WINDOW.fill(BLACK)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
 
-                self.draw_board()
-                self.draw_piece()
+            self.WINDOW.fill(BLACK)
 
-                self.input_handler()
+            self.draw_board()
+            self.draw_piece()
 
-                pygame.display.update()
-            self.game.play()
+            self.input_handler()
+
+            pygame.display.update()
+
+            if self.frame_count == 60:
+                self.game.play()
+                self.frame_count = 0
 
         pygame.quit()
 
     def input_handler(self):
+        """Checks w, a, s, d, space bar, period and comma for in-game moves.
+        Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
+
         if keys[pygame.K_a]:
-            self.game.try_move(LEFT)
+            self.das[LEFT]["charge"] += 1
+
+            if self.das[LEFT]["charge"] == 6 and self.das[LEFT]["first_das"] or\
+                    self.das[LEFT]["charge"] == 15:
+                self.game.try_move(LEFT)
+                self.das[LEFT]["charge"] = 0
+                self.das[LEFT]["first_das"] = True
+
+            elif not self.das[LEFT]["previous_frame"]:
+                self.game.try_move(LEFT)
+                self.das[LEFT]["charge"] = 0
+                self.das[LEFT]["previous_frame"] = True
+
+        else:
+            if self.das[LEFT]["charge"] > 0:
+                self.das[LEFT]["charge"] -= 1
+            self.das[LEFT]["first_das"] = False
+            self.das[LEFT]["previous_frame"] = False
+
+        if keys[pygame.K_d]:
+            self.das[RIGHT]["charge"] += 1
+
+            if self.das[RIGHT]["charge"] == 6 and self.das[RIGHT]["first_das"] or\
+                    self.das[RIGHT]["charge"] == 15:
+                self.game.try_move(RIGHT)
+                self.das[RIGHT]["charge"] = 0
+                self.das[RIGHT]["first_das"] = True
+
+            elif not self.das[RIGHT]["previous_frame"]:
+                self.game.try_move(RIGHT)
+                self.das[RIGHT]["charge"] = 0
+                self.das[RIGHT]["previous_frame"] = True
+
+        else:
+            if self.das[RIGHT]["charge"] > 0:
+                self.das[RIGHT]["charge"] -= 1
+            self.das[RIGHT]["first_das"] = False
+            self.das[RIGHT]["previous_frame"] = False
+
+        # If we press left or right, we charge the das bar.
+        # The first frame the user presses the direction, the piece moves instantly.
+        # The second time is called "first_das", where we wait 15 frames to move the piece.
+        # All the other times, we reach up to 6.
+        # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
+
         if keys[pygame.K_s]:
             self.game.try_move(SOFT_DROP)
-        if keys[pygame.K_d]:
-            self.game.try_move(RIGHT)
 
         if keys[pygame.K_SPACE]:
             self.game.try_move(HARD_DROP)
@@ -72,7 +128,6 @@ class Window:
             self.rotated_counter_clockwise = True
         elif self.rotated_counter_clockwise and not keys[pygame.K_COMMA]:
             self.rotated_counter_clockwise = False
-
 
     @property
     def board_pos(self):
