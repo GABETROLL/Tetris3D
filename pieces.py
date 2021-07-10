@@ -189,7 +189,9 @@ class Board:
             if will_move:
                 self.piece.pos[0] -= 1
 
-        if move == "r":
+            return will_move
+
+        elif move == "r":
             will_move = True
 
             for ri, row in enumerate(self.piece.piece):
@@ -204,18 +206,22 @@ class Board:
 
             if will_move:
                 self.piece.pos[0] += 1
+
+            return will_move
         # If the piece has a square or the wall left or right of one of its squares,
         # We can't move there.
 
-        if move == "h":
+        elif move == "h":
             # If the move is a hard drop,
             while not self.landed():
                 self.move_piece_down()
+            return True
             # We move the piece down until it lands.
 
-        if move == "s" and not self.landed():
+        elif move == "s" and not self.landed():
             # Id the move is a soft drop and we haven't landed,
             self.move_piece_down()
+            return True
             # We move down once.
 
     def set_down(self):
@@ -231,6 +237,18 @@ class Board:
                     self.board[(ci, ri)] = self.piece.color
                     # And append the squares to the board.
 
+    def try_move_up(self):
+        """Moves up unless a square above it blocks it."""
+        for ri, row in enumerate(self.piece.piece):
+            for ci, square in enumerate(row):
+                xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+
+                if square == "#" and self.board.get((xpos, ypos - 1)):
+                    return False
+
+        self.piece.pos[1] -= 1
+        return True
+
     def rotate(self, clockwise=True):
         self.piece.rotation += 1 if clockwise else -1
         self.piece.rotation = abs(self.piece.rotation % len(self.piece.all_rotations))
@@ -238,6 +256,32 @@ class Board:
 
         # Uses mod operator to loop through piece rotations,
         # absolutes value in case they rotated counter-clockwise
+
+    def try_rotate(self, clockwise=True):
+        """Tries to rotate. If the piece is inside a wall, it tries pushing it out.
+        If it can't move there, it cancels the rotation."""
+        self.rotate(clockwise)
+
+        for ri, row in enumerate(self.piece.piece):
+            for ci, square in enumerate(row):
+                # Look at each square
+                if square == "#":
+                    xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+
+                    if xpos > COLUMNS - 1:
+                        if not self.try_move("l"):
+                            self.rotate(not clockwise)
+
+                    elif xpos < 0:
+                        if not self.try_move("r"):
+                            self.rotate(not clockwise)
+
+                    if ypos > ROWS - 1:
+                        if not self.try_move_up():
+                            self.rotate(not clockwise)
+
+                    # If the square is outside the board, we try to push it back in.
+                    # If we can't, we cancel the rotation.
 
     def landed(self):
         """Checks if the piece landed."""

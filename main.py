@@ -62,13 +62,13 @@ class Window:
             self.game.try_move(HARD_DROP)
 
         if keys[pygame.K_PERIOD] and not self.rotated_clockwise:
-            self.game.rotate()
+            self.game.try_rotate()
             self.rotated_clockwise = True
         elif self.rotated_clockwise and not keys[pygame.K_PERIOD]:
             self.rotated_clockwise = False
 
         if keys[pygame.K_COMMA] and not self.rotated_counter_clockwise:
-            self.game.rotate(False)
+            self.game.try_rotate(False)
             self.rotated_counter_clockwise = True
         elif self.rotated_counter_clockwise and not keys[pygame.K_COMMA]:
             self.rotated_counter_clockwise = False
