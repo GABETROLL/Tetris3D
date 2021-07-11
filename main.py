@@ -26,6 +26,9 @@ class Window:
 
         self.fall_rate = 60
 
+        self.previous_space_bar = False
+        # Space bar cooldown. Don't want a piece massacre. :)
+
         self.rotated_clockwise = False
         self.rotated_counter_clockwise = False
 
@@ -114,8 +117,17 @@ class Window:
         if keys[pygame.K_s]:
             self.game.try_move(SOFT_DROP)
 
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] and not self.previous_space_bar:
+            self.previous_space_bar = True
+
             self.game.try_move(HARD_DROP)
+
+            self.frame_count = 60
+            # If we hard dropped, the dropping cycle of the pieces will reset.
+
+        elif not keys[pygame.K_SPACE] and self.previous_space_bar:
+            self.previous_space_bar = False
+        # Makes sure only the first frame of the space bar frame counts.
 
         if keys[pygame.K_PERIOD] and not self.rotated_clockwise:
             self.game.try_rotate()
