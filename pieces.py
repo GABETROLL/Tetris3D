@@ -159,6 +159,8 @@ class Board:
         self.pieces = [I, J, L, O, S, T, Z]
         self.init_random_piece()
 
+        self.previous_piece = None
+
         self.board = {}
         # {(5, 4):(255, 0, 0)}
 
@@ -300,10 +302,19 @@ class Board:
         return False
 
     def landing_handler(self):
+        """If a piece landed, marks it at the previous piece,
+        makes it part of the board, and spawns a new one."""
         if self.landed():
+            self.previous_piece = self.piece
             self.set_down()
             self.init_random_piece()
+            return True
+        return False
+
+    def clear_handler(self):
+        pass
 
     def play(self):
-        self.landing_handler()
+        if self.landing_handler():
+            self.clear_handler()
         self.move_piece_down()
