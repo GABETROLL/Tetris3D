@@ -162,7 +162,7 @@ class Board:
         self.previous_piece = None
 
         self.board = {}
-        # {(5, 4):(255, 0, 0)}
+        # {pos: color}
 
     def init_random_piece(self):
         self.piece = Piece(random.choice(self.pieces))
@@ -312,7 +312,21 @@ class Board:
         return False
 
     def clear_handler(self):
-        pass
+        xpos, ypos = self.previous_piece.pos
+
+        for ri in range(len(self.previous_piece.piece)):
+            row = ypos + ri
+            line = []
+            for ci in range(COLUMNS):
+                square = self.board.get((ci, row))
+                if square:
+                    line.append((ci, row))
+                else:
+                    break
+            print(line)
+            if len(line) == COLUMNS:
+                for square in line:
+                    self.board.pop(square)
 
     def play(self):
         if self.landing_handler():
