@@ -312,21 +312,18 @@ class Board:
         return False
 
     def clear_handler(self):
-        xpos, ypos = self.previous_piece.pos
-
-        for ri in range(len(self.previous_piece.piece)):
-            row = ypos + ri
-            line = []
+        for ri in range(self.previous_piece.pos[1], self.previous_piece.pos[1] + len(self.previous_piece.piece)):
+            row = {}
+            # {square: ci}
             for ci in range(COLUMNS):
-                square = self.board.get((ci, row))
-                if square:
-                    line.append((ci, row))
-                else:
-                    break
-            print(line)
-            if len(line) == COLUMNS:
-                for square in line:
-                    self.board.pop(square)
+                row[self.board.get((ci, ri))] = ci
+
+            if not row.get(None):
+                for ci in range(COLUMNS):
+                    self.board.pop((ci, ri))
+        # Clears each line the previous piece landed on, if possible.
+
+
 
     def play(self):
         if self.landing_handler():
