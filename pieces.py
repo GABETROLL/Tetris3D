@@ -159,8 +159,6 @@ class Board:
         self.pieces = [I, J, L, O, S, T, Z]
         self.init_random_piece()
 
-        self.previous_piece = None
-
         self.board = {}
         # {pos: color}
 
@@ -305,16 +303,53 @@ class Board:
         """If a piece landed, marks it at the previous piece,
         makes it part of the board, and spawns a new one."""
         if self.landed():
-            self.previous_piece = self.piece
             self.set_down()
+            self.clear_handler(self.piece)
             self.init_random_piece()
-            return True
-        return False
 
-    def clear_handler(self):
-        pass
+    def clear_handler(self, previous_piece):
+        # time: O(n), where n is: height of piece
+        # space: O(n), where n is: height of piece
+        deleted_rows = set()
+
+        for ypos, row in zip(range(len(previous_piece.piece), 0, -1), previous_piece.piece):
+            # look at each row in the dropped piece
+            square_y_pos = self.piece.pos[1] + len(self.piece.piece) - ypos
+
+            for xpos in range(COLUMNS):
+                print(xpos)
+                if not ((xpos, square_y_pos) in self.board):
+                    print(f"{(xpos), square_y_pos} WAS NOT FULL!")
+                    print(self.board)
+                    break
+            else:
+                print(f"{square_y_pos} WAS FULL!!")
+                # If the whole row in the board is filled
+                for xpos in range(COLUMNS):
+                    self.board.pop((xpos, square_y_pos))
+                # remove that row
+                deleted_rows.add(square_y_pos)
+                # keep track of that row
+        print(deleted_rows)
+
+        landing_row = 0
+        for row in deleted_rows:
+            if row > landing_row:
+                landing_row = row
+        # lowest deleted row is where all of the rows with gunk in them will 'land' on.
+
+        gunk_row = landing_row - 1
+        while gunk_row > -1:
+            if not (gunk_row in deleted_rows):
+                # if row has gunk in it
+                for xpos in range(COLUMNS):
+                    if (xpos, gunk_row) in self.board:
+                        self.board[(xpos, landing_row)] = self.board.pop((xpos, gunk_row))
+                # move that row down to the landing row
+
+                landing_row -= 1
+            gunk_row -= 1
 
     def play(self):
-        if self.landing_handler():
-            self.clear_handler()
+        self.landing_handler()
         self.move_piece_down()
