@@ -280,6 +280,9 @@ class Board:
                         if not self.try_move_up():
                             self.rotate(not clockwise)
 
+                    if (xpos, ypos) in self.board:
+                        self.rotate(not clockwise)
+
                     # If the square is outside the board, we try to push it back in.
                     # If we can't, we cancel the rotation.
 
