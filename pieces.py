@@ -320,20 +320,15 @@ class Board:
             square_y_pos = self.piece.pos[1] + len(self.piece.piece) - ypos
 
             for xpos in range(COLUMNS):
-                print(xpos)
                 if not ((xpos, square_y_pos) in self.board):
-                    print(f"{(xpos), square_y_pos} WAS NOT FULL!")
-                    print(self.board)
                     break
             else:
-                print(f"{square_y_pos} WAS FULL!!")
                 # If the whole row in the board is filled
                 for xpos in range(COLUMNS):
                     self.board.pop((xpos, square_y_pos))
                 # remove that row
                 deleted_rows.add(square_y_pos)
                 # keep track of that row
-        print(deleted_rows)
 
         landing_row = 0
         for row in deleted_rows:
