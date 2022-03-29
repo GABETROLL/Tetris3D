@@ -13,7 +13,7 @@ class Window:
         self.HEIGHT = height
 
         self.BOARD_WIDTH = board_width
-        self.BOARD_HEIGHT = board_width * 2
+        self.BOARD_HEIGHT = board_width * (ROWS // COLUMNS)
 
         self.WINDOW = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
@@ -27,7 +27,7 @@ class Window:
         self.fall_rate = 60
 
         self.previous_space_bar = False
-        # Space bar cooldown. Don't want a piece massacre. :)
+        # Space bar cool down. Don't want a piece massacre. :)
 
         self.rotated_clockwise = False
         self.rotated_counter_clockwise = False
