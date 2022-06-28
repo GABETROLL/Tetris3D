@@ -7,61 +7,45 @@ BLACK = (0, 0, 0)
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
 
 
-class Window:
-    def __init__(self, width: int, height: int, board_width: int, font: pygame.font.Font):
-        self.WIDTH = width
-        self.HEIGHT = height
-
-        self.BOARD_WIDTH = board_width
-        self.BOARD_HEIGHT = board_width * (ROWS // COLUMNS)
-
-        self.WINDOW = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption("Tetris")
-        self.clock = pygame.time.Clock()
-        self.running = True
-
-        self.font = font
-
-        self.fps = 60
+class Controls:
+    def __init__(self, window):
+        self.window = window
 
         self.game = Board()
+
+        self.frame_count = 0
 
         self.das_bar = [15, 6]
         self.das = {LEFT: {"previous_frame": False, "first_das": False, "charge": 0},
                     RIGHT: {"previous_frame": False, "first_das": False, "charge": 0}}
-        # {direction: (has reached das, charge)}
+        # "DAS" = "delayed auto shift".
 
-        self.frame_count = 0
+    def main(self, key_down_keys: set[int]):
+        self.frame_count += 1
+        self.input_handler(key_down_keys)
 
-        while self.running:
-            self.clock.tick(self.fps)
+        if self.frame_count == self.fall_rate(self.game.score_manager.level):
+            self.game.play()
+            self.frame_count = 0
+    # Counting frames.
 
-            key_down_keys = set()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-
-                if event.type == pygame.KEYDOWN:
-                    key_down_keys.add(event.key)
-                # Certain keys can't spam an instruction every frame.
-
-            self.WINDOW.fill(BLACK)
-
-            self.draw_board()
-            self.draw_piece()
-            self.draw_score()
-
-            self.frame_count += 1
-            self.input_handler(key_down_keys)
-
-            pygame.display.update()
-
-            if self.frame_count == self.fall_rate(self.game.score_manager.level):
-                self.game.play()
-                self.frame_count = 0
-
-        pygame.quit()
+    @staticmethod
+    def fall_rate(level):
+        if level <= 8:
+            return - 5 * level + 48
+        elif level == 9:
+            return 6
+        elif 10 <= level <= 12:
+            return 5
+        elif 13 <= level <= 15:
+            return 4
+        elif 16 <= level <= 18:
+            return 3
+        elif 19 <= level <= 28:
+            return 2
+        else:
+            return 1
+    # Pieces fall faster in higher levels; NES Tetris rules.
 
     def input_handler(self, key_down_keys: set[int]):
         """Checks w, a, s, d, space bar, period and comma for in-game moves.
@@ -129,22 +113,49 @@ class Window:
         if pygame.K_COMMA in key_down_keys:
             self.game.try_rotate(False)
 
-    @staticmethod
-    def fall_rate(level):
-        if level <= 8:
-            return - 5 * level + 48
-        elif level == 9:
-            return 6
-        elif 10 <= level <= 12:
-            return 5
-        elif 13 <= level <= 15:
-            return 4
-        elif 16 <= level <= 18:
-            return 3
-        elif 19 <= level <= 28:
-            return 2
-        else:
-            return 1
+
+class Window:
+    def __init__(self, width: int, height: int, board_width: int, font: pygame.font.Font):
+        self.WIDTH = width
+        self.HEIGHT = height
+
+        self.BOARD_WIDTH = board_width
+        self.BOARD_HEIGHT = board_width * (ROWS // COLUMNS)
+
+        self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Tetris")
+        self.clock = pygame.time.Clock()
+        self.running = True
+
+        self.font = font
+
+        self.fps = 60
+        self.controls = Controls(self.window)
+
+        while self.running:
+            self.clock.tick(self.fps)
+
+            key_down_keys = set()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+                if event.type == pygame.KEYDOWN:
+                    key_down_keys.add(event.key)
+                # Certain keys can't spam an instruction every frame.
+
+            self.window.fill(BLACK)
+
+            self.draw_board()
+            self.draw_piece()
+            self.draw_score()
+
+            self.controls.main(key_down_keys)
+
+            pygame.display.update()
+
+        pygame.quit()
 
     @property
     def board_pos(self):
@@ -160,14 +171,14 @@ class Window:
         """Draw's board's outline."""
         outline = pygame.Surface((self.BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
         outline.fill(GREY)
-        self.WINDOW.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
+        self.window.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
 
         board = pygame.Surface((self.BOARD_WIDTH, self.BOARD_HEIGHT))
         board.fill(BLACK)
-        self.WINDOW.blit(board, self.board_pos)
+        self.window.blit(board, self.board_pos)
 
-        for piece in self.game.board:
-            pygame.draw.rect(self.WINDOW, self.game.board[piece],
+        for piece in self.controls.game.board:
+            pygame.draw.rect(self.window, self.controls.game.board[piece],
                              pygame.Rect(piece[0] * self.block_width + self.board_pos[0],
                                          piece[1] * self.block_width + self.board_pos[1],
                                          self.block_width,
@@ -176,27 +187,30 @@ class Window:
     def draw_score(self):
         """Draws score and level text at the top of the board."""
         white = (255, 255, 255)
-        text = self.font.render(f"Score: {self.game.score_manager.points}, "
-                                f"Level: {self.game.score_manager.level}, "
-                                f"Lines: {self.game.score_manager.lines}",
+        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
+                                f"Level: {self.controls.game.score_manager.level}, "
+                                f"Lines: {self.controls.game.score_manager.lines}",
                                 True,
                                 white)
         position = self.WIDTH // 2 - text.get_width() // 2, 10
-        self.WINDOW.blit(text, position)
+        self.window.blit(text, position)
 
     def draw_piece(self):
         """Draws piece in the position in the screen in the board."""
 
-        for ri, row in zip(range(self.game.piece.pos[1], self.game.piece.pos[1] + len(self.game.piece.piece)), self.game.piece.piece):
-            for ci, square in zip(range(self.game.piece.pos[0], self.game.piece.pos[0] + len(row)), row):
+        for ri, row in zip(range(self.controls.game.piece.pos[1],
+                                 self.controls.game.piece.pos[1] + len(self.controls.game.piece.piece)),
+                           self.controls.game.piece.piece):
+            for ci, square in zip(range(self.controls.game.piece.pos[0],  self.controls.game.piece.pos[0] + len(row)),
+                                  row):
                 # We iterate over both the positions of the squares in the piece
                 # Based on its position and each square,
                 # row by row, column by column,
 
                 if square == "#":
                     # If the square is a pound symbol, we draw the square (see pieces.py).
-                    pygame.draw.rect(self.WINDOW,
-                                     self.game.piece.color,
+                    pygame.draw.rect(self.window,
+                                     self.controls.game.piece.color,
                                      pygame.Rect(ci * self.block_width + self.board_pos[0],
                                                  ri * self.block_width + self.board_pos[1],
                                                  self.block_width,
