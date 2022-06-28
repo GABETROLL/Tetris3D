@@ -180,10 +180,10 @@ class Board:
                 for ci, square in enumerate(row):
 
                     if square == "#":
-                        xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+                        x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
 
-                        if self.board.get((xpos - 1, ypos)) or \
-                                xpos == 0:
+                        if self.board.get((x_pos - 1, y_pos)) or \
+                                x_pos == 0:
                             will_move = False
 
             if will_move:
@@ -198,10 +198,10 @@ class Board:
                 for ci, square in enumerate(row):
 
                     if square == "#":
-                        xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+                        x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
 
-                        if self.board.get((xpos + 1, ypos)) or\
-                                xpos == COLUMNS - 1:
+                        if self.board.get((x_pos + 1, y_pos)) or\
+                                x_pos == COLUMNS - 1:
                             will_move = False
 
             if will_move:
@@ -219,7 +219,7 @@ class Board:
             # We move the piece down until it lands.
 
         elif move == "s" and not self.landed():
-            # Id the move is a soft drop and we haven't landed,
+            # If the move is a soft drop, and we haven't landed,
             self.move_piece_down()
             return True
             # We move down once.
@@ -230,7 +230,7 @@ class Board:
         for ri, row in zip(range(self.piece.pos[1], self.piece.pos[1] + len(self.piece.piece)), self.piece.piece):
             for ci, square in zip(range(self.piece.pos[0], self.piece.pos[0] + len(row)), row):
                 # We iterate over both the positions of the squares in the piece
-                # Based on it's position and each square,
+                # Based on its position and each square,
                 # row by row, column by column,
 
                 if square == "#":
@@ -241,9 +241,9 @@ class Board:
         """Moves up unless a square above it blocks it."""
         for ri, row in enumerate(self.piece.piece):
             for ci, square in enumerate(row):
-                xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+                x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
 
-                if square == "#" and self.board.get((xpos, ypos - 1)):
+                if square == "#" and self.board.get((x_pos, y_pos - 1)):
                     return False
 
         self.piece.pos[1] -= 1
@@ -266,21 +266,21 @@ class Board:
             for ci, square in enumerate(row):
                 # Look at each square
                 if square == "#":
-                    xpos, ypos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+                    x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
 
-                    if xpos > COLUMNS - 1:
+                    if x_pos > COLUMNS - 1:
                         if not self.try_move("l"):
                             self.rotate(not clockwise)
 
-                    elif xpos < 0:
+                    elif x_pos < 0:
                         if not self.try_move("r"):
                             self.rotate(not clockwise)
 
-                    if ypos > ROWS - 1:
+                    if y_pos > ROWS - 1:
                         if not self.try_move_up():
                             self.rotate(not clockwise)
 
-                    if (xpos, ypos) in self.board:
+                    if (x_pos, y_pos) in self.board:
                         self.rotate(not clockwise)
 
                     # If the square is outside the board, we try to push it back in.
@@ -288,13 +288,13 @@ class Board:
 
     def landed(self):
         """Checks if the piece landed."""
-        for ypos, row in zip(range(len(self.piece.piece), 0, -1), self.piece.piece):
-            for xpos, square in enumerate(row):
+        for y_pos, row in zip(range(len(self.piece.piece), 0, -1), self.piece.piece):
+            for x_pos, square in enumerate(row):
                 # Check every square in the piece from the bottom to top rows.
 
                 if square == "#":
                     # If that square is full...
-                    square_pos = (self.piece.pos[0] + xpos, self.piece.pos[1] + len(self.piece.piece) - ypos)
+                    square_pos = (self.piece.pos[0] + x_pos, self.piece.pos[1] + len(self.piece.piece) - y_pos)
                     if self.board.get((square_pos[0], square_pos[1] + 1)) or\
                             square_pos[1] == ROWS - 1:
                         # If there's a block or the wall underneath it...
@@ -315,17 +315,17 @@ class Board:
         # space: O(n), where n is: height of piece
         deleted_rows = set()
 
-        for ypos, row in zip(range(len(previous_piece.piece), 0, -1), previous_piece.piece):
+        for y_pos, row in zip(range(len(previous_piece.piece), 0, -1), previous_piece.piece):
             # look at each row in the dropped piece
-            square_y_pos = self.piece.pos[1] + len(self.piece.piece) - ypos
+            square_y_pos = self.piece.pos[1] + len(self.piece.piece) - y_pos
 
-            for xpos in range(COLUMNS):
-                if not ((xpos, square_y_pos) in self.board):
+            for x_pos in range(COLUMNS):
+                if not ((x_pos, square_y_pos) in self.board):
                     break
             else:
                 # If the whole row in the board is filled
-                for xpos in range(COLUMNS):
-                    self.board.pop((xpos, square_y_pos))
+                for x_pos in range(COLUMNS):
+                    self.board.pop((x_pos, square_y_pos))
                 # remove that row
                 deleted_rows.add(square_y_pos)
                 # keep track of that row
@@ -334,15 +334,15 @@ class Board:
         for row in deleted_rows:
             if row > landing_row:
                 landing_row = row
-        # lowest deleted row is where all of the rows with gunk in them will 'land' on.
+        # lowest deleted row is where all the rows with gunk in them will 'land' on.
 
         gunk_row = landing_row - 1
         while gunk_row > -1:
             if not (gunk_row in deleted_rows):
                 # if row has gunk in it
-                for xpos in range(COLUMNS):
-                    if (xpos, gunk_row) in self.board:
-                        self.board[(xpos, landing_row)] = self.board.pop((xpos, gunk_row))
+                for x_pos in range(COLUMNS):
+                    if (x_pos, gunk_row) in self.board:
+                        self.board[(x_pos, landing_row)] = self.board.pop((x_pos, gunk_row))
                 # move that row down to the landing row
 
                 landing_row -= 1
