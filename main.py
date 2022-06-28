@@ -57,7 +57,7 @@ class Window:
 
             pygame.display.update()
 
-            if self.frame_count == self.fall_rate(self.game.level):
+            if self.frame_count == self.fall_rate(self.game.score_manager.level):
                 self.game.play()
                 self.frame_count = 0
 
@@ -120,7 +120,7 @@ class Window:
         if pygame.K_SPACE in key_down_keys:
             self.game.try_move(HARD_DROP)
 
-            self.frame_count = self.fall_rate(self.game.level)
+            self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
 
         if pygame.K_PERIOD in key_down_keys:
@@ -176,7 +176,9 @@ class Window:
     def draw_score(self):
         """Draws score and level text at the top of the board."""
         white = (255, 255, 255)
-        text = self.font.render(f"Score: {self.game.points}, Level: {self.game.level}, Lines: {self.game.lines}",
+        text = self.font.render(f"Score: {self.game.score_manager.points}, "
+                                f"Level: {self.game.score_manager.level}, "
+                                f"Lines: {self.game.score_manager.lines}",
                                 True,
                                 white)
         position = self.WIDTH // 2 - text.get_width() // 2, 10
