@@ -154,6 +154,21 @@ class Piece:
     def piece(self):
         return self.all_rotations[self.rotation]
 
+    def square_positions(self):
+        """
+        Returns the list of the OBJECTIVE position all the squares of
+        'self', the tetromino.
+        """
+        positions = []
+
+        for ri, row in enumerate(self.piece):
+            for ci, square in enumerate(row):
+
+                if square == "#":
+                    position = (self.pos[0] + ci, self.pos[1] + ri)
+                    positions.append(position)
+        return positions
+
 
 @dataclass
 class Score:
@@ -175,8 +190,8 @@ class Score:
 
         if self.transitioned and 0 in (n % 10 for n in range(self.lines + 1, next_lines + 1)) and cleared_lines:
             # If we passed or are in a multiple of 10 after transition...
-            print(n % 10 for n in range(self.lines, next_lines))
-            print("HI")
+            # print(n % 10 for n in range(self.lines, next_lines))
+            # print("HI")
             self.level += 1
 
         elif self.lines < transitions[self.level] <= next_lines:
@@ -205,49 +220,33 @@ class Board:
         self.piece.pos[1] += 1
 
     def try_move(self, move):
-        """Tries to move piece down.
+        """Tries to move piece down, and returns
+        weather or not it was successfully moved.
 
-        Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP."""
+        A piece can be successfully moved if it's
+        next position (SHOULD always be one over...) 
+        doesn't overlap any existing blocks in the board.
+
+        Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP.
+        """
 
         if move == "l":
-            will_move = True
+            for x_pos, y_pos in self.piece.square_positions():
+                if self.board.get((x_pos - 1, y_pos)) or \
+                        x_pos == 0:
+                    return False
+            self.piece.pos[0] -= 1
+            return True
 
-            for ri, row in enumerate(self.piece.piece):
-                for ci, square in enumerate(row):
+        if move == "r":
+            for x_pos, y_pos in self.piece.square_positions():
+                if self.board.get((x_pos + 1, y_pos)) or \
+                        x_pos == COLUMNS - 1:
+                    return False
+            self.piece.pos[0] += 1
+            return True
 
-                    if square == "#":
-                        x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
-
-                        if self.board.get((x_pos - 1, y_pos)) or \
-                                x_pos == 0:
-                            will_move = False
-
-            if will_move:
-                self.piece.pos[0] -= 1
-
-            return will_move
-
-        elif move == "r":
-            will_move = True
-
-            for ri, row in enumerate(self.piece.piece):
-                for ci, square in enumerate(row):
-
-                    if square == "#":
-                        x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
-
-                        if self.board.get((x_pos + 1, y_pos)) or\
-                                x_pos == COLUMNS - 1:
-                            will_move = False
-
-            if will_move:
-                self.piece.pos[0] += 1
-
-            return will_move
-        # If the piece has a square or the wall left or right of one of its squares,
-        # We can't move there.
-
-        elif move == "h":
+        if move == "h":
             # If the move is a hard drop,
             while not self.landed():
                 self.move_piece_down()
@@ -261,26 +260,22 @@ class Board:
             # We move down once.
 
     def set_down(self):
-        """Makes piece inbeded in board."""
-
-        for ri, row in zip(range(self.piece.pos[1], self.piece.pos[1] + len(self.piece.piece)), self.piece.piece):
-            for ci, square in zip(range(self.piece.pos[0], self.piece.pos[0] + len(row)), row):
-                # We iterate over both the positions of the squares in the piece
-                # Based on its position and each square,
-                # row by row, column by column,
-
-                if square == "#":
-                    self.board[(ci, ri)] = self.piece.color
-                    # And append the squares to the board.
+        """
+        Makes piece 'inbeded' in board.
+        AKA: "puts" the squares of the piece
+        in the 'self.board' dictionary.
+        """
+        for square_pos in self.piece.square_positions():
+            self.board[square_pos] = self.piece.color
 
     def try_move_up(self):
-        """Moves up unless a square above it blocks it."""
-        for ri, row in enumerate(self.piece.piece):
-            for ci, square in enumerate(row):
-                x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
-
-                if square == "#" and self.board.get((x_pos, y_pos - 1)):
-                    return False
+        """
+        Moves 'self'ss current piece up unless a square above it blocks it.
+        Returns weather or not it was able to move up.
+        """
+        for x_pos, y_pos in self.piece.square_positions():
+            if self.board.get((x_pos, y_pos - 1)):
+                return False
 
         self.piece.pos[1] -= 1
         return True
@@ -298,44 +293,39 @@ class Board:
         If it can't move there, it cancels the rotation."""
         self.rotate(clockwise)
 
-        for ri, row in enumerate(self.piece.piece):
-            for ci, square in enumerate(row):
-                # Look at each square
-                if square == "#":
-                    x_pos, y_pos = (self.piece.pos[0] + ci, self.piece.pos[1] + ri)
+        for x_pos, y_pos in self.piece.square_positions():
+            if x_pos > COLUMNS - 1:
+                if not self.try_move("l"):
+                    self.rotate(not clockwise)
 
-                    if x_pos > COLUMNS - 1:
-                        if not self.try_move("l"):
-                            self.rotate(not clockwise)
+            elif x_pos < 0:
+                if not self.try_move("r"):
+                    self.rotate(not clockwise)
 
-                    elif x_pos < 0:
-                        if not self.try_move("r"):
-                            self.rotate(not clockwise)
+            if y_pos > ROWS - 1:
+                if not self.try_move_up():
+                    self.rotate(not clockwise)
 
-                    if y_pos > ROWS - 1:
-                        if not self.try_move_up():
-                            self.rotate(not clockwise)
-
-                    if (x_pos, y_pos) in self.board:
-                        self.rotate(not clockwise)
-
-                    # If the square is outside the board, we try to push it back in.
-                    # If we can't, we cancel the rotation.
+            if (x_pos, y_pos) in self.board:
+                self.rotate(not clockwise)
+            # If the square is outside the board, we try to push it back in.
+            # If we can't, we cancel the rotation.
 
     def landed(self):
-        """Checks if the piece landed."""
-        for y_pos, row in zip(range(len(self.piece.piece), 0, -1), self.piece.piece):
-            for x_pos, square in enumerate(row):
-                # Check every square in the piece from the bottom to top rows.
-
-                if square == "#":
-                    # If that square is full...
-                    square_pos = (self.piece.pos[0] + x_pos, self.piece.pos[1] + len(self.piece.piece) - y_pos)
-                    if self.board.get((square_pos[0], square_pos[1] + 1)) or\
-                            square_pos[1] == ROWS - 1:
-                        # If there's a block or the wall underneath it...
-                        # Return True.
-                        return True
+        """
+        Checks if 'self's current piece landed.
+        A piece has landed if the floor or
+        another square is EXACTLY one square below
+        one of the piece's squares.
+        """
+        for square_pos in reversed(self.piece.square_positions()):
+            # 'self.piece.square_positions' returns all of the squares
+            # in order: up->down, left->right.
+            if self.board.get((square_pos[0], square_pos[1] + 1)) or \
+                    square_pos[1] == ROWS - 1:
+                # If there's a block or the wall underneath it...
+                # Return True.
+                return True
         return False
 
     def landing_handler(self):
@@ -343,10 +333,10 @@ class Board:
         makes it part of the board, and spawns a new one."""
         if self.landed():
             self.set_down()
-            self.clear_handler(self.piece)
+            self.clear_lines(self.piece)
             self.init_random_piece()
 
-    def clear_handler(self, previous_piece):
+    def clear_lines(self, previous_piece: Piece):
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_rows = set()
