@@ -321,6 +321,7 @@ class Board:
         for square_pos in reversed(self.piece.square_positions()):
             # 'self.piece.square_positions' returns all of the squares
             # in order: up->down, left->right.
+            # We want to scan down->up.
             if self.board.get((square_pos[0], square_pos[1] + 1)) or \
                     square_pos[1] == ROWS - 1:
                 # If there's a block or the wall underneath it...
