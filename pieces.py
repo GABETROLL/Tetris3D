@@ -289,27 +289,17 @@ class Board:
         # absolutes value in case they rotated counter-clockwise
 
     def try_rotate(self, clockwise=True):
-        """Tries to rotate. If the piece is inside a wall, it tries pushing it out.
-        If it can't move there, it cancels the rotation."""
+        """Rotates 'self.piece'. If the piece overlaps the outside of the board
+        or a square in the board, the rotation is cancelled."""
         self.rotate(clockwise)
 
-        for x_pos, y_pos in self.piece.square_positions():
-            if x_pos > COLUMNS - 1:
-                if not self.try_move("l"):
-                    self.rotate(not clockwise)
-
-            elif x_pos < 0:
-                if not self.try_move("r"):
-                    self.rotate(not clockwise)
-
-            if y_pos > ROWS - 1:
-                if not self.try_move_up():
-                    self.rotate(not clockwise)
-
-            if (x_pos, y_pos) in self.board:
-                self.rotate(not clockwise)
-            # If the square is outside the board, we try to push it back in.
-            # If we can't, we cancel the rotation.
+        if any(
+            pos in self.board
+            or pos[0] not in range(COLUMNS)
+            or pos[1] not in range(ROWS)
+            for pos in self.piece.square_positions()
+        ):
+            self.rotate(not clockwise)
 
     def landed(self):
         """
