@@ -11,7 +11,7 @@ class Controls:
     def __init__(self, window):
         self.window = window
 
-        self.game = Board()
+        self.game = Game()
 
         self.frame_count = 0
 

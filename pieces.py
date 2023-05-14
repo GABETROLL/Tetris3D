@@ -203,7 +203,7 @@ class Score:
         self.lines = next_lines
 
 
-class Board:
+class Game:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
         self.init_random_piece()
