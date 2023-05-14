@@ -1,7 +1,7 @@
 import pygame
 from pieces import *
 
-GREY = (128, 128, 128)
+BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
@@ -114,6 +114,26 @@ class Controls:
             self.game.try_rotate(False)
 
 
+@dataclass
+class Menu:
+    options: object
+    option_index: int = 0
+
+    @property
+    def option(self):
+        return self.options[self.option_index]
+
+    def move_to_next(self):
+        self.option_index += 1
+        self.option_index %= len(self.options)
+
+    def move_to_previous(self):
+        if self.option_index == 0:
+            self.option_index = len(self.options) - 1
+        else:
+            self.option_index -= 1
+
+
 class Window:
     def __init__(self, width: int, height: int, board_width: int, font: pygame.font.Font):
         self.WIDTH = width
@@ -132,30 +152,102 @@ class Window:
         self.fps = 60
         self.controls = Controls(self.window)
 
+        self.playing = False
+
+        self.level_menu = Menu(range(20))
+        self.mode_menu = Menu(("2D", "3D"))
+        self.music_menu = Menu(("Tetris Theme", "Silence"))
+
+        self.menu_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+
         while self.running:
             self.clock.tick(self.fps)
 
-            key_down_keys = set()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-
-                if event.type == pygame.KEYDOWN:
-                    key_down_keys.add(event.key)
-                # Certain keys can't spam an instruction every frame.
-
             self.window.fill(BLACK)
 
-            self.draw_board()
-            self.draw_piece()
-            self.draw_score()
-
-            self.controls.main(key_down_keys)
+            if self.playing:
+                self.handle_game_frame()
+            else:
+                self.handle_title_screen_frame()
 
             pygame.display.update()
-
         pygame.quit()
+
+    def init_game(self):
+        """
+        Initializes 'self.controls' with the appropiate
+        game level to start in.
+        """
+        self.controls = Controls(self.window)
+        self.controls.game.score_manager.level = self.level_menu.option
+
+    def handle_title_screen_frame(self):
+        """
+        Displays and gets level, mode and music selection from the player,
+        stores in 'self', and switches 'self.playing' if the player
+        pressed ENTER.
+        """
+        TITLE_FONT = pygame.font.SysFont("consolas", 50)
+        TITLE = TITLE_FONT.render("Tetris 3D!", False, BRIGHT_GREY)
+
+        MENU_FONT = pygame.font.SysFont("consolas", 20)
+        CHOSEN_OPTION_FONT = pygame.font.SysFont("consolas", 30)
+
+        STARTING_LEVEL_TEXT = MENU_FONT.render("Starting level:", False, BRIGHT_GREY)
+        GAME_MODE_TEXT = MENU_FONT.render("Game mode:", False, BRIGHT_GREY)
+        BACKGROUND_MUSIC_TEXT = MENU_FONT.render("Background music:", False, BRIGHT_GREY)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    self.menu_menu.move_to_next()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    self.menu_menu.move_to_previous()
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    self.menu_menu.option.move_to_next()
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    self.menu_menu.option.move_to_previous()
+
+                if event.key == pygame.K_RETURN:
+                    self.init_game()
+                    self.playing = True
+
+        self.window.blit(TITLE, (20, 50))
+
+        self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
+        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[0].option), False, BRIGHT_GREY)
+        self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
+
+        self.window.blit(GAME_MODE_TEXT, (20, 200))
+        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[1].option), False, BRIGHT_GREY)
+        self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
+
+        self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
+        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[2].option), False, BRIGHT_GREY)
+        self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
+
+    def handle_game_frame(self):
+        """
+        Controls Tetris game.
+        """
+        key_down_keys = set()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            if event.type == pygame.KEYDOWN:
+                key_down_keys.add(event.key)
+            # Certain keys can't spam an instruction every frame.
+
+        self.draw_board()
+        self.draw_piece()
+        self.draw_score()
+
+        self.controls.main(key_down_keys)
 
     @property
     def board_pos(self):
@@ -170,7 +262,7 @@ class Window:
     def draw_board(self):
         """Draw's board's outline."""
         outline = pygame.Surface((self.BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
-        outline.fill(GREY)
+        outline.fill(BRIGHT_GREY)
         self.window.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
 
         board = pygame.Surface((self.BOARD_WIDTH, self.BOARD_HEIGHT))
@@ -219,4 +311,4 @@ class Window:
 
 if __name__ == "__main__":
     pygame.init()
-    Window(800, 800, 400, pygame.font.SysFont("Consolas", 30))
+    Window(800, 800, 400, pygame.font.SysFont("consolas", 30))
