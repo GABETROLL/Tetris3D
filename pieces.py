@@ -154,6 +154,30 @@ class Piece:
     def piece(self):
         return self.all_rotations[self.rotation]
 
+    @property    
+    def piece_width(self):
+        return len(self.piece[0])
+
+    @property
+    def piece_height(self):
+        return len(self.piece)
+    
+    def relative_square_positions(self):
+        """
+        Returns the list of the positions of the squares
+        in 'self.piece', IF 'self' WHERE IN THE TOP LEFT
+        OF THE BOARD (aka, the "relative position")
+        """
+        positions = []
+
+        for ri, row in enumerate(self.piece):
+            for ci, square in enumerate(row):
+
+                if square == "#":
+                    position = (self.pos[0], self.pos[1])
+                    positions.append(position)
+        return positions
+
     def square_positions(self):
         """
         Returns the list of the OBJECTIVE position all the squares of
@@ -206,7 +230,9 @@ class Score:
 class Game:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
-        self.init_random_piece()
+
+        self.piece = Piece(random.choice(self.pieces))
+        self.next_piece = Piece(random.choice(self.pieces))
 
         self.score_manager = Score()
 
@@ -214,7 +240,8 @@ class Game:
         # {pos: color}
 
     def init_random_piece(self):
-        self.piece = Piece(random.choice(self.pieces))
+        self.piece = self.next_piece
+        self.next_piece = Piece(random.choice(self.pieces))
 
     def move_piece_down(self):
         self.piece.pos[1] += 1
