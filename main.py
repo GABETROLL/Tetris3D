@@ -158,6 +158,8 @@ class Window:
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
 
+        self.menu_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+
         while self.running:
             self.clock.tick(self.fps)
 
@@ -195,22 +197,20 @@ class Window:
         GAME_MODE_TEXT = MENU_FONT.render("Game mode:", False, BRIGHT_GREY)
         BACKGROUND_MUSIC_TEXT = MENU_FONT.render("Background music:", False, BRIGHT_GREY)
 
-        menu_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    menu_menu.move_to_next()
-                    print(menu_menu.option)
+                    self.menu_menu.move_to_next()
+                    print(self.menu_menu.option)
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    menu_menu.move_to_previous()
+                    self.menu_menu.move_to_previous()
                 if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    menu_menu.option.move_to_next()
+                    self.menu_menu.option.move_to_next()
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    menu_menu.option.move_to_previous()
+                    self.menu_menu.option.move_to_previous()
 
                 if event.key == pygame.K_RETURN:
                     self.init_game()
@@ -219,15 +219,15 @@ class Window:
         self.window.blit(TITLE, (20, 50))
 
         self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
-        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(menu_menu.options[0].option), False, BRIGHT_GREY)
+        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[0].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
 
         self.window.blit(GAME_MODE_TEXT, (20, 200))
-        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(menu_menu.options[1].option), False, BRIGHT_GREY)
+        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[1].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
 
         self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
-        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(menu_menu.options[2].option), False, BRIGHT_GREY)
+        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[2].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
     def handle_game_frame(self):
