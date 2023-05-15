@@ -167,6 +167,8 @@ class Piece:
         Returns the list of the positions of the squares
         in 'self.piece', IF 'self' WHERE IN THE TOP LEFT
         OF THE BOARD (aka, the "relative position")
+
+        THE POSITIONS ARE RETURNED (x, y), NOT (y, x)
         """
         positions = []
 
@@ -174,7 +176,10 @@ class Piece:
             for ci, square in enumerate(row):
 
                 if square == "#":
-                    position = (self.pos[0], self.pos[1])
+                    position = (ci, ri)
+                    # They're "backwards" because the ci is the x position,
+                    # and ri is the y position, and that's the order
+                    # of a coordinate here, and in the window display
                     positions.append(position)
         return positions
 
@@ -182,6 +187,8 @@ class Piece:
         """
         Returns the list of the OBJECTIVE position all the squares of
         'self', the tetromino.
+
+        THE POSITIONS ARE RETURNED (x, y), NOT (y, x)
         """
         positions = []
 

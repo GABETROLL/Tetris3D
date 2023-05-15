@@ -135,12 +135,12 @@ class Menu:
 
 
 class Window:
-    def __init__(self, width: int, height: int, board_width: int, font: pygame.font.Font):
-        self.WIDTH = width
-        self.HEIGHT = height
+    def __init__(self, board_height: int, font: pygame.font.Font):
+        self.BOARD_HEIGHT = board_height
+        self.BOARD_WIDTH = int(self.BOARD_HEIGHT * (COLUMNS / ROWS))
 
-        self.BOARD_WIDTH = board_width
-        self.BOARD_HEIGHT = board_width * (ROWS // COLUMNS)
+        self.HEIGHT = board_height
+        self.WIDTH = self.HEIGHT
 
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
@@ -246,6 +246,7 @@ class Window:
         self.draw_board()
         self.draw_piece()
         self.draw_score()
+        self.draw_next_piece()
 
         self.controls.main(key_down_keys)
 
@@ -308,7 +309,35 @@ class Window:
                                                  self.block_width,
                                                  self.block_width))
 
+    def draw_next_piece(self):
+        """Draws next piece in its own little box beside the board."""
+        NEXT_PIECE: Piece = self.controls.game.next_piece
+
+        NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * self.block_width
+        NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * self.block_width
+
+        outline = pygame.Surface((NEXT_PIECE_BOX_WIDTH + 40, NEXT_PIECE_BOX_HEIGHT + 40))
+        outline.fill(BRIGHT_GREY)
+
+        # The plan here is to make a "next piece box" surface,
+        # display the 'NEXT_PIECE' here,
+        # then blit this surface into the main window.
+        next_piece_box = pygame.Surface((NEXT_PIECE_BOX_WIDTH, NEXT_PIECE_BOX_HEIGHT))
+        next_piece_box.fill(BLACK)
+
+        next_piece_square_surface = pygame.Surface((self.block_width, self.block_width))
+        next_piece_square_surface.fill(NEXT_PIECE.color)
+
+        for square_position in self.controls.game.next_piece.relative_square_positions():
+            SQUARE_POSITION_IN_BOX = square_position[0] * self.block_width, square_position[1] * self.block_width
+            next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
+
+        # Next box rendering complete, now it's time to blit the next box.
+        self.window.blit(next_piece_box, (self.board_pos[0] + self.BOARD_WIDTH, self.board_pos[1] + self.BOARD_HEIGHT // 2))
+        # The box is blit half-way down the right side of the board,
+        # with 0 pixels of gap between the two.
+
 
 if __name__ == "__main__":
     pygame.init()
-    Window(800, 800, 400, pygame.font.SysFont("consolas", 30))
+    Window(800, pygame.font.SysFont("consolas", 30))
