@@ -1,5 +1,5 @@
 import pygame
-from pieces import *
+from game.pieces import *
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
