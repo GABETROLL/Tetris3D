@@ -228,7 +228,7 @@ class Window:
         Initializes 'self.controls' with the appropiate
         game level to start in.
         """
-        self.controls = GameControl(self.window)
+        self.controls = GameControl2D(self.window)
         self.controls.game.score_manager.level = self.level_menu.option
 
     def handle_title_screen_frame(self):
