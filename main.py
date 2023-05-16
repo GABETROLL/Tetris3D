@@ -8,26 +8,18 @@ RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), 
 
 
 class GameControl:
-    def __init__(self, window):
+    STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
+    def __init__(self, window: pygame.Surface):
         self.window = window
 
         self.game = Game()
 
         self.frame_count = 0
-
         self.das_bar = [15, 6]
-        self.das = {LEFT: {"previous_frame": False, "first_das": False, "charge": 0},
-                    RIGHT: {"previous_frame": False, "first_das": False, "charge": 0}}
+        self.das = {}
         # "DAS" = "delayed auto shift".
-
-    def main(self, key_down_keys: set[int]):
-        self.frame_count += 1
-        self.input_handler(key_down_keys)
-
-        if self.frame_count == self.fall_rate(self.game.score_manager.level):
-            self.game.play()
-            self.frame_count = 0
-    # Counting frames.
+        # direction_key: charge setting (same as STARTING_DAS above)
+        self.directions = {}
 
     @staticmethod
     def fall_rate(level):
@@ -47,50 +39,51 @@ class GameControl:
             return 1
     # Pieces fall faster in higher levels; NES Tetris rules.
 
+    def main(self, key_down_keys: set[int]):
+        self.frame_count += 1
+        self.input_handler(key_down_keys)
+
+        if self.frame_count == self.fall_rate(self.game.score_manager.level):
+            self.game.play()
+            self.frame_count = 0
+    # Counting frames.
+
+
+class GameControl2D(GameControl):
+    def __init__(self, window):
+        GameControl.__init__(self, window)
+
+        self.game = Game2D()
+        self.das = {pygame.K_a: GameControl.STARTING_DAS,
+                    pygame.K_d: GameControl.STARTING_DAS}
+
     def input_handler(self, key_down_keys: set[int]):
         """Checks w, a, s, d, space bar, period and comma for in-game moves.
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_a]:
-            self.das[LEFT]["charge"] += 1
+        DIRECTION_KEYS = {pygame.K_a: LEFT, pygame.K_d: RIGHT}
 
-            if self.das[LEFT]["charge"] == 6 and self.das[LEFT]["first_das"] or\
-                    self.das[LEFT]["charge"] == 15:
-                self.game.try_move(LEFT)
-                self.das[LEFT]["charge"] = 0
-                self.das[LEFT]["first_das"] = True
+        for direction_key, direction in DIRECTION_KEYS.items():
+            if keys[direction_key]:
+                self.das[direction]["charge"] += 1
 
-            elif not self.das[LEFT]["previous_frame"]:
-                self.game.try_move(LEFT)
-                self.das[LEFT]["charge"] = 0
-                self.das[LEFT]["previous_frame"] = True
+                if self.das[direction]["charge"] == 6 and self.das[direction]["first_das"] or\
+                        self.das[direction]["charge"] == 15:
+                    self.game.try_move(direction)
+                    self.das[direction]["charge"] = 0
+                    self.das[direction]["first_das"] = True
 
-        else:
-            if self.das[LEFT]["charge"] > 0:
-                self.das[LEFT]["charge"] -= 1
-            self.das[LEFT]["first_das"] = False
-            self.das[LEFT]["previous_frame"] = False
+                elif not self.das[direction]["previous_frame"]:
+                    self.game.try_move(direction)
+                    self.das[direction]["charge"] = 0
+                    self.das[direction]["previous_frame"] = True
 
-        if keys[pygame.K_d]:
-            self.das[RIGHT]["charge"] += 1
-
-            if self.das[RIGHT]["charge"] == 6 and self.das[RIGHT]["first_das"] or\
-                    self.das[RIGHT]["charge"] == 15:
-                self.game.try_move(RIGHT)
-                self.das[RIGHT]["charge"] = 0
-                self.das[RIGHT]["first_das"] = True
-
-            elif not self.das[RIGHT]["previous_frame"]:
-                self.game.try_move(RIGHT)
-                self.das[RIGHT]["charge"] = 0
-                self.das[RIGHT]["previous_frame"] = True
-
-        else:
-            if self.das[RIGHT]["charge"] > 0:
-                self.das[RIGHT]["charge"] -= 1
-            self.das[RIGHT]["first_das"] = False
-            self.das[RIGHT]["previous_frame"] = False
+            else:
+                if self.das[direction]["charge"] > 0:
+                    self.das[direction]["charge"] -= 1
+                self.das[direction]["first_das"] = False
+                self.das[direction]["previous_frame"] = False
 
         # If we press left or right, we charge the das bar.
         # The first frame the user presses the direction, the piece moves instantly.
@@ -98,7 +91,7 @@ class GameControl:
         # All the other times, we reach up to 6.
         # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
 
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or keys[pygame.K_LSHIFT]:
             self.game.try_move(SOFT_DROP)
 
         if pygame.K_SPACE in key_down_keys:
@@ -107,11 +100,68 @@ class GameControl:
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
 
-        if pygame.K_PERIOD in key_down_keys:
-            self.game.try_rotate()
 
-        if pygame.K_COMMA in key_down_keys:
-            self.game.try_rotate(False)
+class GameControl3D(GameControl):
+    def __init__(self, window):
+        self.window = window
+
+        self.game = Game3D()
+
+        self.frame_count = 0
+
+        self.das_bar = [15, 6]
+        self.das = {
+            LEFT: GameControl.STARTING_DAS,
+            RIGHT: GameControl.STARTING_DAS,
+            UP: GameControl.STARTING_DAS,
+            DOWN: GameControl.STARTING_DAS
+        }
+        # "DAS" = "delayed auto shift".
+
+    def input_handler(self, key_down_keys: set[int]):
+        """Checks w, a, s, d, space bar, period and comma for in-game moves.
+        Keeps track of left and right's das."""
+        keys = pygame.key.get_pressed()
+
+        DIRECTION_KEYS = {pygame.K_a: LEFT, pygame.K_d: RIGHT, pygame.K_w: UP, pygame.K_d: DOWN}
+
+        for direction_key, direction in DIRECTION_KEYS.items():
+            if keys[direction_key]:
+                self.das[direction]["charge"] += 1
+
+                if self.das[direction]["charge"] == 6 and self.das[direction]["first_das"] or\
+                        self.das[direction]["charge"] == 15:
+                    self.game.try_move(direction)
+                    self.das[direction]["charge"] = 0
+                    self.das[direction]["first_das"] = True
+
+                elif not self.das[direction]["previous_frame"]:
+                    self.game.try_move(direction)
+                    self.das[direction]["charge"] = 0
+                    self.das[direction]["previous_frame"] = True
+
+            else:
+                if self.das[direction]["charge"] > 0:
+                    self.das[direction]["charge"] -= 1
+                self.das[direction]["first_das"] = False
+                self.das[direction]["previous_frame"] = False
+
+        # If we press left or right, we charge the das bar.
+        # The first frame the user presses the direction, the piece moves instantly.
+        # The second time is called "first_das", where we wait 15 frames to move the piece.
+        # All the other times, we reach up to 6.
+        # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
+
+        if keys[pygame.K_LSHIFT]:
+            self.game.try_move(SOFT_DROP)
+
+        if pygame.K_SPACE in key_down_keys:
+            self.game.try_move(HARD_DROP)
+
+            self.frame_count = self.fall_rate(self.game.score_manager.level)
+            # If we hard dropped, the dropping cycle of the pieces will reset.
+
+        # TODO: 3D ROTATIONS
 
 
 @dataclass
@@ -150,7 +200,7 @@ class Window:
         self.font = font
 
         self.fps = 60
-        self.controls = GameControl(self.window)
+        self.controls = GameControl2D(self.window)
 
         self.playing = False
 
