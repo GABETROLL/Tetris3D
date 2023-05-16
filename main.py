@@ -59,9 +59,11 @@ class GameControl2D(GameControl):
     def __init__(self, window):
         GameControl.__init__(self, window)
 
-        self.game = Game2D()
-        self.das = {pygame.K_a: GameControl.STARTING_DAS,
-                    pygame.K_d: GameControl.STARTING_DAS}
+        self.game = Game()
+        self.das = {
+            LEFT: GameControl.STARTING_DAS.copy(),
+            RIGHT: GameControl.STARTING_DAS.copy()
+        }
 
     def input_handler(self, key_down_keys: set[int]):
         """Checks w, a, s, d, space bar, period and comma for in-game moves.
@@ -97,6 +99,13 @@ class GameControl2D(GameControl):
         # All the other times, we reach up to 6.
         # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
 
+        if pygame.K_PERIOD in key_down_keys:
+            self.game.try_rotate()
+
+        if pygame.K_COMMA in key_down_keys:
+            self.game.try_rotate(False)
+        # Rotations shouldn't happen every frame.
+
         if keys[pygame.K_s] or keys[pygame.K_LSHIFT]:
             self.game.try_move(SOFT_DROP)
 
@@ -117,10 +126,10 @@ class GameControl3D(GameControl):
 
         self.das_bar = [15, 6]
         self.das = {
-            LEFT: GameControl.STARTING_DAS,
-            RIGHT: GameControl.STARTING_DAS,
-            UP: GameControl.STARTING_DAS,
-            DOWN: GameControl.STARTING_DAS
+            LEFT: GameControl.STARTING_DAS.copy(),
+            RIGHT: GameControl.STARTING_DAS.copy(),
+            UP: GameControl.STARTING_DAS.copy(),
+            DOWN: GameControl.STARTING_DAS.copy()
         }
         # "DAS" = "delayed auto shift".
 
