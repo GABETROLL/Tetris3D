@@ -39,6 +39,12 @@ class GameControl:
             return 1
     # Pieces fall faster in higher levels; NES Tetris rules.
 
+    def input_handler(self, key_down_keys: set[int]):
+        """
+        Checks for pygame key inputs and plays game accordingly.
+        """
+        raise NotImplementedError
+
     def main(self, key_down_keys: set[int]):
         self.frame_count += 1
         self.input_handler(key_down_keys)

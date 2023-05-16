@@ -136,6 +136,9 @@ RIGHT = "r"
 HARD_DROP = "h"
 SOFT_DROP = "s"
 
+UP = "u"
+DOWN = "d"
+
 
 class Piece:
     """piece player can currently control. (piece data, pos)
