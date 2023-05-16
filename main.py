@@ -7,7 +7,7 @@ BLACK = (0, 0, 0)
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
 
 
-class Controls:
+class GameControl:
     def __init__(self, window):
         self.window = window
 
@@ -150,7 +150,7 @@ class Window:
         self.font = font
 
         self.fps = 60
-        self.controls = Controls(self.window)
+        self.controls = GameControl(self.window)
 
         self.playing = False
 
@@ -178,7 +178,7 @@ class Window:
         Initializes 'self.controls' with the appropiate
         game level to start in.
         """
-        self.controls = Controls(self.window)
+        self.controls = GameControl(self.window)
         self.controls.game.score_manager.level = self.level_menu.option
 
     def handle_title_screen_frame(self):
