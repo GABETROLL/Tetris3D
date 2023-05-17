@@ -174,7 +174,7 @@ class Game3D:
             self.piece.pos[0] += 1
             return True
 
-        if move == UP:
+        if move == BACK:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos, y_pos - 1, z_pos)) or \
                         x_pos == 0:
@@ -182,7 +182,7 @@ class Game3D:
             self.piece.pos[1] -= 1
             return True
 
-        if move == RIGHT:
+        if move == FRONT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos, y_pos + 1, z_pos)) or \
                         x_pos == BOARD_WIDTH_DEPTH - 1:

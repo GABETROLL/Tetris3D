@@ -3,5 +3,5 @@ RIGHT = "r"
 HARD_DROP = "h"
 SOFT_DROP = "s"
 
-UP = "u"
-DOWN = "d"
+BACK = "b"
+FRONT = "f"
