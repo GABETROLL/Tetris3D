@@ -1,5 +1,7 @@
 import pygame
 from game.pieces import *
+from game.move_data import *
+from game.pieces_3d import *
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
@@ -243,7 +245,13 @@ class Window:
         Initializes 'self.controls' with the appropiate
         game level to start in.
         """
-        self.controls = GameControl2D(self.window)
+        if self.mode_menu.option == "2D":
+            self.controls = GameControl2D(self.window)
+        elif self.mode_menu.option == "3D":
+            self.controls = GameControl3D(self.window)
+        else:
+            raise ValueError("Dimension chosen shouldn't be possible!")
+
         self.controls.game.score_manager.level = self.level_menu.option
 
     def handle_title_screen_frame(self):
