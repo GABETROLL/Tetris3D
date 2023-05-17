@@ -1,0 +1,1 @@
+from game.pieces import *
