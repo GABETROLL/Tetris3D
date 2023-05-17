@@ -15,7 +15,7 @@ class GameControl:
     def __init__(self, window: pygame.Surface):
         self.window = window
 
-        self.game = Game()
+        self.game = Game2D()
 
         self.frame_count = 0
         self.das_bar = [15, 6]
@@ -62,7 +62,7 @@ class GameControl2D(GameControl):
     def __init__(self, window):
         GameControl.__init__(self, window)
 
-        self.game = Game()
+        self.game = Game2D()
         self.das = {
             LEFT: GameControl.STARTING_DAS.copy(),
             RIGHT: GameControl.STARTING_DAS.copy()

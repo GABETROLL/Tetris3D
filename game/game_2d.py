@@ -196,7 +196,7 @@ class Piece:
         return positions
 
 
-class Game:
+class Game2D:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
 
