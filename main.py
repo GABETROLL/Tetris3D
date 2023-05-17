@@ -2,6 +2,7 @@ import pygame
 from game.game_2d import *
 from game.move_data import *
 from game.game_3d import *
+from dataclasses import dataclass
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
