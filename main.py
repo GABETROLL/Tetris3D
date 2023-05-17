@@ -1,7 +1,7 @@
 import pygame
-from game.pieces import *
+from game.game_2d import *
 from game.move_data import *
-from game.pieces_3d import *
+from game.game_3d import *
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
