@@ -121,7 +121,10 @@ class Piece3D:
 
         self.blocks = blocks
         self.color = color
-    
+
+    def __str__(self):
+        return f"Piece(pos={self.pos}, blocks={self.blocks}, color={self.color=})"
+
     def block_positions(self):
         """
         Returns all of the blocks' positions
@@ -172,6 +175,11 @@ class Game3D:
         self.piece.pos[1] += 1
     
     def try_move(self, move: str):
+        """
+        Tries to move piece in 'move' direction.
+        The direction options are defined in
+        'game.move_data.py', in this folder.
+        """
         if move == LEFT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos - 1, y_pos, z_pos)) or \
@@ -226,13 +234,14 @@ class Game3D:
         for square_pos in self.piece.block_positions():
             self.board[square_pos] = self.piece.color
     
-    def rotate(self):
+    def rotate(self, move):
+        # TODO: define rotation for 3D pieces
         pass
 
-    def try_rotate(self, clockwise=True):
+    def try_rotate(self, move):
         """Rotates 'self.piece'. If the piece overlaps the outside of the board
         or a square in the board, the rotation is cancelled."""
-        self.rotate(clockwise)
+        # TODO: rotate here
 
         if any(
             pos in self.board
@@ -241,7 +250,8 @@ class Game3D:
             or pos[2] not in range(FLOORS)
             for pos in self.piece.block_positions()
         ):
-            self.rotate(not clockwise)
+            # TODO: cancel rotation
+            pass
 
     def landed(self):
         """
