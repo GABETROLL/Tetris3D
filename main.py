@@ -287,7 +287,7 @@ class Window:
                     FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
                     FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
                 )
-                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, (FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH)))
+                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH))
 
             for block_pos_in_game in self.controls.game.piece.block_positions():
                 if block_pos_in_game[2] == floor:
@@ -295,7 +295,7 @@ class Window:
                         FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
                         FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
                     )
-                    pygame.draw.rect(self.window, self.controls.game.piece.color, pygame.Rect(*BLOCK_POS_IN_SCREEN, (FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH)))
+                    pygame.draw.rect(self.window, self.controls.game.piece.color, pygame.Rect(*BLOCK_POS_IN_SCREEN, FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH))
 
     def draw_score(self):
         """Draws score and level text at the top of the board."""
