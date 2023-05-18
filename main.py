@@ -269,9 +269,12 @@ class Window:
 
         The method for drawing the pieces is simple:
         the floors are drawn flat on the screen (no perspective),
-        BOTTOM->UP, while the size of the floor on the screen
+        BOTTOM->UP (INCLUDING THE BLOCKS OF THE PIECE AT THAT FLOOR),
+        while the size of the floor on the screen
         keeps increasing, to give perspective.
         """
+        # draw the 3D board, floor by floor
+        # iterate through each floor
         for floor_size, floor in zip(
             range(self.block_width * game.game_3d.FLOOR_WIDTH),
             reversed(self.controls.game.floors())
@@ -285,6 +288,14 @@ class Window:
                     FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
                 )
                 pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, (FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH)))
+
+            for block_pos_in_game in self.controls.game.piece.block_positions():
+                if block_pos_in_game[2] == floor:
+                    BLOCK_POS_IN_SCREEN = (
+                        FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
+                        FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
+                    )
+                    pygame.draw.rect(self.window, self.controls.game.piece.color, pygame.Rect(*BLOCK_POS_IN_SCREEN, (FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH)))
 
     def draw_score(self):
         """Draws score and level text at the top of the board."""
