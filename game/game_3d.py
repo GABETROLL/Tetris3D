@@ -231,8 +231,8 @@ class Game3D:
         AKA: "puts" the cubes of the piece
         in the 'self.board' dictionary.
         """
-        for square_pos in self.piece.block_positions():
-            self.board[square_pos] = self.piece.color
+        for cube_pos in self.piece.block_positions():
+            self.board[cube_pos] = self.piece.color
     
     def rotate(self, move):
         # TODO: define rotation for 3D pieces
