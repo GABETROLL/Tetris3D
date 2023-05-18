@@ -108,8 +108,17 @@ FLOORS = 20
 
 class Piece3D:
     def __init__(self, blocks: ndarray, color: tuple[int, int, int]) -> None:
+        """
+        Copies the parameters,
+        BUT CHECKS THAT 'blocks' IS A 3D ARRAY,
+        AND THROWS AN ERROR IF IT ISNT.
+        """
         self.pos = [3, 3, 0]
         """top-left-front"""
+
+        if len(blocks.shape) != 3:
+            raise TypeError(f"'blocks' argument isn't a 3D numpy matrix!")
+
         self.blocks = blocks
         self.color = color
     
@@ -121,11 +130,13 @@ class Piece3D:
         """
         positions = []
 
-        for (x_pos, y_pos, z_pos), block in nditer(self.blocks, flags=['multi_index']):
-            if block:
-                positions.append(
-                    (x_pos + self.pos[0], y_pos + self.pos[1], z_pos + self.pos[2])
-                )
+        for x_pos, vertical_slice in enumerate(self.blocks):
+            for y_pos, column in enumerate(vertical_slice):
+                for z_pos, block in enumerate(column):
+                    if block:
+                        positions.append(
+                            (x_pos + self.pos[0], y_pos + self.pos[1], z_pos + self.pos[2])
+                        )
         return positions
 
     def relative_block_positions(self):
@@ -134,9 +145,12 @@ class Piece3D:
         to the PIECE position, AKA the top-left-front position
         """
         positions = []
-        for block_position, block in nditer(self.blocks, flags=['multi_index']):
-            if block:
-                positions.append(block_position)
+
+        for x_pos, vertical_slice in enumerate(self.blocks):
+            for y_pos, column in enumerate(vertical_slice):
+                for z_pos, block in enumerate(column):
+                    if block:
+                        positions.append((x_pos, y_pos, z_pos))
         return positions
 
 
