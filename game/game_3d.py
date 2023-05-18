@@ -285,7 +285,8 @@ class Game3D:
         deleted_floors = set()
 
         PREVIOUS_PIECE_HEIGHT = previous_piece.blocks.shape[2]
-        for z_pos in range(previous_piece.pos, previous_piece.pos + PREVIOUS_PIECE_HEIGHT):
+        PREVIOUS_PIECE_Z_POS = previous_piece.pos[2]
+        for z_pos in range(PREVIOUS_PIECE_Z_POS, PREVIOUS_PIECE_Z_POS + PREVIOUS_PIECE_HEIGHT):
             # look at each floor in the dropped piece
 
             if all(
