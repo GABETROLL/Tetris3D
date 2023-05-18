@@ -265,7 +265,7 @@ class Game3D:
             # in order: up->down, left->right.
             # We want to scan down->up.
             if self.board.get((block_pos[0], block_pos[1], block_pos[2] + 1)) or \
-                    block_pos[1] ==  - 1:
+                    block_pos[1] == FLOORS - 1:
                 # If there's a block or the floor underneath it...
                 # Return True.
                 return True
