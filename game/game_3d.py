@@ -102,7 +102,7 @@ All of the classic 2D Tetrominos, but padded to be 3D boxes.
 2D Tetrominos
 """
 
-BOARD_WIDTH_DEPTH = 10
+FLOOR_WIDTH = 10
 FLOORS = 20
 
 
@@ -169,7 +169,7 @@ class Game3D:
         if move == RIGHT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos + 1, y_pos, z_pos)) or \
-                        x_pos == BOARD_WIDTH_DEPTH - 1:
+                        x_pos == FLOOR_WIDTH - 1:
                     return False
             self.piece.pos[0] += 1
             return True
@@ -185,7 +185,7 @@ class Game3D:
         if move == FRONT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos, y_pos + 1, z_pos)) or \
-                        x_pos == BOARD_WIDTH_DEPTH - 1:
+                        x_pos == FLOOR_WIDTH - 1:
                     return False
             self.piece.pos[1] += 1
             return True
@@ -222,8 +222,8 @@ class Game3D:
 
         if any(
             pos in self.board
-            or pos[0] not in range(BOARD_WIDTH_DEPTH)
-            or pos[1] not in range(BOARD_WIDTH_DEPTH)
+            or pos[0] not in range(FLOOR_WIDTH)
+            or pos[1] not in range(FLOOR_WIDTH)
             or pos[2] not in range(FLOORS)
             for pos in self.piece.block_positions()
         ):
@@ -266,12 +266,12 @@ class Game3D:
 
             if all(
                 (x_pos, y_pos, z_pos) in self.board
-                for y_pos in range(BOARD_WIDTH_DEPTH)
-                for x_pos in range(BOARD_WIDTH_DEPTH)
+                for y_pos in range(FLOOR_WIDTH)
+                for x_pos in range(FLOOR_WIDTH)
             ):
                 # If the whole floor in the board is filled
-                for x_pos in range(BOARD_WIDTH_DEPTH):
-                    for y_pos in range(BOARD_WIDTH_DEPTH):
+                for x_pos in range(FLOOR_WIDTH):
+                    for y_pos in range(FLOOR_WIDTH):
                         self.board.pop((x_pos, y_pos, z_pos))
                 # remove that floor
                 deleted_floors.add(z_pos)
@@ -287,7 +287,7 @@ class Game3D:
         while gunk_floor > -1:
             if not (gunk_floor in deleted_floors):
                 # if floor has gunk in it
-                for x_pos in range(BOARD_WIDTH_DEPTH):
+                for x_pos in range(FLOOR_WIDTH):
                     if (x_pos, gunk_floor) in self.board:
                         self.board[(x_pos, landing_floor)] = self.board.pop((x_pos, gunk_floor))
                 # move that floor down to the landing floor
@@ -300,3 +300,18 @@ class Game3D:
     def play(self):
         self.landing_handler()
         self.move_piece_down()
+
+    def floors(self) -> list[dict]:
+        """
+        Returns all of the floors in self.board.
+        UP->DOWN.
+        """
+        result: list[dict] = []
+
+        for floor_index in range(FLOORS):
+            result.append({})
+            for block_pos, color in self.board.items():
+                if block_pos[2] == floor_index:
+                    result[-1][block_pos] = color
+
+        return result

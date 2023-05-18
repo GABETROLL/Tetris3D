@@ -160,10 +160,11 @@ class Window:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
 
-        self.draw_board()
-        self.draw_piece()
+        if self.mode_menu.option == "3D":
+            self.draw_3d()
+        else:
+            self.draw_2d()
         self.draw_score()
-        self.draw_next_piece()
 
         self.controls.main(key_down_keys)
 
@@ -176,38 +177,43 @@ class Window:
     def block_width(self):
         """returns block's width."""
         return self.BOARD_WIDTH // game.game_2d.COLUMNS
+    
+    def draw_2d(self):
+        """
+        Draws the 'self.game_control.game' board, piece
+        and next piece, IF THE GAME MODE IS 2D
+        
+        IF 'self.game_control' is 3D, a TypeError
+        will be raised.
 
-    def draw_board(self):
-        """Draw's board's outline."""
+        The board is drawn in the middle of the screen.
+        The piece is drawn in the correct position INSIDE
+        the board.
+        The next piece is drawn in a little box beside the board
+        """
+        if type(self.controls) != GameControl2D:
+            raise TypeError("Can't render in 2D while game mode is not 2D!")
+
+        # draw board
+        # board outline
         outline = pygame.Surface((self.BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
         outline.fill(BRIGHT_GREY)
         self.window.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
 
+        # board background
         board = pygame.Surface((self.BOARD_WIDTH, self.BOARD_HEIGHT))
         board.fill(BLACK)
         self.window.blit(board, self.board_pos)
 
+        # board blocks
         for piece in self.controls.game.board:
             pygame.draw.rect(self.window, self.controls.game.board[piece],
                              pygame.Rect(piece[0] * self.block_width + self.board_pos[0],
                                          piece[1] * self.block_width + self.board_pos[1],
                                          self.block_width,
                                          self.block_width))
-
-    def draw_score(self):
-        """Draws score and level text at the top of the board."""
-        white = (255, 255, 255)
-        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
-                                f"Level: {self.controls.game.score_manager.level}, "
-                                f"Lines: {self.controls.game.score_manager.lines}",
-                                True,
-                                white)
-        position = self.WIDTH // 2 - text.get_width() // 2, 10
-        self.window.blit(text, position)
-
-    def draw_piece(self):
-        """Draws piece in the position in the screen in the board."""
-
+    
+        # draw piece
         for ri, row in zip(range(self.controls.game.piece.pos[1],
                                  self.controls.game.piece.pos[1] + len(self.controls.game.piece.piece)),
                            self.controls.game.piece.piece):
@@ -226,8 +232,7 @@ class Window:
                                                  self.block_width,
                                                  self.block_width))
 
-    def draw_next_piece(self):
-        """Draws next piece in its own little box beside the board."""
+        # draw next piece in its own little box beside the board
         NEXT_PIECE: game.game_2d.Piece = self.controls.game.next_piece
 
         NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * self.block_width
@@ -253,6 +258,44 @@ class Window:
         self.window.blit(next_piece_box, (self.board_pos[0] + self.BOARD_WIDTH, self.board_pos[1] + self.BOARD_HEIGHT // 2))
         # The box is blit half-way down the right side of the board,
         # with 0 pixels of gap between the two.
+    
+    def draw_3d(self):
+        """
+        Draws the 'self.game_control.game' board, piece
+        and next piece, IF THE GAME MODE IS 3D
+
+        IF 'self.game_control' is 2D, a TypeError
+        will be raised.
+
+        The method for drawing the pieces is simple:
+        the floors are drawn flat on the screen (no perspective),
+        BOTTOM->UP, while the size of the floor on the screen
+        keeps increasing, to give perspective.
+        """
+        for floor_size, floor in zip(
+            range(self.block_width * game.game_3d.FLOOR_WIDTH),
+            reversed(self.controls.game.floors())
+        ):
+            FLOOR_POS = self.WIDTH // 2 - floor_size // 2, self.HEIGHT - floor_size // 2
+            FLOOR_TILE_WIDTH = floor_size // game.game_3d.FLOOR_WIDTH
+
+            for block_pos_in_game, block_color in floor.items():
+                BLOCK_POS_IN_SCREEN = (
+                    FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
+                    FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
+                )
+                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, (FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH)))
+
+    def draw_score(self):
+        """Draws score and level text at the top of the board."""
+        white = (255, 255, 255)
+        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
+                                f"Level: {self.controls.game.score_manager.level}, "
+                                f"Lines: {self.controls.game.score_manager.lines}",
+                                True,
+                                white)
+        position = self.WIDTH // 2 - text.get_width() // 2, 10
+        self.window.blit(text, position)
 
 
 if __name__ == "__main__":
