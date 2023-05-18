@@ -204,6 +204,8 @@ class Menu:
 
 class Window:
     def __init__(self, board_height: int, font: pygame.font.Font):
+        # We have to make sure the board )and the next piece) can fit in the window.
+        # So, we define the window size later
         self.BOARD_HEIGHT = board_height
         self.BOARD_WIDTH = int(self.BOARD_HEIGHT * (COLUMNS / ROWS))
 
