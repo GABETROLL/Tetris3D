@@ -292,7 +292,7 @@ class Window:
             for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
                     self.board_pos[0] + self.block_width * block_pos_in_game[0],
-                    self.board_pos[1] + self.block_width * block_pos_in_game[1]
+                    self.board_pos[1] + self.block_width * block_pos_in_game[2]
                 )
 
                 pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, self.block_width, self.block_width))
