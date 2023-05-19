@@ -268,34 +268,38 @@ class Window:
         will be raised.
 
         The method for drawing the pieces is simple:
-        the floors are drawn flat on the screen (no perspective),
-        BOTTOM->UP (INCLUDING THE BLOCKS OF THE PIECE AT THAT FLOOR),
-        while the size of the floor on the screen
-        keeps increasing, to give perspective.
+        the vertical slices are drawn BACK-FRONT
+        (INCLUDING THE BLOCKS OF THE PIECE AT THAT SLICE)
+
+        TODO: make slices increase in size
         """
-        # draw the 3D board, floor by floor
-        # iterate through each floor
-        for floor_size, floor in zip(
-            range(self.block_width * game.game_3d.FLOOR_WIDTH),
-            reversed(self.controls.game.floors())
-        ):
-            FLOOR_POS = self.WIDTH // 2 - floor_size // 2, self.HEIGHT - floor_size // 2
-            FLOOR_TILE_WIDTH = floor_size // game.game_3d.FLOOR_WIDTH
 
-            for block_pos_in_game, block_color in floor.items():
+        slices = [
+            {
+                (x_pos, y_pos, z_pos): color
+                for (x_pos, y_pos, z_pos), color in self.controls.game.board.items()
+                if y_pos == slice_pos
+            } for slice_pos in range(game.game_3d.FLOOR_WIDTH)
+        ]
+        # Each slice of the board, SUB-DICTIONARIES OF THE BOARD,
+        # ordered from front-to-back
+        # (we want to iterate through them backwards)
+
+        for block_pos in self.controls.game.piece.block_positions():
+            slices[block_pos[2]][block_pos] = self.controls.game.piece.color
+        # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
+        # (In their corresponding slices and positions, and with their corresponding piece color)
+
+        # for each slice in the board (BACK->FRONT)
+        for slice in reversed(slices):
+
+            for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
-                    FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
-                    FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
+                    self.board_pos[0] + self.block_width * block_pos_in_game[0],
+                    self.board_pos[1] + self.block_width * block_pos_in_game[1]
                 )
-                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH))
 
-            for block_pos_in_game in self.controls.game.piece.block_positions():
-                if block_pos_in_game[2] == floor:
-                    BLOCK_POS_IN_SCREEN = (
-                        FLOOR_POS[0] + FLOOR_TILE_WIDTH * block_pos_in_game[0],
-                        FLOOR_POS[1] + FLOOR_TILE_WIDTH * block_pos_in_game[1]
-                    )
-                    pygame.draw.rect(self.window, self.controls.game.piece.color, pygame.Rect(*BLOCK_POS_IN_SCREEN, FLOOR_TILE_WIDTH, FLOOR_TILE_WIDTH))
+                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, self.block_width, self.block_width))
 
     def draw_score(self):
         """Draws score and level text at the top of the board."""
