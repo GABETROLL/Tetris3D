@@ -172,7 +172,14 @@ class Game3D:
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
     
     def move_piece_down(self):
-        self.piece.pos[1] += 1
+        """
+        Moves 'self.piece' one floor down
+        AKA adds one to its z-pos.
+
+        REGARDLESS OF THE PIECE GOING OFF BOARD
+        OR INTO ANOTHER PIECE.
+        """
+        self.piece.pos[2] += 1
     
     def try_move(self, move: str):
         """
@@ -325,18 +332,3 @@ class Game3D:
     def play(self):
         self.landing_handler()
         self.move_piece_down()
-
-    def floors(self) -> list[dict]:
-        """
-        Returns all of the floors in self.board.
-        UP->DOWN.
-        """
-        result: list[dict] = []
-
-        for floor_index in range(FLOORS):
-            result.append({})
-            for block_pos, color in self.board.items():
-                if block_pos[2] == floor_index:
-                    result[-1][block_pos] = color
-
-        return result
