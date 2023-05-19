@@ -274,19 +274,15 @@ class Window:
         TODO: make slices increase in size
         """
 
-        slices = [
-            {
-                (x_pos, y_pos, z_pos): color
-                for (x_pos, y_pos, z_pos), color in self.controls.game.board.items()
-                if y_pos == slice_pos
-            } for slice_pos in range(game.game_3d.FLOOR_WIDTH)
-        ]
+        slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
+        for block_pos_in_game, block_color in self.controls.game.board.items():
+            slices[block_pos_in_game[1]][block_pos_in_game] = block_color
         # Each slice of the board, SUB-DICTIONARIES OF THE BOARD,
         # ordered from front-to-back
         # (we want to iterate through them backwards)
 
-        for block_pos in self.controls.game.piece.block_positions():
-            slices[block_pos[2]][block_pos] = self.controls.game.piece.color
+        for block_pos_in_game in self.controls.game.piece.block_positions():
+            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
         # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
         # (In their corresponding slices and positions, and with their corresponding piece color)
 
