@@ -135,7 +135,7 @@ class GameControl3D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        DIRECTION_KEYS = {pygame.K_a: LEFT, pygame.K_d: RIGHT, pygame.K_w: BACK, pygame.K_d: FRONT}
+        DIRECTION_KEYS = {pygame.K_a: LEFT, pygame.K_d: RIGHT, pygame.K_w: BACK, pygame.K_s: FRONT}
 
         for direction_key, direction in DIRECTION_KEYS.items():
             if keys[direction_key]:
