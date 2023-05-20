@@ -212,11 +212,10 @@ class Game3D:
         AND THE AXII DIRECTION ARE DEFINED IN THIS CLASS'
         DOCSTRING!
         """
-        # TODO: PLEASE MANAGE YOUR INDEXES AND POSITIONS BETTER!
+        # SUGGESTION: PLEASE MANAGE YOUR INDEXES, POSITIONS AND MOVES BETTER!
         # I HAD TO SWAP TONS OF VALUES AROUND TO GET THE PIECES
         # TO BEHAVE IN THE CORRECT POSITIONS!
 
-        print(f"{self.piece.pos}")
         if move == LEFT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos - 1, y_pos, z_pos)) or \
