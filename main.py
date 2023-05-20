@@ -291,12 +291,18 @@ class Window:
         # we 'override' the ones at the back,
         # "blocking" their colors and therefore acheiving
         # "perspective"
-        for slice in reversed(slices):
+        for display_darkness, slice in zip(range(len(slices), 0, -1), reversed(slices)):
 
             for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
                     self.board_pos[0] + self.block_width * block_pos_in_game[0],
                     self.board_pos[1] + self.block_width * block_pos_in_game[2]
+                )
+
+                block_color = (
+                    block_color[0] / display_darkness,
+                    block_color[1] / display_darkness,
+                    block_color[2] / display_darkness
                 )
 
                 pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, self.block_width, self.block_width))
