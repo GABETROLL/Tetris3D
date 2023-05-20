@@ -158,6 +158,28 @@ class Piece3D:
 
 
 class Game3D:
+    """
+    3D current and next pieces,
+    a ScoreManager instance, and a board dictionary
+    that functions in this format: {3d_pos: color}
+
+    The 3D current and next pieces are NOT PART OF THE BOARD,
+    and are placed IN the board when they land.
+
+    The 'self.score_manager' instance is used exactly as 2D:
+    BUT using FLOORS instead of LINES.
+
+    The 'self.board' has tuple[int, int, int] as both the coordinates
+    and the colors (of "garbage" left by the other pieces)
+
+    THE AXII IN THIS BOARD ARE DEFINED AS THE FOLLOWING,
+    AND 'self.try_move' WILL MOVE THE PIECES ACCORDING TO
+    THIS 3D PROJECTION METHOD (used in 'main.py'):
+
+    x axis: LEFT to RIGHT (0 -> FLOOR_WIDTH)
+    y axis: FRONT to BACK (0 -> FLOOR_WIDTH)
+    z axis: UP to DOWN (0 -> FLOORS)
+    """
     def __init__(self):
         self.piece = Piece3D(*random.choice(PIECES_3D))
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
@@ -186,7 +208,15 @@ class Game3D:
         Tries to move piece in 'move' direction.
         The direction options are defined in
         'game.move_data.py', in this folder.
+
+        AND THE AXII DIRECTION ARE DEFINED IN THIS CLASS'
+        DOCSTRING!
         """
+        # TODO: PLEASE MANAGE YOUR INDEXES AND POSITIONS BETTER!
+        # I HAD TO SWAP TONS OF VALUES AROUND TO GET THE PIECES
+        # TO BEHAVE IN THE CORRECT POSITIONS!
+
+        print(f"{self.piece.pos}")
         if move == LEFT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos - 1, y_pos, z_pos)) or \
@@ -205,18 +235,18 @@ class Game3D:
 
         if move == BACK:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
-                if self.board.get((x_pos, y_pos - 1, z_pos)) or \
-                        x_pos == 0:
+                if self.board.get((x_pos, y_pos + 1, z_pos)) or \
+                        y_pos == FLOOR_WIDTH - 1:
                     return False
-            self.piece.pos[1] -= 1
+            self.piece.pos[1] += 1
             return True
 
         if move == FRONT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
-                if self.board.get((x_pos, y_pos + 1, z_pos)) or \
-                        x_pos == FLOOR_WIDTH - 1:
+                if self.board.get((x_pos, y_pos - 1, z_pos)) or \
+                        y_pos == 0:
                     return False
-            self.piece.pos[1] += 1
+            self.piece.pos[1] -= 1
             return True
 
         if move == HARD_DROP:
@@ -267,12 +297,12 @@ class Game3D:
         another square is EXACTLY one square below
         one of the piece's squares.
         """
-        for block_pos in reversed(self.piece.block_positions()):
+        for block_x_pos, block_y_pos, block_z_pos in reversed(self.piece.block_positions()):
             # 'self.piece.block_positions' returns all of the squares
             # in order: up->down, left->right.
             # We want to scan down->up.
-            if self.board.get((block_pos[0], block_pos[1], block_pos[2] + 1)) or \
-                    block_pos[1] == FLOORS - 1:
+            if self.board.get((block_x_pos, block_y_pos, block_z_pos + 1)) or \
+                    block_z_pos == FLOORS - 1:
                 # If there's a block or the floor underneath it...
                 # Return True.
                 return True

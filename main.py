@@ -287,6 +287,10 @@ class Window:
         # (In their corresponding slices and positions, and with their corresponding piece color)
 
         # for each slice in the board (BACK->FRONT)
+        # BECAUSE when drawing the ones at the front later,
+        # we 'override' the ones at the back,
+        # "blocking" their colors and therefore acheiving
+        # "perspective"
         for slice in reversed(slices):
 
             for block_pos_in_game, block_color in slice.items():
