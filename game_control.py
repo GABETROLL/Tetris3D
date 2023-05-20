@@ -174,3 +174,9 @@ class GameControl3D(GameControl):
             # If we hard dropped, the dropping cycle of the pieces will reset.
 
         # TODO: 3D ROTATIONS
+        # U: rotate around the y axis counter-clockwise
+        # O: rotate around the y axis clockwise
+        # I: rotate around the x axis counter-clockwise
+        # K: rotate around the x axis clockwise
+        # J: rotate around the z axis clockwise
+        # L: rotate around the z axis counter-clockwise

@@ -1,4 +1,4 @@
-from numpy import zeros, ndarray, nditer
+from numpy import zeros, ndarray, rot90
 import random
 from game.score import Score
 from game.move_data import *
@@ -105,6 +105,10 @@ All of the classic 2D Tetrominos, but padded to be 3D boxes.
 FLOOR_WIDTH = 10
 FLOORS = 20
 
+X_AXIS = 0
+Y_AXIS = 1
+Z_AXIS = 2
+
 
 class Piece3D:
     def __init__(self, blocks: ndarray, color: tuple[int, int, int]) -> None:
@@ -124,6 +128,15 @@ class Piece3D:
 
     def __str__(self):
         return f"Piece(pos={self.pos}, blocks={self.blocks}, color={self.color=})"
+    
+    def rotate(self, axis: int, clockwise: bool):
+        """
+        Rotates self's blocks AROUND 'axis'
+        however 'clockwise' specifies,
+
+        ASSUMING 'self.blocks' is a cube.
+        """
+        pass
 
     def block_positions(self):
         """
@@ -274,9 +287,13 @@ class Game3D:
         # TODO: define rotation for 3D pieces
         pass
 
-    def try_rotate(self, move):
-        """Rotates 'self.piece'. If the piece overlaps the outside of the board
-        or a square in the board, the rotation is cancelled."""
+    def try_rotate(self, axis):
+        """
+        Rotates 'self.piece' AROUND the 'axis' DEFINED AT THE TOP OF THIS CLASS.
+        If the piece can't rotate because it goes outside of the 3D board,
+        or a block is already in a position where the piece's block will end up in,
+        this method CANCELS THE ROTATION.
+        """
         # TODO: rotate here
 
         if any(
