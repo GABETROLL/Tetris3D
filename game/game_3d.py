@@ -136,7 +136,14 @@ class Piece3D:
 
         ASSUMING 'self.blocks' is a cube.
         """
-        pass
+        rotation_axii = [X_AXIS, Y_AXIS, Z_AXIS]
+
+        if axis not in rotation_axii:
+            raise ValueError(f"Rotation axis 'axis' can only be 'X_AXIS, 'Y_AXIS' or 'Z_AXIS'.\nGot: {axis}")
+        
+        rotation_axii.remove(axis)
+
+        self.blocks = rot90(self.blocks, 1 if clockwise else 3, tuple(rotation_axii))
 
     def block_positions(self):
         """
@@ -282,29 +289,29 @@ class Game3D:
         """
         for cube_pos in self.piece.block_positions():
             self.board[cube_pos] = self.piece.color
-    
-    def rotate(self, move):
-        # TODO: define rotation for 3D pieces
-        pass
 
-    def try_rotate(self, axis):
+    def try_rotate(self, axis: int, clockwise: bool):
         """
         Rotates 'self.piece' AROUND the 'axis' DEFINED AT THE TOP OF THIS CLASS.
         If the piece can't rotate because it goes outside of the 3D board,
         or a block is already in a position where the piece's block will end up in,
         this method CANCELS THE ROTATION.
         """
-        # TODO: rotate here
+        self.piece.rotate(axis, clockwise)
+        # rotate
 
         if any(
-            pos in self.board
-            or pos[0] not in range(FLOOR_WIDTH)
-            or pos[1] not in range(FLOOR_WIDTH)
-            or pos[2] not in range(FLOORS)
-            for pos in self.piece.block_positions()
+            piece_block_pos in self.board
+            or piece_block_pos[0] not in range(FLOOR_WIDTH)
+            or piece_block_pos[1] not in range(FLOOR_WIDTH)
+            or piece_block_pos[2] not in range(FLOORS)
+            for piece_block_pos in self.piece.block_positions()
         ):
-            # TODO: cancel rotation
-            pass
+            # if any block in self.piece.block_positions
+            # is aleady occupied by self.board,
+            # or is outside the board,
+            # undo rotation.
+            self.piece.rotate(axis, not clockwise)
 
     def landed(self):
         """

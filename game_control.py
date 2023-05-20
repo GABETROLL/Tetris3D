@@ -1,6 +1,6 @@
 import pygame
 from game.game_2d import Game2D
-from game.game_3d import Game3D
+from game.game_3d import Game3D, X_AXIS, Y_AXIS, Z_AXIS
 from game.move_data import *
 
 
@@ -173,10 +173,25 @@ class GameControl3D(GameControl):
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
 
-        # TODO: 3D ROTATIONS
+        rotations = {
+            pygame.K_u: (Y_AXIS, False),
+            pygame.K_o: (Y_AXIS, True),
+            pygame.K_i: (X_AXIS, True),
+            pygame.K_k: (X_AXIS, False),
+            pygame.K_j: (Z_AXIS, True),
+            pygame.K_l: (Z_AXIS, False)
+        }
         # U: rotate around the y axis counter-clockwise
         # O: rotate around the y axis clockwise
-        # I: rotate around the x axis counter-clockwise
-        # K: rotate around the x axis clockwise
-        # J: rotate around the z axis clockwise
-        # L: rotate around the z axis counter-clockwise
+        # I: rotate around the x axis clockwise
+        # K: rotate around the x axis counter-clockwise
+        # J: rotate around the z axis counter-clockwise
+        # L: rotate around the z axis clockwise
+
+        # (Imagine flicking the piece from it's sides,
+        # like in 2D)
+
+        # ROTATE WITH KEYS
+        for rotation_key, (axis, clockwise) in rotations.items():
+            if rotation_key in key_down_keys:
+                self.game.try_rotate(axis, clockwise)
