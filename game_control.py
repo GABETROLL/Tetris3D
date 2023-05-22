@@ -96,10 +96,10 @@ class GameControl2D(GameControl):
         # All the other times, we reach up to 6.
         # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
 
-        if pygame.K_PERIOD in key_down_keys:
+        if pygame.K_o in key_down_keys:
             self.game.try_rotate()
 
-        if pygame.K_COMMA in key_down_keys:
+        if pygame.K_u in key_down_keys:
             self.game.try_rotate(False)
         # Rotations shouldn't happen every frame.
 
