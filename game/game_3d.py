@@ -102,7 +102,7 @@ All of the classic 2D Tetrominos, but padded to be 3D boxes.
 2D Tetrominos
 """
 
-FLOOR_WIDTH = 10
+FLOOR_WIDTH = 4
 FLOORS = 20
 
 X_AXIS = 0
@@ -117,7 +117,7 @@ class Piece3D:
         BUT CHECKS THAT 'blocks' IS A 3D ARRAY,
         AND THROWS AN ERROR IF IT ISNT.
         """
-        self.pos = [3, 3, 0]
+        self.pos = [FLOOR_WIDTH // 2 - len(blocks) // 2, FLOOR_WIDTH // 2 - len(blocks) // 2, 0]
         """top-left-front"""
 
         if len(blocks.shape) != 3:
@@ -361,24 +361,29 @@ class Game3D:
                 # remove that floor
                 deleted_floors.add(z_pos)
                 # keep track of that floor
+        
+        if not deleted_floors:
+            return
+        # no cleared lines, so no "landing" of lines either.
 
-        landing_floor = 0
-        for floor in deleted_floors:
-            if floor > landing_floor:
-                landing_floor = floor
+        landing_floor = max(deleted_floors)
         # lowest deleted floor is where all the floors with gunk in them will 'land' on.
 
+        print(f"{deleted_floors=} {landing_floor=}")
+        # make board's rows higher than the cleared rows "land"
+        # in that space
         gunk_floor = landing_floor - 1
-        while gunk_floor > -1:
-            if not (gunk_floor in deleted_floors):
+        for gunk_floor in range(landing_floor, -1, -1):
+
+            if gunk_floor not in deleted_floors:
                 # if floor has gunk in it
                 for x_pos in range(FLOOR_WIDTH):
-                    if (x_pos, gunk_floor) in self.board:
-                        self.board[(x_pos, landing_floor)] = self.board.pop((x_pos, gunk_floor))
+                    for y_pos in range(FLOOR_WIDTH):
+                        if (x_pos, y_pos, gunk_floor) in self.board:
+                            self.board[(x_pos, y_pos, landing_floor)] = self.board.pop((x_pos, y_pos, gunk_floor))
                 # move that floor down to the landing floor
 
                 landing_floor -= 1
-            gunk_floor -= 1
 
         self.score_manager.score(len(deleted_floors))
 
