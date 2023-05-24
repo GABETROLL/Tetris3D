@@ -103,8 +103,15 @@ class GameControl2D(GameControl):
             self.game.try_rotate(False)
         # Rotations shouldn't happen every frame.
 
-        if keys[pygame.K_s] or keys[pygame.K_LSHIFT]:
+        if (keys[pygame.K_s] or keys[pygame.K_LSHIFT]) and not self.game.landed():
             self.game.try_move(SOFT_DROP)
+
+            if self.game.landed():
+                self.frame_count = 0
+        # If the piece that we soft-dropped landed,
+        # the piece should remain there until the whole fram cycle finishes.
+        # This makes it a lot easier to do T-spins and other things,
+        # since the piece doesn't land immediatly after touching the ground.
 
         if pygame.K_SPACE in key_down_keys:
             self.game.try_move(HARD_DROP)
@@ -164,8 +171,15 @@ class GameControl3D(GameControl):
         # All the other times, we reach up to 6.
         # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
 
-        if keys[pygame.K_LSHIFT]:
+        if (keys[pygame.K_s] or keys[pygame.K_LSHIFT]) and not self.game.landed():
             self.game.try_move(SOFT_DROP)
+
+            if self.game.landed():
+                self.frame_count = 0
+        # If the piece that we soft-dropped landed,
+        # the piece should remain there until the whole fram cycle finishes.
+        # This makes it a lot easier to do T-spins and other things,
+        # since the piece doesn't land immediatly after touching the ground.
 
         if pygame.K_SPACE in key_down_keys:
             self.game.try_move(HARD_DROP)
