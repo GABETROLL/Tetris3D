@@ -1,5 +1,5 @@
 import random
-from dataclasses import dataclass
+from game.score import Score
 
 START_POS = [3, 0]
 
@@ -131,11 +131,6 @@ Z = (["## ",
 ROWS = 20
 COLUMNS = 10
 
-LEFT = "l"
-RIGHT = "r"
-HARD_DROP = "h"
-SOFT_DROP = "s"
-
 
 class Piece:
     """piece player can currently control. (piece data, pos)
@@ -201,40 +196,7 @@ class Piece:
         return positions
 
 
-@dataclass
-class Score:
-    points: int = 0
-    lines: int = 0
-    level: int = 0
-    transitioned: bool = False
-
-    def score(self, cleared_lines: int):
-        """Adds points for each line cleared and goes up levels."""
-        score_per_line = 0, 40, 100, 300, 1200
-        transitions = {level: (level + 1) * 10 for level in range(8 + 1)} | \
-                      {level: 100 for level in range(9, 15 + 1)} | \
-                      {level: (level + 50) * 10 for level in range(16, 24 + 1)} | \
-                      {level: 200 for level in range(25, 28 + 1)}
-
-        self.points += (self.level + 1) * score_per_line[cleared_lines]
-        next_lines = self.lines + cleared_lines
-
-        if self.transitioned and 0 in (n % 10 for n in range(self.lines + 1, next_lines + 1)) and cleared_lines:
-            # If we passed or are in a multiple of 10 after transition...
-            # print(n % 10 for n in range(self.lines, next_lines))
-            # print("HI")
-            self.level += 1
-
-        elif self.lines < transitions[self.level] <= next_lines:
-            # If we passed or are in a transition point...
-            self.level += 1
-            self.transitioned = True
-            # NES Tetris rules. :)
-
-        self.lines = next_lines
-
-
-class Game:
+class Game2D:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
 
@@ -402,5 +364,32 @@ class Game:
         self.score_manager.score(len(deleted_rows))
 
     def play(self):
-        self.landing_handler()
+        """
+        Plays Tetris for one "step" (where the piece goes one down),
+        and returns True if the game can continue,
+        and False it the game is over.
+
+        This is the "step":
+        If the current piece has landed,
+        we set it down using 'self.set_down',
+        clear any lines the piece completed with 'self.clear_lines'
+        and makes a new piece.
+        
+        If the new piece spawns where it immediately lands,
+        the game is over.
+
+        If the piece hasn't landed, or if the game isn't over,
+        we just move the piece one down using
+        'self.move_piece_down'.
+        """
+        if self.landed():
+            self.set_down()
+            self.clear_lines(self.piece)
+            self.init_random_piece()
+
+            if self.landed():
+                return False
+
         self.move_piece_down()
+
+        return True

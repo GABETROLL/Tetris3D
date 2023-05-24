@@ -1,117 +1,26 @@
+"""
+Main program file
+Has a 'Window' class that renders the game using a pygame window,
+and manages the title screen frames and game frames,
+and game inputs using pygame.
+
+The game is stored in the GameControl instances (2D/3D),
+which control keyoard inputs for the game and the speed
+at which the pieces fall.
+It is meant to be an extension of the Window class,
+but makes this file too long to put in here.
+
+God bless you, enjoy!
+"""
 import pygame
-from pieces import *
+import game
+from game_control import GameControl2D, GameControl3D
+from dataclasses import dataclass
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
-
-
-class Controls:
-    def __init__(self, window):
-        self.window = window
-
-        self.game = Game()
-
-        self.frame_count = 0
-
-        self.das_bar = [15, 6]
-        self.das = {LEFT: {"previous_frame": False, "first_das": False, "charge": 0},
-                    RIGHT: {"previous_frame": False, "first_das": False, "charge": 0}}
-        # "DAS" = "delayed auto shift".
-
-    def main(self, key_down_keys: set[int]):
-        self.frame_count += 1
-        self.input_handler(key_down_keys)
-
-        if self.frame_count == self.fall_rate(self.game.score_manager.level):
-            self.game.play()
-            self.frame_count = 0
-    # Counting frames.
-
-    @staticmethod
-    def fall_rate(level):
-        if level <= 8:
-            return - 5 * level + 48
-        elif level == 9:
-            return 6
-        elif 10 <= level <= 12:
-            return 5
-        elif 13 <= level <= 15:
-            return 4
-        elif 16 <= level <= 18:
-            return 3
-        elif 19 <= level <= 28:
-            return 2
-        else:
-            return 1
-    # Pieces fall faster in higher levels; NES Tetris rules.
-
-    def input_handler(self, key_down_keys: set[int]):
-        """Checks w, a, s, d, space bar, period and comma for in-game moves.
-        Keeps track of left and right's das."""
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_a]:
-            self.das[LEFT]["charge"] += 1
-
-            if self.das[LEFT]["charge"] == 6 and self.das[LEFT]["first_das"] or\
-                    self.das[LEFT]["charge"] == 15:
-                self.game.try_move(LEFT)
-                self.das[LEFT]["charge"] = 0
-                self.das[LEFT]["first_das"] = True
-
-            elif not self.das[LEFT]["previous_frame"]:
-                self.game.try_move(LEFT)
-                self.das[LEFT]["charge"] = 0
-                self.das[LEFT]["previous_frame"] = True
-
-        else:
-            if self.das[LEFT]["charge"] > 0:
-                self.das[LEFT]["charge"] -= 1
-            self.das[LEFT]["first_das"] = False
-            self.das[LEFT]["previous_frame"] = False
-
-        if keys[pygame.K_d]:
-            self.das[RIGHT]["charge"] += 1
-
-            if self.das[RIGHT]["charge"] == 6 and self.das[RIGHT]["first_das"] or\
-                    self.das[RIGHT]["charge"] == 15:
-                self.game.try_move(RIGHT)
-                self.das[RIGHT]["charge"] = 0
-                self.das[RIGHT]["first_das"] = True
-
-            elif not self.das[RIGHT]["previous_frame"]:
-                self.game.try_move(RIGHT)
-                self.das[RIGHT]["charge"] = 0
-                self.das[RIGHT]["previous_frame"] = True
-
-        else:
-            if self.das[RIGHT]["charge"] > 0:
-                self.das[RIGHT]["charge"] -= 1
-            self.das[RIGHT]["first_das"] = False
-            self.das[RIGHT]["previous_frame"] = False
-
-        # If we press left or right, we charge the das bar.
-        # The first frame the user presses the direction, the piece moves instantly.
-        # The second time is called "first_das", where we wait 15 frames to move the piece.
-        # All the other times, we reach up to 6.
-        # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
-
-        if keys[pygame.K_s]:
-            self.game.try_move(SOFT_DROP)
-
-        if pygame.K_SPACE in key_down_keys:
-            self.game.try_move(HARD_DROP)
-
-            self.frame_count = self.fall_rate(self.game.score_manager.level)
-            # If we hard dropped, the dropping cycle of the pieces will reset.
-
-        if pygame.K_PERIOD in key_down_keys:
-            self.game.try_rotate()
-
-        if pygame.K_COMMA in key_down_keys:
-            self.game.try_rotate(False)
 
 
 @dataclass
@@ -136,8 +45,10 @@ class Menu:
 
 class Window:
     def __init__(self, board_height: int, font: pygame.font.Font):
+        # We have to make sure the board )and the next piece) can fit in the window.
+        # So, we define the window size later
         self.BOARD_HEIGHT = board_height
-        self.BOARD_WIDTH = int(self.BOARD_HEIGHT * (COLUMNS / ROWS))
+        self.BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
 
         self.HEIGHT = board_height
         self.WIDTH = self.HEIGHT
@@ -145,30 +56,37 @@ class Window:
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
+        self.fps = 60
         self.running = True
 
         self.font = font
 
-        self.fps = 60
-        self.controls = Controls(self.window)
-
-        self.playing = False
-
         self.level_menu = Menu(range(20))
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
+        self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+        # game options information
 
-        self.menu_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+        self.controls = GameControl2D(self.window)
+
+        self.frame_handler = self.handle_title_screen_frame
+        """
+        current "mode" the program is in,
+        a method that will be called each frame.
+        The methods can be:
+        'self.handle_title_screen_frame',
+        'self.handle_game_frame',
+        'self.handle_game_over_screen_frame'
+        """
+
+        self.game_over_menu =  Menu(("Back to title screen", "Quit"))
 
         while self.running:
             self.clock.tick(self.fps)
 
             self.window.fill(BLACK)
 
-            if self.playing:
-                self.handle_game_frame()
-            else:
-                self.handle_title_screen_frame()
+            self.frame_handler()
 
             pygame.display.update()
         pygame.quit()
@@ -178,14 +96,20 @@ class Window:
         Initializes 'self.controls' with the appropiate
         game level to start in.
         """
-        self.controls = Controls(self.window)
+        if self.mode_menu.option == "2D":
+            self.controls = GameControl2D(self.window)
+        elif self.mode_menu.option == "3D":
+            self.controls = GameControl3D(self.window)
+        else:
+            raise ValueError("Dimension chosen shouldn't be possible!")
+
         self.controls.game.score_manager.level = self.level_menu.option
 
     def handle_title_screen_frame(self):
         """
         Displays and gets level, mode and music selection from the player,
-        stores in 'self', and switches 'self.playing' if the player
-        pressed ENTER.
+        stores in 'self', and switches 'self.frame_handler' to
+        'self.handle_game_frame' if the player pressed ENTER.
         """
         TITLE_FONT = pygame.font.SysFont("consolas", 50)
         TITLE = TITLE_FONT.render("Tetris 3D!", False, BRIGHT_GREY)
@@ -203,30 +127,30 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.menu_menu.move_to_next()
+                    self.game_options_menu.move_to_next()
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.menu_menu.move_to_previous()
+                    self.game_options_menu.move_to_previous()
                 if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.menu_menu.option.move_to_next()
+                    self.game_options_menu.option.move_to_next()
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.menu_menu.option.move_to_previous()
+                    self.game_options_menu.option.move_to_previous()
 
                 if event.key == pygame.K_RETURN:
                     self.init_game()
-                    self.playing = True
+                    self.frame_handler = self.handle_game_frame
 
         self.window.blit(TITLE, (20, 50))
 
         self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
-        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[0].option), False, BRIGHT_GREY)
+        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[0].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
 
         self.window.blit(GAME_MODE_TEXT, (20, 200))
-        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[1].option), False, BRIGHT_GREY)
+        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[1].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
 
         self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
-        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[2].option), False, BRIGHT_GREY)
+        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[2].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
     def handle_game_frame(self):
@@ -243,12 +167,79 @@ class Window:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
 
-        self.draw_board()
-        self.draw_piece()
+        if self.mode_menu.option == "3D":
+            self.draw_3d()
+        else:
+            self.draw_2d()
         self.draw_score()
-        self.draw_next_piece()
 
-        self.controls.main(key_down_keys)
+        GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+        if not GAME_CONTINUES:
+            self.frame_handler = self.handle_game_over_screen_frame
+
+    def handle_game_over_screen_frame(self):
+        """
+        Just draws "GAME OVER" on the screen,
+        along with two options:
+        one to go back to the title screen,
+        and one to exit the script.
+
+        These options are stored in 'self.game_over_menu',
+        to handle every frame.
+
+        To scroll:
+        w/UP or s/DOWN
+        To select: ENTER
+        """
+        FONT_NAME = "consolas"
+
+        GAME_OVER_STR = "GAME OVER"
+        GAME_OVER_FONT = pygame.font.SysFont(FONT_NAME, min((self.WIDTH // len(GAME_OVER_STR), self.HEIGHT // 2)))
+        # If the letters in "GAME OVER" are roughly squares
+        # in the rendered Surface with the word,
+        # then you'd expect the font size that fits the window to be
+        # 1/9 of the window's width, OR LESS, AND
+        # the "GAME OVER" and buttons texts have to fit in 'self.HEIGHT'.
+
+        GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, BRIGHT_GREY)
+
+        TEXT_POS = [
+            (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
+            (self.HEIGHT >> 1) - (GAME_OVER_TEXT.get_height() >> 1)
+        ]
+
+        self.window.blit(GAME_OVER_TEXT, TEXT_POS)
+        TEXT_POS[1] += GAME_OVER_TEXT.get_height()
+
+        MAX_OPTION_STR_LEN = max(len(option) for option in self.game_over_menu.options)
+        # to make sure both menu options fit the screen's width
+        # the 'self.HEIGHT // 4' is to ensure that "GAME OVER" and these menu options
+        # fit vertically ("GAME OVER" being double the height of the option text rectangles)
+        OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // MAX_OPTION_STR_LEN, self.HEIGHT // 4))
+
+        for option in self.game_over_menu.options:
+            OPTION_TEXT = OPTION_FONT.render(option, False, BRIGHT_GREY)
+            self.window.blit(OPTION_TEXT, TEXT_POS)
+            TEXT_POS[1] += OPTION_TEXT.get_height()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            if event.type == pygame.KEYDOWN:
+                # move around menu
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    self.game_over_menu.move_to_next()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    self.game_over_menu.move_to_previous()
+
+                # submit menu selection
+                if event.key == pygame.K_RETURN:
+                    if self.game_over_menu.option == "Quit":
+                        self.running = False
+                        # quit
+                    else:  # elif menu.option == "Back to title screen"
+                        self.frame_handler = self.handle_title_screen_frame
 
     @property
     def board_pos(self):
@@ -258,39 +249,44 @@ class Window:
     @property
     def block_width(self):
         """returns block's width."""
-        return self.BOARD_WIDTH // COLUMNS
+        return self.BOARD_WIDTH // game.game_2d.COLUMNS
+    
+    def draw_2d(self):
+        """
+        Draws the 'self.game_control.game' board, piece
+        and next piece, IF THE GAME MODE IS 2D
+        
+        IF 'self.game_control' is 3D, a TypeError
+        will be raised.
 
-    def draw_board(self):
-        """Draw's board's outline."""
+        The board is drawn in the middle of the screen.
+        The piece is drawn in the correct position INSIDE
+        the board.
+        The next piece is drawn in a little box beside the board
+        """
+        if type(self.controls) != GameControl2D:
+            raise TypeError("Can't render in 2D while game mode is not 2D!")
+
+        # draw board
+        # board outline
         outline = pygame.Surface((self.BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
         outline.fill(BRIGHT_GREY)
         self.window.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
 
+        # board background
         board = pygame.Surface((self.BOARD_WIDTH, self.BOARD_HEIGHT))
         board.fill(BLACK)
         self.window.blit(board, self.board_pos)
 
+        # board blocks
         for piece in self.controls.game.board:
             pygame.draw.rect(self.window, self.controls.game.board[piece],
                              pygame.Rect(piece[0] * self.block_width + self.board_pos[0],
                                          piece[1] * self.block_width + self.board_pos[1],
                                          self.block_width,
                                          self.block_width))
-
-    def draw_score(self):
-        """Draws score and level text at the top of the board."""
-        white = (255, 255, 255)
-        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
-                                f"Level: {self.controls.game.score_manager.level}, "
-                                f"Lines: {self.controls.game.score_manager.lines}",
-                                True,
-                                white)
-        position = self.WIDTH // 2 - text.get_width() // 2, 10
-        self.window.blit(text, position)
-
-    def draw_piece(self):
-        """Draws piece in the position in the screen in the board."""
-
+    
+        # draw piece
         for ri, row in zip(range(self.controls.game.piece.pos[1],
                                  self.controls.game.piece.pos[1] + len(self.controls.game.piece.piece)),
                            self.controls.game.piece.piece):
@@ -309,9 +305,8 @@ class Window:
                                                  self.block_width,
                                                  self.block_width))
 
-    def draw_next_piece(self):
-        """Draws next piece in its own little box beside the board."""
-        NEXT_PIECE: Piece = self.controls.game.next_piece
+        # draw next piece in its own little box beside the board
+        NEXT_PIECE: game.game_2d.Piece = self.controls.game.next_piece
 
         NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * self.block_width
         NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * self.block_width
@@ -336,6 +331,65 @@ class Window:
         self.window.blit(next_piece_box, (self.board_pos[0] + self.BOARD_WIDTH, self.board_pos[1] + self.BOARD_HEIGHT // 2))
         # The box is blit half-way down the right side of the board,
         # with 0 pixels of gap between the two.
+    
+    def draw_3d(self):
+        """
+        Draws the 'self.game_control.game' board, piece
+        and next piece, IF THE GAME MODE IS 3D
+
+        IF 'self.game_control' is 2D, a TypeError
+        will be raised.
+
+        The method for drawing the pieces is simple:
+        the vertical slices are drawn BACK-FRONT
+        (INCLUDING THE BLOCKS OF THE PIECE AT THAT SLICE)
+
+        TODO: make slices increase in size
+        """
+
+        slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
+        for block_pos_in_game, block_color in self.controls.game.board.items():
+            slices[block_pos_in_game[1]][block_pos_in_game] = block_color
+        # Each slice of the board, SUB-DICTIONARIES OF THE BOARD,
+        # ordered from front-to-back
+        # (we want to iterate through them backwards)
+
+        for block_pos_in_game in self.controls.game.piece.block_positions():
+            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
+        # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
+        # (In their corresponding slices and positions, and with their corresponding piece color)
+
+        # for each slice in the board (BACK->FRONT)
+        # BECAUSE when drawing the ones at the front later,
+        # we 'override' the ones at the back,
+        # "blocking" their colors and therefore acheiving
+        # "perspective"
+        for display_darkness, slice in zip(range(len(slices), 0, -1), reversed(slices)):
+
+            for block_pos_in_game, block_color in slice.items():
+                BLOCK_POS_IN_SCREEN = (
+                    self.board_pos[0] + self.block_width * block_pos_in_game[0],
+                    self.board_pos[1] + self.block_width * block_pos_in_game[2]
+                )
+
+                block_color = (
+                    block_color[0] / display_darkness,
+                    block_color[1] / display_darkness,
+                    block_color[2] / display_darkness
+                )
+
+                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, self.block_width, self.block_width))
+
+    def draw_score(self):
+        """Draws score and level text at the top of the board."""
+        white = (255, 255, 255)
+        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
+                                f"Level: {self.controls.game.score_manager.level}, "
+                                f"Lines: {self.controls.game.score_manager.lines}",
+                                True,
+                                white)
+        position = self.WIDTH // 2 - text.get_width() // 2, 10
+        self.window.blit(text, position)
 
 
 if __name__ == "__main__":
