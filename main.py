@@ -79,6 +79,8 @@ class Window:
         'self.handle_game_over_screen_frame'
         """
 
+        self.game_over_menu =  Menu(("Back to title screen", "Quit"))
+
         while self.running:
             self.clock.tick(self.fps)
 
@@ -191,44 +193,46 @@ class Window:
         # then you'd expect the font size that fits the window to be
         # 1/9 of the window's width, OR LESS, AND
         # the "GAME OVER" and buttons texts have to fit in 'self.HEIGHT'.
+
         GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, BRIGHT_GREY)
 
-        TRY_AGAIN_STR = "Back to title screen"
-        # using len(TRY_AGAIN_STR), since it's the longer string.
-        OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // len(TRY_AGAIN_STR), self.HEIGHT // 4))
-
-        TRY_AGAIN_TEXT = OPTION_FONT.render(TRY_AGAIN_STR, False, BRIGHT_GREY)
-        QUIT_TEXT = OPTION_FONT.render("Quit", False, BRIGHT_GREY)
-
-        GAME_OVER_TEXT_POS = (
+        TEXT_POS = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
-            (self.HEIGHT >> 1) - (GAME_OVER_FONT.get_height() >> 1)
-        )
+            (self.HEIGHT >> 1) - (GAME_OVER_TEXT.get_height() >> 1)
+        ]
 
-        self.window.blit(
-            GAME_OVER_TEXT,
-            GAME_OVER_TEXT_POS
-        )
+        self.window.blit(GAME_OVER_TEXT, TEXT_POS)
+        TEXT_POS[1] += GAME_OVER_TEXT.get_height()
 
-        self.window.blit(
-            TRY_AGAIN_TEXT,
-            ((GAME_OVER_TEXT_POS[0], GAME_OVER_TEXT_POS[1] + GAME_OVER_TEXT.get_height()))
-        )
+        MAX_OPTION_STR_LEN = max(len(option) for option in self.game_over_menu.options)
+        # to make sure both menu options fit the screen's width
+        # the 'self.HEIGHT // 4' is to ensure that "GAME OVER" and these menu options
+        # fit vertically ("GAME OVER" being double the height of the option text rectangles)
+        OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // MAX_OPTION_STR_LEN, self.HEIGHT // 4))
 
-        self.window.blit(
-            QUIT_TEXT,
-            ((GAME_OVER_TEXT_POS[0], GAME_OVER_TEXT_POS[1] + GAME_OVER_TEXT.get_height() + TRY_AGAIN_TEXT.get_height()))
-        )
+        for option in self.game_over_menu.options:
+            OPTION_TEXT = OPTION_FONT.render(option, False, BRIGHT_GREY)
+            self.window.blit(OPTION_TEXT, TEXT_POS)
+            TEXT_POS[1] += OPTION_TEXT.get_height()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
 
             if event.type == pygame.KEYDOWN:
+                # move around menu
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    self.game_over_menu.move_to_next()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    self.game_over_menu.move_to_previous()
+
+                # submit menu selection
                 if event.key == pygame.K_RETURN:
-                    self.frame_handler = self.handle_title_screen_frame
-                elif event.key == pygame.K_ESCAPE:
-                    self.running = False
+                    if self.game_over_menu.option == "Quit":
+                        self.running = False
+                        # quit
+                    else:  # elif menu.option == "Back to title screen"
+                        self.frame_handler = self.handle_title_screen_frame
 
     @property
     def board_pos(self):
