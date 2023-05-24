@@ -166,7 +166,7 @@ class Window:
             self.draw_2d()
         self.draw_score()
 
-        self.controls.main(key_down_keys)
+        self.playing = self.controls.play_game_step(key_down_keys)
 
     @property
     def board_pos(self):

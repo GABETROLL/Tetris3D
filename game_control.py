@@ -42,13 +42,33 @@ class GameControl:
         """
         raise NotImplementedError
 
-    def main(self, key_down_keys: set[int]):
+    def play_game_step(self, key_down_keys: set[int]) -> bool:
+        """
+        Counts the amount of frames before playing next game step
+        in 'self.frame_count'
+        (because of the pieces' fall rate needing to be faster the
+        higher the level),
+        and plays the game's next step (using 'self.game.play')
+        if the counter has hit the level's appropiate piece
+        fall rate.
+        (Look at 'fall_rate' for more info)
+
+        Returns True if the game should keep going, and False
+        if the player "topped-out", and the game is over.
+
+        If the counter is still counting, this method's
+        result is always True.
+        """
         self.frame_count += 1
         self.input_handler(key_down_keys)
 
+        game_can_continue = True
+
         if self.frame_count == self.fall_rate(self.game.score_manager.level):
-            self.game.play()
+            game_can_continue = self.game.play()
             self.frame_count = 0
+
+        return game_can_continue
     # Counting frames.
 
 

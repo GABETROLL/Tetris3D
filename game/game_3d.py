@@ -331,14 +331,6 @@ class Game3D:
                 return True
         return False
 
-    def landing_handler(self):
-        """If a piece landed, marks it at the previous piece,
-        makes it part of the board, and spawns a new one."""
-        if self.landed():
-            self.set_down()
-            self.clear_lines(self.piece)
-            self.init_random_piece()
-
     def clear_lines(self, previous_piece: Piece3D):
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
@@ -388,5 +380,32 @@ class Game3D:
         self.score_manager.score(len(deleted_floors))
 
     def play(self):
-        self.landing_handler()
+        """
+        Plays Tetris for one "step" (where the piece goes one down),
+        and returns True if the game can continue,
+        and False it the game is over.
+
+        This is the "step":
+        If the current piece has landed,
+        we set it down using 'self.set_down',
+        clear any lines the piece completed with 'self.clear_lines'
+        and makes a new piece.
+        
+        If the new piece spawns where it immediately lands,
+        the game is over.
+
+        If the piece hasn't landed, or if the game isn't over,
+        we just move the piece one down using
+        'self.move_piece_down'.
+        """
+        if self.landed():
+            self.set_down()
+            self.clear_lines(self.piece)
+            self.init_random_piece()
+
+            if self.landed():
+                return False
+
         self.move_piece_down()
+
+        return True
