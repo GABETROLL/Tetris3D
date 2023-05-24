@@ -191,7 +191,7 @@ class GameControl3D(GameControl):
         # All the other times, we reach up to 6.
         # If user isn't moving, the charge goes down until it reaches 0, and "previous_frame" is set to False.
 
-        if (keys[pygame.K_s] or keys[pygame.K_LSHIFT]) and not self.game.landed():
+        if keys[pygame.K_LSHIFT] and not self.game.landed():
             self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
