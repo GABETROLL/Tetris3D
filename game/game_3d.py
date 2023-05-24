@@ -361,7 +361,7 @@ class Game3D:
         landing_floor = max(deleted_floors)
         # lowest deleted floor is where all the floors with gunk in them will 'land' on.
 
-        print(f"{deleted_floors=} {landing_floor=}")
+        # print(f"{deleted_floors=} {landing_floor=}")
         # make board's rows higher than the cleared rows "land"
         # in that space
         gunk_floor = landing_floor - 1
