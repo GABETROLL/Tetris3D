@@ -183,6 +183,13 @@ class Window:
         along with two options:
         one to go back to the title screen,
         and one to exit the script.
+
+        These options are stored in 'self.game_over_menu',
+        to handle every frame.
+
+        To scroll:
+        w/UP or s/DOWN
+        To select: ENTER
         """
         FONT_NAME = "consolas"
 
