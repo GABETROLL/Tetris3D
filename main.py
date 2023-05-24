@@ -56,30 +56,35 @@ class Window:
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
+        self.fps = 60
         self.running = True
 
         self.font = font
 
-        self.fps = 60
-        self.controls = GameControl2D(self.window)
-
-        self.playing = False
-
         self.level_menu = Menu(range(20))
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
+        self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+        # game options information
 
-        self.menu_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+        self.controls = GameControl2D(self.window)
+
+        self.frame_handler = self.handle_title_screen_frame
+        """
+        current "mode" the program is in,
+        a method that will be called each frame.
+        The methods can be:
+        'self.handle_title_screen_frame',
+        'self.handle_game_frame',
+        'self.handle_game_over_screen_frame'
+        """
 
         while self.running:
             self.clock.tick(self.fps)
 
             self.window.fill(BLACK)
 
-            if self.playing:
-                self.handle_game_frame()
-            else:
-                self.handle_title_screen_frame()
+            self.frame_handler()
 
             pygame.display.update()
         pygame.quit()
@@ -101,8 +106,8 @@ class Window:
     def handle_title_screen_frame(self):
         """
         Displays and gets level, mode and music selection from the player,
-        stores in 'self', and switches 'self.playing' if the player
-        pressed ENTER.
+        stores in 'self', and switches 'self.frame_handler' to
+        'self.handle_game_frame' if the player pressed ENTER.
         """
         TITLE_FONT = pygame.font.SysFont("consolas", 50)
         TITLE = TITLE_FONT.render("Tetris 3D!", False, BRIGHT_GREY)
@@ -120,30 +125,30 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.menu_menu.move_to_next()
+                    self.game_options_menu.move_to_next()
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.menu_menu.move_to_previous()
+                    self.game_options_menu.move_to_previous()
                 if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.menu_menu.option.move_to_next()
+                    self.game_options_menu.option.move_to_next()
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.menu_menu.option.move_to_previous()
+                    self.game_options_menu.option.move_to_previous()
 
                 if event.key == pygame.K_RETURN:
                     self.init_game()
-                    self.playing = True
+                    self.frame_handler = self.handle_game_frame
 
         self.window.blit(TITLE, (20, 50))
 
         self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
-        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[0].option), False, BRIGHT_GREY)
+        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[0].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
 
         self.window.blit(GAME_MODE_TEXT, (20, 200))
-        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[1].option), False, BRIGHT_GREY)
+        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[1].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
 
         self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
-        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.menu_menu.options[2].option), False, BRIGHT_GREY)
+        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[2].option), False, BRIGHT_GREY)
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
     def handle_game_frame(self):
@@ -166,7 +171,64 @@ class Window:
             self.draw_2d()
         self.draw_score()
 
-        self.playing = self.controls.play_game_step(key_down_keys)
+        GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+        if not GAME_CONTINUES:
+            self.frame_handler = self.handle_game_over_screen_frame
+
+    def handle_game_over_screen_frame(self):
+        """
+        Just draws "GAME OVER" on the screen,
+        along with two options:
+        one to go back to the title screen,
+        and one to exit the script.
+        """
+        FONT_NAME = "consolas"
+
+        GAME_OVER_STR = "GAME OVER"
+        GAME_OVER_FONT = pygame.font.SysFont(FONT_NAME, min((self.WIDTH // len(GAME_OVER_STR), self.HEIGHT // 2)))
+        # If the letters in "GAME OVER" are roughly squares
+        # in the rendered Surface with the word,
+        # then you'd expect the font size that fits the window to be
+        # 1/9 of the window's width, OR LESS, AND
+        # the "GAME OVER" and buttons texts have to fit in 'self.HEIGHT'.
+        GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, BRIGHT_GREY)
+
+        TRY_AGAIN_STR = "Back to title screen"
+        # using len(TRY_AGAIN_STR), since it's the longer string.
+        OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // len(TRY_AGAIN_STR), self.HEIGHT // 4))
+
+        TRY_AGAIN_TEXT = OPTION_FONT.render(TRY_AGAIN_STR, False, BRIGHT_GREY)
+        QUIT_TEXT = OPTION_FONT.render("Quit", False, BRIGHT_GREY)
+
+        GAME_OVER_TEXT_POS = (
+            (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
+            (self.HEIGHT >> 1) - (GAME_OVER_FONT.get_height() >> 1)
+        )
+
+        self.window.blit(
+            GAME_OVER_TEXT,
+            GAME_OVER_TEXT_POS
+        )
+
+        self.window.blit(
+            TRY_AGAIN_TEXT,
+            ((GAME_OVER_TEXT_POS[0], GAME_OVER_TEXT_POS[1] + GAME_OVER_TEXT.get_height()))
+        )
+
+        self.window.blit(
+            QUIT_TEXT,
+            ((GAME_OVER_TEXT_POS[0], GAME_OVER_TEXT_POS[1] + GAME_OVER_TEXT.get_height() + TRY_AGAIN_TEXT.get_height()))
+        )
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    self.frame_handler = self.handle_title_screen_frame
+                elif event.key == pygame.K_ESCAPE:
+                    self.running = False
 
     @property
     def board_pos(self):
