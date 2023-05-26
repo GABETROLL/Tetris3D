@@ -231,7 +231,11 @@ class Window:
         OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // MAX_OPTION_STR_LEN, self.HEIGHT // 4))
 
         for option in self.game_over_menu.options:
-            OPTION_TEXT = OPTION_FONT.render(option, False, BRIGHT_GREY)
+            OPTION_TEXT = OPTION_FONT.render(
+                option,
+                False,
+                YELLOW if option == self.game_over_menu.option else BRIGHT_GREY
+            )
             self.window.blit(OPTION_TEXT, TEXT_POS)
             TEXT_POS[1] += OPTION_TEXT.get_height()
 
