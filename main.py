@@ -49,7 +49,6 @@ class Window:
         # We have to make sure the board )and the next piece) can fit in the window.
         # So, we define the window size later
         self.BOARD_HEIGHT = board_height
-        self.BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
 
         self.HEIGHT = board_height
         self.WIDTH = self.HEIGHT
@@ -257,16 +256,6 @@ class Window:
                         # quit
                     else:  # elif menu.option == "Back to title screen"
                         self.frame_handler = self.handle_title_screen_frame
-
-    @property
-    def board_pos(self):
-        """returns (x_pos, y_pos) of the board."""
-        return self.WIDTH // 2 - self.BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
-
-    @property
-    def block_width(self):
-        """returns block's width."""
-        return self.BOARD_WIDTH // game.game_2d.COLUMNS
     
     def draw_2d(self):
         """
@@ -284,24 +273,31 @@ class Window:
         if type(self.controls) != GameControl2D:
             raise TypeError("Can't render in 2D while game mode is not 2D!")
 
-        # draw board
+        
+        BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
+        BLOCK_WIDTH = BOARD_WIDTH // game.game_2d.COLUMNS
+        BOARD_POS = self.WIDTH // 2 - BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
+        # to draw board
+
+        # DRAW BOARD:
+
         # board outline
-        outline = pygame.Surface((self.BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
+        outline = pygame.Surface((BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
         outline.fill(BRIGHT_GREY)
-        self.window.blit(outline, (self.board_pos[0] - 20, self.board_pos[1] - 20))
+        self.window.blit(outline, (BOARD_POS[0] - 20, BOARD_POS[1] - 20))
 
         # board background
-        board = pygame.Surface((self.BOARD_WIDTH, self.BOARD_HEIGHT))
+        board = pygame.Surface((BOARD_WIDTH, self.BOARD_HEIGHT))
         board.fill(BLACK)
-        self.window.blit(board, self.board_pos)
+        self.window.blit(board, BOARD_POS)
 
         # board blocks
         for piece in self.controls.game.board:
             pygame.draw.rect(self.window, self.controls.game.board[piece],
-                             pygame.Rect(piece[0] * self.block_width + self.board_pos[0],
-                                         piece[1] * self.block_width + self.board_pos[1],
-                                         self.block_width,
-                                         self.block_width))
+                             pygame.Rect(piece[0] * BLOCK_WIDTH + BOARD_POS[0],
+                                         piece[1] * BLOCK_WIDTH + BOARD_POS[1],
+                                         BLOCK_WIDTH,
+                                         BLOCK_WIDTH))
     
         # draw piece
         for ri, row in zip(range(self.controls.game.piece.pos[1],
@@ -317,16 +313,16 @@ class Window:
                     # If the square is a pound symbol, we draw the square (see pieces.py).
                     pygame.draw.rect(self.window,
                                      self.controls.game.piece.color,
-                                     pygame.Rect(ci * self.block_width + self.board_pos[0],
-                                                 ri * self.block_width + self.board_pos[1],
-                                                 self.block_width,
-                                                 self.block_width))
+                                     pygame.Rect(ci * BLOCK_WIDTH + BOARD_POS[0],
+                                                 ri * BLOCK_WIDTH + BOARD_POS[1],
+                                                 BLOCK_WIDTH,
+                                                 BLOCK_WIDTH))
 
         # draw next piece in its own little box beside the board
         NEXT_PIECE: game.game_2d.Piece = self.controls.game.next_piece
 
-        NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * self.block_width
-        NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * self.block_width
+        NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * BLOCK_WIDTH
+        NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * BLOCK_WIDTH
 
         outline = pygame.Surface((NEXT_PIECE_BOX_WIDTH + 40, NEXT_PIECE_BOX_HEIGHT + 40))
         outline.fill(BRIGHT_GREY)
@@ -337,15 +333,15 @@ class Window:
         next_piece_box = pygame.Surface((NEXT_PIECE_BOX_WIDTH, NEXT_PIECE_BOX_HEIGHT))
         next_piece_box.fill(BLACK)
 
-        next_piece_square_surface = pygame.Surface((self.block_width, self.block_width))
+        next_piece_square_surface = pygame.Surface((BLOCK_WIDTH, BLOCK_WIDTH))
         next_piece_square_surface.fill(NEXT_PIECE.color)
 
         for square_position in self.controls.game.next_piece.relative_square_positions():
-            SQUARE_POSITION_IN_BOX = square_position[0] * self.block_width, square_position[1] * self.block_width
+            SQUARE_POSITION_IN_BOX = square_position[0] * BLOCK_WIDTH, square_position[1] * BLOCK_WIDTH
             next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
 
         # Next box rendering complete, now it's time to blit the next box.
-        self.window.blit(next_piece_box, (self.board_pos[0] + self.BOARD_WIDTH, self.board_pos[1] + self.BOARD_HEIGHT // 2))
+        self.window.blit(next_piece_box, (BOARD_POS[0] + BOARD_WIDTH, BOARD_POS[1] + self.BOARD_HEIGHT // 2))
         # The box is blit half-way down the right side of the board,
         # with 0 pixels of gap between the two.
     
@@ -376,6 +372,10 @@ class Window:
         # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
         # (In their corresponding slices and positions, and with their corresponding piece color)
 
+        BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
+        BLOCK_WIDTH = BOARD_WIDTH // game.game_3d.FLOOR_WIDTH
+        BOARD_POS = self.WIDTH // 2 - BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
+
         # for each slice in the board (BACK->FRONT)
         # BECAUSE when drawing the ones at the front later,
         # we 'override' the ones at the back,
@@ -385,8 +385,8 @@ class Window:
 
             for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
-                    self.board_pos[0] + self.block_width * block_pos_in_game[0],
-                    self.board_pos[1] + self.block_width * block_pos_in_game[2]
+                    BOARD_POS[0] + BLOCK_WIDTH * block_pos_in_game[0],
+                    BOARD_POS[1] + BLOCK_WIDTH * block_pos_in_game[2]
                 )
 
                 block_color = (
@@ -395,7 +395,7 @@ class Window:
                     block_color[2] / display_darkness
                 )
 
-                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, self.block_width, self.block_width))
+                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, BLOCK_WIDTH, BLOCK_WIDTH))
 
     def draw_score(self):
         """Draws score and level text at the top of the board."""
