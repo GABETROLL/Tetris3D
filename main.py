@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
+YELLOW = (128, 128, 0)
 
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
 
@@ -142,15 +143,27 @@ class Window:
         self.window.blit(TITLE, (20, 50))
 
         self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
-        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[0].option), False, BRIGHT_GREY)
+        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(
+            str(self.level_menu.option),
+            False,
+            YELLOW if self.game_options_menu.option is self.level_menu else BRIGHT_GREY
+        )
         self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
 
         self.window.blit(GAME_MODE_TEXT, (20, 200))
-        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[1].option), False, BRIGHT_GREY)
+        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(
+            str(self.mode_menu.option),
+            False,
+            YELLOW if self.game_options_menu.option is self.mode_menu else BRIGHT_GREY
+        )
         self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
 
         self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
-        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(str(self.game_options_menu.options[2].option), False, BRIGHT_GREY)
+        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(
+            str(self.music_menu.option),
+            False,
+            YELLOW if self.game_options_menu.option is self.music_menu else BRIGHT_GREY
+        )
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
     def handle_game_frame(self):
