@@ -364,29 +364,49 @@ class Window:
         for block_pos_in_game, block_color in self.controls.game.board.items():
             slices[block_pos_in_game[1]][block_pos_in_game] = block_color
         # Each slice of the board, SUB-DICTIONARIES OF THE BOARD,
-        # ordered from front-to-back
-        # (we want to iterate through them backwards)
+        # ordered front-to-back
 
         for block_pos_in_game in self.controls.game.piece.block_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
         # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
         # (In their corresponding slices and positions, and with their corresponding piece color)
 
-        BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
-        BLOCK_WIDTH = BOARD_WIDTH // game.game_3d.FLOOR_WIDTH
-        BOARD_POS = self.WIDTH // 2 - BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
+        FRONT_SLICE_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
 
+        MAX_SLICE_SIDE = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
         # for each slice in the board (BACK->FRONT)
         # BECAUSE when drawing the ones at the front later,
         # we 'override' the ones at the back,
         # "blocking" their colors and therefore acheiving
         # "perspective"
-        for display_darkness, slice in zip(range(len(slices), 0, -1), reversed(slices)):
+        for slice_distance, display_darkness, slice \
+            in zip(
+                range(MAX_SLICE_SIDE + len(slices) - 1, MAX_SLICE_SIDE - 1, -1),
+                range(len(slices), 0, -1),
+                reversed(slices)
+        ):
+            PERSPECTIVE_FACTOR = MAX_SLICE_SIDE / slice_distance
+            # every front-facing square's side-length APPEARS 1 / distance
+            # of the square from the camera, if the distance is measured
+            # by the side-length of the square.
+
+            # We want the imaginary distance of the front-most slice
+            # to be MAX_SLICE_SIDE from the camera, to avoid super-warped
+            # perspective.
+
+            # BUT, since we need the front-most slice to remain our pre-determined
+            # size, we need to multiply the factor by 'MAX_SLICE_SIDE'.
+
+            SLICE_WIDTH = int(FRONT_SLICE_WIDTH * PERSPECTIVE_FACTOR)
+            SLICE_HEIGHT = int(self.BOARD_HEIGHT * PERSPECTIVE_FACTOR)
+
+            BLOCK_WIDTH = SLICE_WIDTH // game.game_3d.FLOOR_WIDTH
+            SLICE_POS = self.WIDTH // 2 - SLICE_WIDTH // 2, self.HEIGHT // 2 - SLICE_HEIGHT // 2
 
             for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
-                    BOARD_POS[0] + BLOCK_WIDTH * block_pos_in_game[0],
-                    BOARD_POS[1] + BLOCK_WIDTH * block_pos_in_game[2]
+                    SLICE_POS[0] + BLOCK_WIDTH * block_pos_in_game[0],
+                    SLICE_POS[1] + BLOCK_WIDTH * block_pos_in_game[2]
                 )
 
                 block_color = (
