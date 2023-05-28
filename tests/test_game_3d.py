@@ -1,6 +1,19 @@
 from game import game_3d
 from numpy import rot90
+from itertools import repeat
 import unittest
+
+
+GREY = (128, 128, 128)
+
+
+def piece_inside_board(piece: game_3d.Piece3D):
+    return all(
+        pos[0] in range(game_3d.FLOOR_WIDTH)
+        and pos[1] in range(game_3d.FLOOR_WIDTH)
+        and pos[2] in range(game_3d.FLOORS)
+        for pos in piece.block_positions()
+    )
 
 
 class TestPiece3D(unittest.TestCase):
@@ -8,6 +21,12 @@ class TestPiece3D(unittest.TestCase):
         super().__init__(*args, **kwargs)
 
         self.pieces = [game_3d.Piece3D(*piece_data) for piece_data in game_3d.PIECES_3D]
+    
+    def test_piece_inits_inside_board(self):
+        for piece in self.pieces:
+            self.assertTrue(
+                piece_inside_board(piece)
+            )
 
     def test_rotate(self):
         for piece in self.pieces:
@@ -104,6 +123,7 @@ class TestGame3D(unittest.TestCase):
         in the board, or any of the piece's blocks go outside
         the ranges of the board.
 
+        TEST ONE:
         We can test this by putting a new block in the board
         in front of the front-most block in the piece, relative
         to the direction it's about to move in,
@@ -115,4 +135,58 @@ class TestGame3D(unittest.TestCase):
         AND A FINAL TEST that tries to move a piece with no blocks in its way,
         and make sure it ACTUALLY MOVES.
         """
-        pass
+        for piece in game_3d.PIECES_3D:
+            # first test (read docstring)
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            LOWEST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[2])
+            self.game.board[(LOWEST_BLOCK[0], LOWEST_BLOCK[1], LOWEST_BLOCK[2] + 1)] = GREY  # place-holder value
+            PREVIOUS_POS = self.game.piece.pos
+            self.assertFalse(self.game.try_move(game_3d.SOFT_DROP))
+            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+
+            LEFT_MOST_BLOCK = min(self.game.piece.block_positions(), key=lambda block_pos: block_pos[0])
+            self.game.board[(LEFT_MOST_BLOCK[0] - 1, LEFT_MOST_BLOCK[1], LEFT_MOST_BLOCK[2])] = GREY  # place-holder value
+            PREVIOUS_POS = self.game.piece.pos
+            self.assertFalse(self.game.try_move(game_3d.LEFT))
+            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+
+            RIGHT_MOST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[0])
+            self.game.board[(RIGHT_MOST_BLOCK[0] + 1, RIGHT_MOST_BLOCK[1], RIGHT_MOST_BLOCK[2])] = GREY  # place-holder value
+            PREVIOUS_POS = self.game.piece.pos
+            self.assertFalse(self.game.try_move(game_3d.RIGHT))
+            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+
+            FRONT_MOST_BLOCK = min(self.game.piece.block_positions(), key=lambda block_pos: block_pos[1])
+            self.game.board[(FRONT_MOST_BLOCK[0], FRONT_MOST_BLOCK[1] - 1, FRONT_MOST_BLOCK[2])] = GREY  # place-holder value
+            PREVIOUS_POS = self.game.piece.pos
+            self.assertFalse(self.game.try_move(game_3d.FRONT))
+            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+
+            BACK_MOST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[1])
+            self.game.board[(BACK_MOST_BLOCK[0], BACK_MOST_BLOCK[1] + 1, BACK_MOST_BLOCK[2])] = GREY  # place-holder value
+            PREVIOUS_POS = self.game.piece.pos
+            self.assertFalse(self.game.try_move(game_3d.BACK))
+            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+
+            # second test (read docstring)
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            for move in (game_3d.LEFT, game_3d.RIGHT, game_3d.FRONT, game_3d.BACK, game_3d.SOFT_DROP):
+
+                PREVIOUS_POS = self.game.piece.pos
+
+                while True:
+                    self.game.try_move(move)
+                    self.assertTrue(piece_inside_board(self.game.piece))
+
+                    if self.game.piece.pos == PREVIOUS_POS:
+                        break
+                    # piece reached the wall and can no longer move 
+
+                    PREVIOUS_POS = self.game.piece.pos
+
+        self.game.piece.pos = []
+
+
+        
