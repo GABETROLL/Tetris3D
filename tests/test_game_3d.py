@@ -173,10 +173,10 @@ class TestGame3D(unittest.TestCase):
             self.game.piece = game_3d.Piece3D(*piece)
 
             for move in (game_3d.LEFT, game_3d.RIGHT, game_3d.FRONT, game_3d.BACK, game_3d.SOFT_DROP):
-
                 PREVIOUS_POS = self.game.piece.pos
 
                 while True:
+                    self.assertTrue(piece_inside_board(self.game.piece))
                     self.game.try_move(move)
                     self.assertTrue(piece_inside_board(self.game.piece))
 
@@ -185,8 +185,53 @@ class TestGame3D(unittest.TestCase):
                     # piece reached the wall and can no longer move 
 
                     PREVIOUS_POS = self.game.piece.pos
+            
+            # TODO: test HARD_DROP
 
         self.game.piece.pos = []
+    
+    def test_set_down(self):
+        """
+        Tests that 'self.game.set_down' copies the blocks in 'self.game.piece'
+        to 'self.game.board', with the piece's color as the value and the block
+        positions as the keys.
+        """
+        for piece in game_3d.PIECES_3D:
+            self.game.piece = game_3d.Piece3D(*piece)
+            self.game.board = {}
 
+            self.game.set_down()
 
-        
+            self.assertEqual(self.game.board, {pos: self.game.piece.color for pos in self.game.piece.block_positions()})
+    
+    def test_landed(self):
+        """
+        Tests that 'self.game.landed' returns True if 'self.game.piece'
+        has a cube that's directly above a cube in 'self.game.board',
+        or the board's floor.
+
+        It does that by placing a GREY (placeholder value) block in 'self.game.board',
+        one cube below each cube in 'self.game.piece' that's the lowest in its piece in its column,
+        then checking that 'self.game.landed()' == True.
+        """
+        for piece in game_3d.PIECES_3D:
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            # Test that 'self.game.landed()' returns True when the piece is at the bottom of the board:
+            # (while loop moves the piece to the bottom of the board)
+            while not any(z_pos == game_3d.FLOORS - 1 for (_, _, z_pos) in self.game.piece.block_positions()):
+                self.game.move_piece_down()  # already tested, scroll up
+            # assert
+            self.assertTrue(self.game.landed())
+
+            PIECE_BLOCKS = set(self.game.piece.block_positions())
+
+            for block_pos in PIECE_BLOCKS:
+                LANDING_BLOCK_POS = block_pos[0], block_pos[1], block_pos[2] + 1
+
+                if LANDING_BLOCK_POS in PIECE_BLOCKS:
+                    continue
+
+                self.game.board = {LANDING_BLOCK_POS: GREY}
+
+                self.assertTrue(self.game.landed())
