@@ -210,6 +210,13 @@ class Game3D:
         # {3D_pos: color}
     
     def init_random_piece(self):
+        """
+        Makes 'self.piece' to be 'self.next_piece'
+        and initializes a random new 'self.next_piece',
+
+        with the UNPACKED data in 'PIECES_3D'.
+        (higher up in the file)
+        """
         self.piece = self.next_piece
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
     
@@ -228,6 +235,12 @@ class Game3D:
         Tries to move piece in 'move' direction.
         The direction options are defined in
         'game.move_data.py', in this folder.
+
+        If the piece were to overlap another cube, or have any of its
+        cubes outside the position ranges of the board,
+        THE MOVE FAILS.
+
+        OTHERWISE, THE MOVE SUCCEEDS.
 
         AND THE AXII DIRECTION ARE DEFINED IN THIS CLASS'
         DOCSTRING!
