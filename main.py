@@ -16,6 +16,7 @@ import pygame
 import game
 from game_control import GameControl2D, GameControl3D
 from dataclasses import dataclass
+from itertools import chain
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
@@ -357,32 +358,32 @@ class Window:
         the vertical slices are drawn BACK-FRONT
         (INCLUDING THE BLOCKS OF THE PIECE AT THAT SLICE)
 
-        TODO: make slices increase in size
+        TODO: draw cubes in slices as actual cubes
         """
 
         slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
         for block_pos_in_game, block_color in self.controls.game.board.items():
             slices[block_pos_in_game[1]][block_pos_in_game] = block_color
-        # Each slice of the board, SUB-DICTIONARIES OF THE BOARD,
-        # ordered front-to-back
-
         for block_pos_in_game in self.controls.game.piece.block_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
-        # MAKE SURE TO INCLUDE THE PIECE'S BLOCKS AS WELL!!
-        # (In their corresponding slices and positions, and with their corresponding piece color)
+        # Each FRONT-FACING SLICE of the board, AS IF IT INCLUDED THE PIECE'S BLOCKS,
+        # as dictionaries of 3D positions and colors
 
         FRONT_SLICE_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
 
         MAX_SLICE_SIDE = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
-        # for each slice in the board (BACK->FRONT)
-        # BECAUSE when drawing the ones at the front later,
-        # we 'override' the ones at the back,
-        # "blocking" their colors and therefore acheiving
-        # "perspective"
-        for slice_distance, display_darkness, slice \
+
+        DISTANCE_TO_FRONT_SLICE = MAX_SLICE_SIDE
+        # arbitrary value
+
+        # for each slice in the board (BACK->FRONT),
+        # because drawing a rectangle on the screen
+        # just overrides whatever was there,
+        # We achieve blocks at the front "blocking"
+        # the view from the ones behind.
+        for slice_distance, slice \
             in zip(
-                range(MAX_SLICE_SIDE + len(slices) - 1, MAX_SLICE_SIDE - 1, -1),
-                range(len(slices), 0, -1),
+                range(DISTANCE_TO_FRONT_SLICE + len(slices) - 1, DISTANCE_TO_FRONT_SLICE - 1, -1),
                 reversed(slices)
         ):
             PERSPECTIVE_FACTOR = MAX_SLICE_SIDE / slice_distance
@@ -410,9 +411,9 @@ class Window:
                 )
 
                 block_color = (
-                    block_color[0] / display_darkness,
-                    block_color[1] / display_darkness,
-                    block_color[2] / display_darkness
+                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[0] / slice_distance ** 2,
+                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[1] / slice_distance ** 2,
+                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[2] / slice_distance ** 2
                 )
 
                 pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, BLOCK_WIDTH, BLOCK_WIDTH))
