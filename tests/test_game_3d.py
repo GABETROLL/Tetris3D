@@ -60,3 +60,59 @@ class TestPiece3D(unittest.TestCase):
             PIECE_AT_ORIGIN.pos = [0, 0, 0]
 
             self.assertEqual(PIECE_AT_ORIGIN.relative_block_positions(), PIECE_AT_ORIGIN.block_positions())
+
+
+class TestGame3D(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.game = game_3d.Game3D()
+    
+    def test_init_random_piece(self):
+        """
+        'self.game.init_random_piece' should make 'self.game.piece'
+        be 'self.game.next_piece', and make
+        a new, random 'self.game.next_piece',
+        with the data in 'game_3d.PIECES_3D'.
+        """
+        # 'self.game.piece' is what was in 'self.game.next_piece'
+        OLD_PIECE = self.game.piece
+        OLD_NEXT_PIECE = self.game.next_piece
+
+        self.game.init_random_piece()
+        self.assertIs(self.game.piece, OLD_NEXT_PIECE)
+        # 'self.game.next_piece' is brand new
+        self.assertIsNot(self.game.next_piece, OLD_NEXT_PIECE)
+        self.assertIsNot(self.game.next_piece, OLD_PIECE)
+    
+    def test_move_piece_down(self):
+        """
+        Tests that 'self.game.move_piece_down' adds 1
+        to 'self.game.piece.pos[2]' (AKA
+        'self's game's piece's Z-position)
+        """
+        OLD_PIECE_Z_POS = self.game.piece.pos[2]
+        self.game.move_piece_down()
+        self.assertTrue(self.game.piece.pos[2] == OLD_PIECE_Z_POS + 1)
+
+    def test_try_move(self):
+        """
+        'self.game.try_move' should move ONE cube of distance
+        in any direction in the board,
+        
+        ONLY if the new piece's blocks' positions
+        aren't already occupied by any blocks
+        in the board, or any of the piece's blocks go outside
+        the ranges of the board.
+
+        We can test this by putting a new block in the board
+        in front of the front-most block in the piece, relative
+        to the direction it's about to move in,
+        then testing if the piece overlaps it or not.
+
+        AND run another string of tests where we put the piece at the edge of the board,
+        then see if any of the piece's blocks go outside of it.
+
+        AND A FINAL TEST that tries to move a piece with no blocks in its way,
+        and make sure it ACTUALLY MOVES.
+        """
+        pass
