@@ -1,6 +1,6 @@
 from game import game_3d
 from numpy import rot90, nditer
-from itertools import repeat
+from itertools import combinations_with_replacement
 import unittest
 
 
@@ -16,6 +16,14 @@ def piece_inside_board(piece: game_3d.Piece3D):
     )
 
 
+def piece_overlaps_board_blocks(game: game_3d.Game3D):
+    """
+    Returns True if ANY of the game's piece's blocks
+    are ALSO found in the game's board.
+    """
+    return any(block in game.board for block in game.piece.block_positions())
+
+
 class TestPiece3D(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,11 +31,20 @@ class TestPiece3D(unittest.TestCase):
         self.pieces = [game_3d.Piece3D(*piece_data) for piece_data in game_3d.PIECES_3D]
     
     def test_piece_inits_inside_board(self):
+        """
+        Creating a new game_3d.Piece instance should always
+        initialize the piece INSIDE the board.
+
+        AKA: all of the piece's block_positions
+        are within the range of game_3d.FLOORS
+        and game_3d.FLOOR_WIDTH, respective to the axii.
+        """
         for piece in self.pieces:
             self.assertTrue(
                 piece_inside_board(piece)
             )
 
+    # TODO: REDUNDANT
     def test_rotate(self):
         for piece in self.pieces:
             for rotation_axis in range(3):
@@ -95,10 +112,32 @@ class TestPiece3D(unittest.TestCase):
 
 
 class TestGame3D(unittest.TestCase):
+    """
+    There are only a few ways to try to alter any state in Game3D:
+    - try to move a piece with nothing in its way        (AND SUCCEED)
+    - try to move a piece with a block in its way        (AND FAIL)
+    - try to move a piece with a wall/floor in its way   (AND FAIL)
+    - try to rotate a piece with nothing in its way      (AND SUCCEED)
+    - try to rotate a piece with a block in its way      (AND FAIL)
+    - try to rotate a piece with a wall/floor in its way (AND FAIL)
+    - inbed the game's piece into its board using 'set_down'
+    - move the game's piece with 'move_piece_down' (redundant)
+
+    - TODO: CLEAR LINES
+
+    - AND check that a piece CAN NEVER MOVE UP.
+
+    And there's a few expected inputs and outputs:
+    - 'try_move' should output True when the piece move (mentioned above)
+        succeeds, and False when it fails
+    - 'landed' should output True if anything (block or floor) is below
+        the game's current piece
+    - 'play' should return True if the game can continue, or False if the game is over
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.game = game_3d.Game3D()
-    
+
     def test_init_random_piece(self):
         """
         'self.game.init_random_piece' should make 'self.game.piece'
@@ -199,7 +238,11 @@ class TestGame3D(unittest.TestCase):
 
                     PREVIOUS_POS = self.game.piece.pos
             
-            # TODO: test HARD_DROP
+            # test HARD_DROP
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            self.game.try_move(game_3d.HARD_DROP)
+            self.assertTrue(self.game.landed())
 
         self.game.piece.pos = []
     
@@ -248,3 +291,14 @@ class TestGame3D(unittest.TestCase):
                 self.game.board = {LANDING_BLOCK_POS: GREY}
 
                 self.assertTrue(self.game.landed())
+            
+            # hard-drop test
+            self.game.board = {}
+            self.game.try_move(game_3d.HARD_DROP)
+            self.assertTrue(self.game.landed())
+
+    def test_clear_lines(self):
+        pass
+
+    def test_play(self):
+        pass
