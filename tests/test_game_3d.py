@@ -1,6 +1,5 @@
 from game import game_3d
 from numpy import rot90, nditer
-from itertools import combinations_with_replacement
 import unittest
 
 
@@ -81,7 +80,7 @@ class TestPiece3D(unittest.TestCase):
             # make sure all of the positions are 1's
             for relative_cube_pos in BLOCK_POSITIONS:
                 self.assertEqual(piece.blocks[relative_cube_pos[0], relative_cube_pos[1], relative_cube_pos[2]], 1)
-            # count 1's
+
             self.assertEqual(len(BLOCK_POSITIONS), sum(nditer(piece.blocks)))
 
     def test_block_positions(self):
@@ -114,14 +113,17 @@ class TestPiece3D(unittest.TestCase):
 class TestGame3D(unittest.TestCase):
     """
     There are only a few ways to try to alter any state in Game3D:
+    - make 'game.piece' point to 'game.next_piece'
+        and init a new 'game.next_piece, using 'game.next_piece'
     - try to move a piece with nothing in its way        (AND SUCCEED)
     - try to move a piece with a block in its way        (AND FAIL)
     - try to move a piece with a wall/floor in its way   (AND FAIL)
     - try to rotate a piece with nothing in its way      (AND SUCCEED)
     - try to rotate a piece with a block in its way      (AND FAIL)
     - try to rotate a piece with a wall/floor in its way (AND FAIL)
-    - inbed the game's piece into its board using 'set_down'
-    - move the game's piece with 'move_piece_down' (redundant)
+    (all of these using 'game.try_move')
+    - inbed the game's piece into its board using 'game.set_down'
+    - move the game's piece with 'game.move_piece_down' (redundant)
 
     - TODO: CLEAR LINES
 
@@ -154,7 +156,7 @@ class TestGame3D(unittest.TestCase):
         # 'self.game.next_piece' is brand new
         self.assertIsNot(self.game.next_piece, OLD_NEXT_PIECE)
         self.assertIsNot(self.game.next_piece, OLD_PIECE)
-    
+
     def test_move_piece_down(self):
         """
         Tests that 'self.game.move_piece_down' adds 1
@@ -167,77 +169,133 @@ class TestGame3D(unittest.TestCase):
 
     def test_try_move(self):
         """
-        'self.game.try_move' should move ONE cube of distance
-        in any direction in the board,
-        
-        ONLY if the new piece's blocks' positions
-        aren't already occupied by any blocks
-        in the board, or any of the piece's blocks go outside
-        the ranges of the board.
+        'self.game.try_move' should move 'self.game.piece'
+        ONE cube of distance in any direction in the board
+        (that's one of these: LEFT, RIGHT, FRONT, BACK, SOFT_DROP),
 
-        TEST ONE:
-        We can test this by putting a new block in the board
-        in front of the front-most block in the piece, relative
-        to the direction it's about to move in,
-        then testing if the piece overlaps it or not.
+        ONLY if there's no wall, floor or block in the board
+        that's in the piece's way.
 
-        AND run another string of tests where we put the piece at the edge of the board,
-        then see if any of the piece's blocks go outside of it.
+        If the piece could be moved, 'self.game.try_move' should return True,
+        and the piece's new position should be the predicted.
+        Otherwise, 'self.game.try_move' should return False, and the piece's
+        position should be the same as before.
 
-        AND A FINAL TEST that tries to move a piece with no blocks in its way,
-        and make sure it ACTUALLY MOVES.
+        The piece's position, no matter what, SHOULD ALWAYS be inside the board,
+        and SHOULD NEVER overlap any blocks in the board.
+
+        TESTS:
+        put a new block in the board right beside where the piece
+        is going to move, then try to move the piece in that direction.
+        THE MOVE SHOULD FAIL.
+
+        move the piece until it reaches each face in the board (EXCEPT ABOVE),
+        and check that the piece move SUCCEEDS when the piece can move in that direction
+        without going outsite the board, and FAILS when the piece could leave.
         """
+        MOVES = ((game_3d.RIGHT, game_3d.LEFT), (game_3d.BACK, game_3d.FRONT), (game_3d.SOFT_DROP))
+
         for piece in game_3d.PIECES_3D:
             # first test (read docstring)
             self.game.piece = game_3d.Piece3D(*piece)
+            self.game.board = {}
+            # start with empty board to prevent any stray blocks
+            # falsify the tests
 
-            LOWEST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[2])
-            self.game.board[(LOWEST_BLOCK[0], LOWEST_BLOCK[1], LOWEST_BLOCK[2] + 1)] = GREY  # place-holder value
-            PREVIOUS_POS = self.game.piece.pos
-            self.assertFalse(self.game.try_move(game_3d.SOFT_DROP))
-            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+            # TEST: moving any piece in any way SHOULD FAIL
+            # if a block in the board is in its way,
+            # by returning False and keeping the piece's position the same.
 
-            LEFT_MOST_BLOCK = min(self.game.piece.block_positions(), key=lambda block_pos: block_pos[0])
-            self.game.board[(LEFT_MOST_BLOCK[0] - 1, LEFT_MOST_BLOCK[1], LEFT_MOST_BLOCK[2])] = GREY  # place-holder value
-            PREVIOUS_POS = self.game.piece.pos
-            self.assertFalse(self.game.try_move(game_3d.LEFT))
-            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+            # note that some of these blocks "in the way" of the piece's moves
+            # may actually be outisde the board! This shouldn't matter, though,
+            # because we'll test that the pieces can't go outside the board either.
+            for axis, moves in enumerate(MOVES):
+                for reverse, direction, move in zip((True, False), (1, -1), moves):
+                    SORTED_PIECE_BLOCKS = sorted(self.game.piece.block_positions(), key=lambda block_pos: block_pos[axis], reverse=reverse)
 
-            RIGHT_MOST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[0])
-            self.game.board[(RIGHT_MOST_BLOCK[0] + 1, RIGHT_MOST_BLOCK[1], RIGHT_MOST_BLOCK[2])] = GREY  # place-holder value
-            PREVIOUS_POS = self.game.piece.pos
-            self.assertFalse(self.game.try_move(game_3d.RIGHT))
-            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+                    EDGE_MOST_BLOCKS = (
+                        block_pos
+                        for block_pos in SORTED_PIECE_BLOCKS
+                        if block_pos[axis] == SORTED_PIECE_BLOCKS[0][axis]
+                    )
+                    """
+                    All of the blocks right in front of the piece, in the direction
+                    we'll try to move it
+                    """
 
-            FRONT_MOST_BLOCK = min(self.game.piece.block_positions(), key=lambda block_pos: block_pos[1])
-            self.game.board[(FRONT_MOST_BLOCK[0], FRONT_MOST_BLOCK[1] - 1, FRONT_MOST_BLOCK[2])] = GREY  # place-holder value
-            PREVIOUS_POS = self.game.piece.pos
-            self.assertFalse(self.game.try_move(game_3d.FRONT))
-            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+                    for edge_most_block in EDGE_MOST_BLOCKS:
+                        self.game.board = {}
+                        # empty board to prevent any stray blocks
+                        # falsify the tests
 
-            BACK_MOST_BLOCK = max(self.game.piece.block_positions(), key=lambda block_pos: block_pos[1])
-            self.game.board[(BACK_MOST_BLOCK[0], BACK_MOST_BLOCK[1] + 1, BACK_MOST_BLOCK[2])] = GREY  # place-holder value
-            PREVIOUS_POS = self.game.piece.pos
-            self.assertFalse(self.game.try_move(game_3d.BACK))
-            self.assertEqual(self.game.piece.pos, PREVIOUS_POS)
+                        obstacle_block_pos = list(edge_most_block)
+                        obstacle_block_pos[axis] += direction
+                        self.game.board[tuple(obstacle_block_pos)] = GREY
 
-            # second test (read docstring)
+                        self.assertTrue(piece_inside_board(self.game.piece))
+                        self.assertFalse(piece_overlaps_board_blocks(self.game))
+                        # assert piece is completely inside board
+                        # and doesn't overlap any blocks in the board
+
+                        PREVIOUS_PIECE_POS = self.game.piece.pos.copy()
+                        self.assertFalse(self.game.try_move(move))
+                        # assert 'try_move' returns False when move fails
+                        self.assertEqual(PREVIOUS_PIECE_POS, self.game.piece.pos)
+                        # assert piece didn't move
+
+                        self.assertTrue(piece_inside_board(self.game.piece))
+                        self.assertFalse(piece_overlaps_board_blocks(self.game))
+                        # assert piece is completely inside board
+                        # and doesn't overlap any blocks in the board
+
+            # TEST: any piece moved in any way should SUCCEED if
+            # no wall/floor (or block, see above) is in its way,
+            # and FAIL when a wall/floor is.
             self.game.piece = game_3d.Piece3D(*piece)
+            self.game.board = {}
+            # start with empty board to prevent any stray blocks
+            # falsify the tests
 
-            for move in (game_3d.LEFT, game_3d.RIGHT, game_3d.FRONT, game_3d.BACK, game_3d.SOFT_DROP):
-                PREVIOUS_POS = self.game.piece.pos
+            for axis, moves in enumerate(MOVES):
+                for direction, move in zip((1, -1), moves):
+                    while True:
+                        self.assertTrue(piece_inside_board(self.game.piece))
+                        self.assertFalse(piece_overlaps_board_blocks(self.game))
+                        # assert piece is completely inside board
+                        # and doesn't overlap any blocks in the board
 
-                while True:
-                    self.assertTrue(piece_inside_board(self.game.piece))
-                    self.game.try_move(move)
-                    self.assertTrue(piece_inside_board(self.game.piece))
+                        PREVIOUS_PIECE_POS = self.game.piece.pos.copy()
 
-                    if self.game.piece.pos == PREVIOUS_POS:
-                        break
-                    # piece reached the wall and can no longer move 
+                        self.game.piece.pos[axis] += direction
+                        PIECE_WOULD_LEAVE = not piece_inside_board(self.game.piece)
+                        self.game.piece.pos[axis] -= direction
 
-                    PREVIOUS_POS = self.game.piece.pos
-            
+                        MOVE_RESULT = self.game.try_move(move)
+
+                        self.assertTrue(piece_inside_board(self.game.piece))
+                        self.assertFalse(piece_overlaps_board_blocks(self.game))
+                        # assert piece is completely inside board
+                        # and doesn't overlap any blocks in the board
+
+                        if PIECE_WOULD_LEAVE:
+                            self.assertFalse(MOVE_RESULT)
+                            # a failed move in 'self.game.try_move' should return False.
+                            self.assertEqual(PREVIOUS_PIECE_POS, self.game.piece.pos)
+                            # assert the piece never moved,
+                            # if any of its blocks would leave the board.
+                            break
+                            # Piece reached the wall and can no longer move,
+                            # so we can start testing the next piece.
+                        else:
+                            self.assertTrue(MOVE_RESULT)
+                            self.assertNotEqual(PREVIOUS_PIECE_POS, self.game.piece.pos)
+                            # a successful move in 'self.game.try_move' should return True,
+                            # and change the piece's position
+                            EXPECTED_PIECE_DESTINATION = PREVIOUS_PIECE_POS.copy()
+                            EXPECTED_PIECE_DESTINATION[axis] += direction
+                            self.assertEqual(self.game.piece.pos, EXPECTED_PIECE_DESTINATION)
+                            # assert piece moved to its expected destination
+
             # test HARD_DROP
             self.game.piece = game_3d.Piece3D(*piece)
 
@@ -245,7 +303,10 @@ class TestGame3D(unittest.TestCase):
             self.assertTrue(self.game.landed())
 
         self.game.piece.pos = []
-    
+
+    def test_try_rotate(self):
+        pass
+
     def test_set_down(self):
         """
         Tests that 'self.game.set_down' copies the blocks in 'self.game.piece'
@@ -254,12 +315,11 @@ class TestGame3D(unittest.TestCase):
         """
         for piece in game_3d.PIECES_3D:
             self.game.piece = game_3d.Piece3D(*piece)
-            self.game.board = {}
-
             self.game.set_down()
 
-            self.assertEqual(self.game.board, {pos: self.game.piece.color for pos in self.game.piece.block_positions()})
-    
+            for block_pos in self.game.piece.block_positions():
+                self.assertEqual(self.game.board[block_pos], self.game.piece.color)
+
     def test_landed(self):
         """
         Tests that 'self.game.landed' returns True if 'self.game.piece'
