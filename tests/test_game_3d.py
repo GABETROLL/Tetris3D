@@ -1,5 +1,5 @@
 from game import game_3d
-from numpy import rot90
+from numpy import rot90, nditer
 from itertools import repeat
 import unittest
 
@@ -43,8 +43,8 @@ class TestPiece3D(unittest.TestCase):
 
     def test_relative_block_positions(self):
         """
-        The whole point of Piece3D.relative_block_positions
-        is the position of all 1's in the numpy.ndarray,
+        'Piece3D.relative_block_positions' returns
+        the position of all 1's in the numpy.ndarray,
         meant to represent the piece in 2D as a cube of empty or "full"
         cubes.
 
@@ -53,13 +53,19 @@ class TestPiece3D(unittest.TestCase):
         its piece,
         
         by looking-up each individual position and seeing if the
-        int in the 3D numpy.ndarray is a 1.
-        
+        int in the 3D numpy.ndarray is a 1,
+
+        and by checking if all of the 1's have been found.
+
         THE TEST SUCCEEDS IF ALL OF THEM ARE.
         """
         for piece in self.pieces:
-            for relative_cube_pos in piece.relative_block_positions():
+            BLOCK_POSITIONS = piece.relative_block_positions()
+            # make sure all of the positions are 1's
+            for relative_cube_pos in BLOCK_POSITIONS:
                 self.assertEqual(piece.blocks[relative_cube_pos[0], relative_cube_pos[1], relative_cube_pos[2]], 1)
+            # count 1's
+            self.assertEqual(len(BLOCK_POSITIONS), sum(nditer(piece.blocks)))
 
     def test_block_positions(self):
         """
@@ -71,14 +77,21 @@ class TestPiece3D(unittest.TestCase):
         This test succeeds if all of the positions returned by
         'Piece3D.block_positions' "shifted" to position (0, 0, 0)
         match the RELATIVE positions of the blocks
-        
+
+        AND if the amount of positions returned corresponds to the amount
+        of 1's in the piece.
+
         (see test above)
         """
         for piece in self.pieces:
             PIECE_AT_ORIGIN = game_3d.Piece3D(piece.blocks.copy(), piece.color)
             PIECE_AT_ORIGIN.pos = [0, 0, 0]
 
-            self.assertEqual(PIECE_AT_ORIGIN.relative_block_positions(), PIECE_AT_ORIGIN.block_positions())
+            BLOCK_POSITIONS = PIECE_AT_ORIGIN.block_positions()
+
+            self.assertEqual(PIECE_AT_ORIGIN.relative_block_positions(), BLOCK_POSITIONS)
+
+            self.assertEqual(len(BLOCK_POSITIONS), sum(nditer(piece.blocks)))
 
 
 class TestGame3D(unittest.TestCase):
