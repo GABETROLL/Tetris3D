@@ -113,28 +113,29 @@ class TestPiece3D(unittest.TestCase):
 class TestGame3D(unittest.TestCase):
     """
     There are only a few ways to try to alter any state in Game3D:
-    - make 'game.piece' point to 'game.next_piece'
+    - make 'game.piece' point to 'game.next_piece'                     DONE
         and init a new 'game.next_piece, using 'game.next_piece'
-    - try to move a piece with nothing in its way        (AND SUCCEED)
-    - try to move a piece with a block in its way        (AND FAIL)
-    - try to move a piece with a wall/floor in its way   (AND FAIL)
-    - try to rotate a piece with nothing in its way      (AND SUCCEED)
-    - try to rotate a piece with a block in its way      (AND FAIL)
-    - try to rotate a piece with a wall/floor in its way (AND FAIL)
+    - try to move a piece with nothing in its way        (AND SUCCEED) DONE
+    - try to move a piece with a block in its way        (AND FAIL)    DONE
+    - try to move a piece with a wall/floor in its way   (AND FAIL)    DONE
     (all of these using 'game.try_move')
-    - inbed the game's piece into its board using 'game.set_down'
-    - move the game's piece with 'game.move_piece_down' (redundant)
+    - try to rotate a piece with nothing in its way      (AND SUCCEED) TODO
+    - try to rotate a piece with a block in its way      (AND FAIL)    TODO
+    - try to rotate a piece with a wall/floor in its way (AND FAIL)    TODO
+    (all of these using 'game.try_rotate')
+    - inbed the game's piece into its board using 'game.set_down'      DONE
+    - move the game's piece with 'game.move_piece_down' (redundant)    DONE
 
-    - TODO: CLEAR LINES
+    - TODO: test 'game.clear_lines'
 
-    - AND check that a piece CAN NEVER MOVE UP.
+    - AND check that a piece CAN NEVER MOVE UP. TODO
 
     And there's a few expected inputs and outputs:
-    - 'try_move' should output True when the piece move (mentioned above)
+    - 'try_move' should output True when the piece move (mentioned above)               DONE
         succeeds, and False when it fails
-    - 'landed' should output True if anything (block or floor) is below
+    - 'landed' should output True if anything (block or floor) is below                 DONE
         the game's current piece
-    - 'play' should return True if the game can continue, or False if the game is over
+    - 'play' should return True if the game can continue, or False if the game is over  TODO
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
