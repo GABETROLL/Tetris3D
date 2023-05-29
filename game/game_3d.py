@@ -209,7 +209,7 @@ class Game3D:
         self.board = {}
         # {3D_pos: color}
     
-    def init_random_piece(self):
+    def init_random_piece(self) -> None:
         """
         Makes 'self.piece' to be 'self.next_piece'
         and initializes a random new 'self.next_piece',
@@ -220,7 +220,7 @@ class Game3D:
         self.piece = self.next_piece
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
     
-    def move_piece_down(self):
+    def move_piece_down(self) -> None:
         """
         Moves 'self.piece' one floor down
         AKA adds one to its z-pos.
@@ -230,7 +230,7 @@ class Game3D:
         """
         self.piece.pos[2] += 1
     
-    def try_move(self, move: str):
+    def try_move(self, move: str) -> bool:
         """
         Tries to move piece in 'move' direction.
         The direction options are defined in
@@ -294,7 +294,7 @@ class Game3D:
             return True
             # We move down once.
 
-    def set_down(self):
+    def set_down(self) -> None:
         """
         Makes piece 'inbeded' in board.
         AKA: "puts" the cubes of the piece
@@ -303,7 +303,7 @@ class Game3D:
         for cube_pos in self.piece.block_positions():
             self.board[cube_pos] = self.piece.color
 
-    def try_rotate(self, axis: int, clockwise: bool):
+    def try_rotate(self, axis: int, clockwise: bool) -> None:
         """
         Rotates 'self.piece' AROUND the 'axis' DEFINED AT THE TOP OF THIS CLASS.
         If the piece can't rotate because it goes outside of the 3D board,
@@ -326,7 +326,7 @@ class Game3D:
             # undo rotation.
             self.piece.rotate(axis, not clockwise)
 
-    def landed(self):
+    def landed(self) -> bool:
         """
         Checks if 'self's current piece landed.
         A piece has landed if the floor or
@@ -344,7 +344,7 @@ class Game3D:
                 return True
         return False
 
-    def clear_lines(self, previous_piece: Piece3D):
+    def clear_lines(self, previous_piece: Piece3D) -> None:
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_floors = set()
@@ -392,7 +392,7 @@ class Game3D:
 
         self.score_manager.score(len(deleted_floors))
 
-    def play(self):
+    def play(self) -> bool:
         """
         Plays Tetris for one "step" (where the piece goes one down),
         and returns True if the game can continue,
