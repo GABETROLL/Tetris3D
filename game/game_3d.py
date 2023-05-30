@@ -1,3 +1,9 @@
+"""
+The axii/indexes in the board and pieces are described like this:
+0: x: left->right
+1: y: front->back
+2: z: top->bottom
+"""
 from numpy import zeros, ndarray, rot90
 import random
 from game.score import Score
@@ -111,6 +117,18 @@ Z_AXIS = 2
 
 
 class Piece3D:
+    """
+    'blocks': a numpy 3D ndarray cube with 1's representing a block
+    and 0's representing empty space
+
+    The 'blocks' coordinate system works like this:
+    blocks[relative_x_pos (left->right), relative_y_pos (front->back), relative_z_pos (top->bottom)]
+
+    'color': pygame color for screen display (aka: tuple[int, int, int])
+    'pos': the position of the left-front-top corner of the 'blocks' matrix
+    in the Game3D board. (scroll down)
+
+    """
     def __init__(self, blocks: ndarray, color: tuple[int, int, int]) -> None:
         """
         Copies the parameters,
@@ -420,9 +438,12 @@ class Game3D:
             self.clear_lines(self.piece)
             self.init_random_piece()
 
-            if self.landed():
+            if any(
+                block in self.board
+                for block in self.piece.block_positions()
+            ):
                 return False
-
-        self.move_piece_down()
+        else:
+            self.move_piece_down()
 
         return True

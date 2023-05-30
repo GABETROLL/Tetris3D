@@ -387,9 +387,12 @@ class Game2D:
             self.clear_lines(self.piece)
             self.init_random_piece()
 
-            if self.landed():
+            if any(
+                block in self.board
+                for block in self.piece.square_positions()
+            ):
                 return False
-
-        self.move_piece_down()
+        else:
+            self.move_piece_down()
 
         return True
