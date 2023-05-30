@@ -471,10 +471,10 @@ class TestGame3D(unittest.TestCase):
             self.game.try_move(game_3d.HARD_DROP)
             self.assertTrue(self.game.landed())
 
-    def test_clear_lines(self):
+    def test_clear_floors(self):
         """
-        Tests that all of the complete FLOORS get cleared,
-        using every piece, with all of the FLOORS it occupies
+        Tests that all of the complete floors get cleared,
+        using every piece, with all of the floors it occupies
         being filled out with 'GREY'-colored blocks.
         """
         for piece in game_3d.PIECES_3D:
@@ -491,7 +491,7 @@ class TestGame3D(unittest.TestCase):
             }
 
             self.game.set_down()
-            self.game.clear_lines(self.game.piece)
+            self.game.clear_floors(self.game.piece)
 
             self.assertEqual(self.game.board, {})
 

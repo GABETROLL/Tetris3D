@@ -366,7 +366,7 @@ class Game3D:
                 return True
         return False
 
-    def clear_lines(self, previous_piece: Piece3D) -> None:
+    def clear_floors(self, previous_piece: Piece3D) -> None:
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_floors = set()
@@ -391,7 +391,7 @@ class Game3D:
         
         if not deleted_floors:
             return
-        # no cleared lines, so no "landing" of lines either.
+        # no cleared floors, so no "landing" of floors either.
 
         landing_floor = max(deleted_floors)
         # lowest deleted floor is where all the floors with gunk in them will 'land' on.
@@ -423,7 +423,7 @@ class Game3D:
         This is the "step":
         If the current piece has landed,
         we set it down using 'self.set_down',
-        clear any lines the piece completed with 'self.clear_lines'
+        clear any floors the piece completed with 'self.clear_floors'
         and makes a new piece.
         
         If the new piece spawns where it immediately lands,
@@ -435,7 +435,7 @@ class Game3D:
         """
         if self.landed():
             self.set_down()
-            self.clear_lines(self.piece)
+            self.clear_floors(self.piece)
             self.init_random_piece()
 
             if any(
