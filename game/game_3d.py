@@ -114,6 +114,7 @@ FLOORS = 20
 X_AXIS = 0
 Y_AXIS = 1
 Z_AXIS = 2
+AXII = [X_AXIS, Y_AXIS, Z_AXIS]
 
 
 class Piece3D:
@@ -156,7 +157,7 @@ class Piece3D:
         """
         rotation_axii = [X_AXIS, Y_AXIS, Z_AXIS]
 
-        if axis not in rotation_axii:
+        if axis not in AXII:
             raise ValueError(f"Rotation axis 'axis' can only be 'X_AXIS, 'Y_AXIS' or 'Z_AXIS'.\nGot: {axis}")
         
         rotation_axii.remove(axis)
@@ -227,7 +228,7 @@ class Game3D:
         self.board = {}
         # {3D_pos: color}
     
-    def init_random_piece(self) -> None:
+    def _init_random_piece(self) -> None:
         """
         Makes 'self.piece' to be 'self.next_piece'
         and initializes a random new 'self.next_piece',
@@ -238,16 +239,22 @@ class Game3D:
         self.piece = self.next_piece
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
     
-    def move_piece_down(self) -> None:
+    def _move_piece_down(self) -> None:
         """
         Moves 'self.piece' one floor down
         AKA adds one to its z-pos.
 
-        REGARDLESS OF THE PIECE GOING OFF BOARD
-        OR INTO ANOTHER PIECE.
+        If 'self.piece' overlaps any block in self.board,
+        this method raises ValueError.
         """
         self.piece.pos[2] += 1
-    
+
+        if any(
+            block in self.board
+            for block in self.piece.block_positions()
+        ):
+            raise ValueError(f"Moved piece down, overlapping board block! {self.board=} {self.piece=}")
+
     def try_move(self, move: str) -> bool:
         """
         Tries to move piece in 'move' direction.
@@ -267,50 +274,54 @@ class Game3D:
         # I HAD TO SWAP TONS OF VALUES AROUND TO GET THE PIECES
         # TO BEHAVE IN THE CORRECT POSITIONS!
 
+        if move not in MOVES_3D:
+            raise ValueError(
+                f"Invalid 3D Game move! Expected: {' or '.join(MOVES_3D)}. Got: {move}"
+            )
+
+        # All these paths return True after they finish,
+        # or fail and return False RIGHT THERE.
         if move == LEFT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos - 1, y_pos, z_pos)) or \
                         x_pos == 0:
                     return False
-            self.piece.pos[0] -= 1
-            return True
+            self.piece.pos[X_AXIS] -= 1
 
-        if move == RIGHT:
+        elif move == RIGHT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos + 1, y_pos, z_pos)) or \
                         x_pos == FLOOR_WIDTH - 1:
                     return False
-            self.piece.pos[0] += 1
-            return True
+            self.piece.pos[X_AXIS] += 1
 
-        if move == BACK:
+        elif move == BACK:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos, y_pos + 1, z_pos)) or \
                         y_pos == FLOOR_WIDTH - 1:
                     return False
-            self.piece.pos[1] += 1
-            return True
+            self.piece.pos[Y_AXIS] += 1
 
-        if move == FRONT:
+        elif move == FRONT:
             for x_pos, y_pos, z_pos in self.piece.block_positions():
                 if self.board.get((x_pos, y_pos - 1, z_pos)) or \
                         y_pos == 0:
                     return False
-            self.piece.pos[1] -= 1
-            return True
+            self.piece.pos[Y_AXIS] -= 1
 
-        if move == HARD_DROP:
-            # If the move is a hard drop,
+        elif move == HARD_DROP:
             while not self.landed():
-                self.move_piece_down()
-            return True
-            # We move the piece down until it lands.
+                self._move_piece_down()
+            # move the piece down until it lands.
 
-        elif move == SOFT_DROP and not self.landed():
-            # If the move is a soft drop, and we haven't landed,
-            self.move_piece_down()
-            return True
-            # We move down once.
+        elif move == SOFT_DROP:
+            if self.landed():
+                return False
+            # can't move the piece down if it has already landed
+
+            self._move_piece_down()
+
+        return True
 
     def set_down(self) -> None:
         """
@@ -330,6 +341,8 @@ class Game3D:
 
         Returns weather or not the rotation succeeded.
         """
+        if axis not in (X_AXIS, Y_AXIS, Z_AXIS):
+            raise ValueError(f"Invalid rotation axis! Expected: X_AXIS, Y_AXIS or Z_AXIS. Got: {axis}")
         self.piece.rotate(axis, clockwise)
         # rotate
 
@@ -366,11 +379,15 @@ class Game3D:
                 return True
         return False
 
-    def clear_floors(self, previous_piece: Piece3D) -> None:
+    def _clear_floors(self, previous_piece: Piece3D) -> None:
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_floors = set()
 
+        # Look at each floor 'previous_piece' landed in
+        # (assuming it's 'self.piece', that just landed)
+        # and add the floor index to 'deleted_floors' if the floor
+        # was completed
         PREVIOUS_PIECE_HEIGHT = previous_piece.blocks.shape[2]
         PREVIOUS_PIECE_Z_POS = previous_piece.pos[2]
         for z_pos in range(PREVIOUS_PIECE_Z_POS, PREVIOUS_PIECE_Z_POS + PREVIOUS_PIECE_HEIGHT):
@@ -435,8 +452,8 @@ class Game3D:
         """
         if self.landed():
             self.set_down()
-            self.clear_floors(self.piece)
-            self.init_random_piece()
+            self._clear_floors(self.piece)
+            self._init_random_piece()
 
             if any(
                 block in self.board
@@ -444,6 +461,6 @@ class Game3D:
             ):
                 return False
         else:
-            self.move_piece_down()
+            self._move_piece_down()
 
         return True

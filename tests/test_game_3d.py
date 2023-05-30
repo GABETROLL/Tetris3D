@@ -153,7 +153,7 @@ class TestGame3D(unittest.TestCase):
         OLD_PIECE = self.game.piece
         OLD_NEXT_PIECE = self.game.next_piece
 
-        self.game.init_random_piece()
+        self.game._init_random_piece()
         self.assertIs(self.game.piece, OLD_NEXT_PIECE)
         # 'self.game.next_piece' is brand new
         self.assertIsNot(self.game.next_piece, OLD_NEXT_PIECE)
@@ -166,7 +166,7 @@ class TestGame3D(unittest.TestCase):
         'self's game's piece's Z-position)
         """
         OLD_PIECE_Z_POS = self.game.piece.pos[2]
-        self.game.move_piece_down()
+        self.game._move_piece_down()
         self.assertTrue(self.game.piece.pos[2] == OLD_PIECE_Z_POS + 1)
 
     def test_try_move(self):
@@ -450,7 +450,7 @@ class TestGame3D(unittest.TestCase):
             # Test that 'self.game.landed()' returns True when the piece is at the bottom of the board:
             # (while loop moves the piece to the bottom of the board)
             while not any(z_pos == game_3d.FLOORS - 1 for (_, _, z_pos) in self.game.piece.block_positions()):
-                self.game.move_piece_down()  # already tested, scroll up
+                self.game._move_piece_down()  # already tested, scroll up
             # assert
             self.assertTrue(self.game.landed())
 
@@ -491,7 +491,7 @@ class TestGame3D(unittest.TestCase):
             }
 
             self.game.set_down()
-            self.game.clear_floors(self.game.piece)
+            self.game._clear_floors(self.game.piece)
 
             self.assertEqual(self.game.board, {})
 
