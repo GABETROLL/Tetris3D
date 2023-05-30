@@ -472,7 +472,28 @@ class TestGame3D(unittest.TestCase):
             self.assertTrue(self.game.landed())
 
     def test_clear_lines(self):
-        pass
+        """
+        Tests that all of the complete FLOORS get cleared,
+        using every piece, with all of the FLOORS it occupies
+        being filled out with 'GREY'-colored blocks.
+        """
+        for piece in game_3d.PIECES_3D:
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            PIECE_BLOCK_POSITIONS = self.game.piece.block_positions()
+            PIECE_FLOORS = set(z_pos for (_, _, z_pos) in self.game.piece.block_positions())
+            self.game.board = {
+                (x_pos, y_pos, z_pos): self.game.piece.color
+                for x_pos in range(game_3d.FLOOR_WIDTH)
+                for y_pos in range(game_3d.FLOOR_WIDTH)
+                for z_pos in PIECE_FLOORS
+                if (x_pos, y_pos, z_pos) not in PIECE_BLOCK_POSITIONS
+            }
+
+            self.game.set_down()
+            self.game.clear_lines(self.game.piece)
+
+            self.assertEqual(self.game.board, {})
 
     def test_play(self):
         pass
