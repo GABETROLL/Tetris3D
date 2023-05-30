@@ -1,6 +1,7 @@
 from game import game_3d
 from numpy import rot90, nditer
 import unittest
+from itertools import combinations
 
 
 GREY = (128, 128, 128)
@@ -119,9 +120,9 @@ class TestGame3D(unittest.TestCase):
     - try to move a piece with a block in its way        (AND FAIL)    DONE
     - try to move a piece with a wall/floor in its way   (AND FAIL)    DONE
     (all of these using 'game.try_move')
-    - try to rotate a piece with nothing in its way      (AND SUCCEED) TODO
-    - try to rotate a piece with a block in its way      (AND FAIL)    TODO
-    - try to rotate a piece with a wall/floor in its way (AND FAIL)    TODO
+    - try to rotate a piece with nothing in its way      (AND SUCCEED) DONE
+    - try to rotate a piece with a block in its way      (AND FAIL)    DONE
+    - try to rotate a piece with a wall/floor in its way (AND FAIL)    DONE
     (all of these using 'game.try_rotate')
     - inbed the game's piece into its board using 'game.set_down'      DONE
     - move the game's piece with 'game.move_piece_down' (redundant)    DONE
@@ -306,7 +307,119 @@ class TestGame3D(unittest.TestCase):
         self.game.piece.pos = []
 
     def test_try_rotate(self):
-        pass
+        """
+        'self.game.try_rotate' should always rotate a piece when
+        nothing is in its way, and never when a block
+        in 'self.game.board' overlaps the piece or
+        any of the piece's blocks go outside the board
+        once it finishes rotating.
+
+        We can test this by:
+        - Rotating every piece (which SHOULD to fit in the board,
+            see Piece3D tests) in every way possible, 3 at a time
+        - moving each piece to each face, edge and corner,
+            rotating it in every way possible, 3 at a time again,
+            and testing that:
+
+            the rotation SUCCEEDS when the piece can stay in the board
+            after rotating
+            - OR -
+            the rotation FAILS when the piece leaves the board after
+            rotating
+        - filling the board with a grey block in each
+            position the piece would rotate into (exculsively), then checking that
+            the rotation failed, and that the board and piece stayed the same.
+        """
+        for piece in game_3d.PIECES_3D:
+            self.game.board = {}
+            # empty board to prevent falsified tests
+            # (it'll still be empty when it gets to the obstacle test)
+            
+            # try to rotate 'self.game.piece'
+            # in all 6 ways possible
+            # (3 axii * 2 directions (clockwise / counterclockwise)),
+            # 3 at a time, starting from the piece's default rotation.
+
+            # since all of the pieces in 'game_3d.PIECES_3D's matrices
+            # fit completely inside the board,
+            # we should be able to rotate them all successfully.
+            for axii in combinations(range(3), 1):
+                self.game.piece = game_3d.Piece3D(*piece)
+
+                for axis in axii:
+                    for clockwise in (True, False):
+
+                        self.assertTrue(
+                            self.game.try_rotate(axis, clockwise),
+                            msg=f"{self.game.piece.color=} {axis=} {clockwise=} {self.game.board=}"
+                        )
+
+            self.game.piece = game_3d.Piece3D(*piece)
+            # reset piece to prevent tests being falsified
+
+            # ALL OF THESE MOVES ARE ALSO TESTED, LOOK ABOVE
+            # move all of the pieces to each face edge and corner (except the ones above the board)
+            for perpendicular_faces_moves in ((game_3d.LEFT, game_3d.RIGHT), (game_3d.FRONT, game_3d.BACK), (game_3d.HARD_DROP)):
+                for face_move in perpendicular_faces_moves:
+                    # move piece to face
+                    # (if we're moving the piece to the second face,
+                    # which should be perpendicular to the first
+                    # (defined in this for-loop, look above),
+                    # we should have the piece in the corner)
+                    while True:
+                        PREVIOUS_PIECE_POS = self.game.piece.pos
+                        self.game.try_move(face_move)
+                        if PREVIOUS_PIECE_POS == self.game.piece.pos:
+                            break
+                    
+                    for axii in combinations(range(3), 1):
+                        self.game.piece = game_3d.Piece3D(*piece)
+
+                        for axis in axii:
+                            for clockwise in (True, False):
+
+                                self.game.piece.rotate(axis, clockwise)
+                                PIECE_WOULD_LEAVE_BOARD = any(
+                                    x_pos not in range(game_3d.FLOOR_WIDTH)
+                                    or y_pos not in range(game_3d.FLOOR_WIDTH)
+                                    or z_pos not in range(game_3d.FLOORS)
+                                    for x_pos, y_pos, z_pos in self.game.piece.block_positions()
+                                )
+                                self.game.piece.rotate(axis, not clockwise)
+                                # rotate, then undo to see if the rotation would make the piece
+                                # leave the board
+
+                                if PIECE_WOULD_LEAVE_BOARD:
+                                    PREVIOUS_PIECE_BLOCKS = self.game.piece.block_positions()
+                                    self.game.try_rotate(axis, clockwise)
+                                    self.assertEqual(PREVIOUS_PIECE_BLOCKS, self.game.piece.block_positions())
+
+            self.game.board = {}
+            # empty board to prevent tests being falsified
+
+            for axis in range(3):
+                for clockwise in (True, False):
+                    PIECE_BLOCK_POSITIONS = self.game.piece.block_positions()
+                    self.game.piece.rotate(axis, clockwise)
+                    rotation_obstacles = (
+                        pos
+                        for pos in self.game.piece.block_positions()
+                        if pos not in PIECE_BLOCK_POSITIONS
+                    )
+                    # all of the blocks would stop the piece's currently tested rotation,
+                    # that don't interfere with the piece's current position
+                    # (we rotate and un-rotate to figure these blocks out)
+                    self.game.piece.rotate(axis, not clockwise)
+
+                    for rotation_obstacle in rotation_obstacles:
+                        self.game.board = {rotation_obstacle: GREY}
+                        PRE_ROTATION_BOARD = self.game.board.copy()
+
+                        self.assertFalse(self.game.try_rotate(axis, clockwise))
+                        # rotation must fail, if we put all the blocks properly.
+                        self.assertEqual(PIECE_BLOCK_POSITIONS, self.game.piece.block_positions())
+                        # if the rotation fails, its blocks must stay the same.
+                        self.assertEqual(self.game.board, PRE_ROTATION_BOARD)
 
     def test_set_down(self):
         """
