@@ -303,12 +303,14 @@ class Game3D:
         for cube_pos in self.piece.block_positions():
             self.board[cube_pos] = self.piece.color
 
-    def try_rotate(self, axis: int, clockwise: bool) -> None:
+    def try_rotate(self, axis: int, clockwise: bool) -> bool:
         """
         Rotates 'self.piece' AROUND the 'axis' DEFINED AT THE TOP OF THIS CLASS.
         If the piece can't rotate because it goes outside of the 3D board,
         or a block is already in a position where the piece's block will end up in,
         this method CANCELS THE ROTATION.
+
+        Returns weather or not the rotation succeeded.
         """
         self.piece.rotate(axis, clockwise)
         # rotate
@@ -323,8 +325,10 @@ class Game3D:
             # if any block in self.piece.block_positions
             # is aleady occupied by self.board,
             # or is outside the board,
-            # undo rotation.
+            # undo
             self.piece.rotate(axis, not clockwise)
+            return False
+        return True
 
     def landed(self) -> bool:
         """
