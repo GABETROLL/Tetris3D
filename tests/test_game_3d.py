@@ -496,4 +496,13 @@ class TestGame3D(unittest.TestCase):
             self.assertEqual(self.game.board, {})
 
     def test_play(self):
-        pass
+        """
+        Tests that:
+        If the game's current piece hasn't landed yet,
+        'self.game.play' always returns True.
+        """
+        for piece in game_3d.PIECES_3D:
+            self.game.board = {}
+            self.game.piece = game_3d.Piece3D(*piece)
+
+            self.assertTrue(self.game.play())
