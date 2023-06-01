@@ -379,24 +379,27 @@ class Window:
         # Each FRONT-FACING SLICE of the board, AS IF IT INCLUDED THE PIECE'S BLOCKS,
         # as dictionaries of 3D positions and colors
 
-        FRONT_SLICE_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
+        FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
 
-        MAX_SLICE_SIDE = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
-
-        DISTANCE_TO_FRONT_SLICE = MAX_SLICE_SIDE >> 1
-        # arbitrary value
+        DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS)) >> 1
+        """
+        Arbitrary value, meant to represent the imagined distance
+        from the "camera" to front of the board,
+        A.K.A, the front side of the cubes in the front side of the board.
+        """
 
         # for each slice in the board (BACK->FRONT),
         # because drawing a rectangle on the screen
         # just overrides whatever was there,
         # We achieve blocks at the front "blocking"
         # the view from the ones behind.
-        for slice_distance, slice \
+        for distance_to_slice_front, slice \
             in zip(
-                range(DISTANCE_TO_FRONT_SLICE + len(slices) - 1, DISTANCE_TO_FRONT_SLICE - 1, -1),
+                range(DISTANCE_TO_FRONT_SLICE_FRONT + len(slices) - 1, DISTANCE_TO_FRONT_SLICE_FRONT - 1, -1),
                 reversed(slices)
         ):
-            PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE / slice_distance
+            distance_to_slice_back = distance_to_slice_front + 1
+            BACK_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_back
             # every front-facing square's side-length APPEARS 1 / distance
             # of the square from the camera, if the distance is measured
             # by the side-length of the square.
@@ -407,25 +410,115 @@ class Window:
 
             # BUT, since we need the front-most slice to remain our pre-determined
             # size, we need to multiply the factor by 'MAX_SLICE_SIDE'.
+            FRONT_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_front
+            # (again with this one)
 
-            SLICE_WIDTH = int(FRONT_SLICE_WIDTH * PERSPECTIVE_FACTOR)
+            SLICE_BACK_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * BACK_PERSPECTIVE_FACTOR)
+            BLOCK_BACK_WIDTH_IN_SCREEN = SLICE_BACK_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+            # since 'SLICE_BACK_WIDTH' is the slice's width IN THE SCREEN,
+            # and the slice's width is just the sum of all of the block's widths in the slice,
+            # which is 'game.game_3d.FLOOR_WIDTH',
+            # the slice's front and back display size are these.
+            SLICE_FRONT_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * FRONT_PERSPECTIVE_FACTOR)
+            BLOCK_FRONT_WIDTH_IN_SCREEN = SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+            # (again with this one)
 
-            BLOCK_WIDTH = SLICE_WIDTH // game.game_3d.FLOOR_WIDTH
-            SLICE_POS = self.WIDTH // 2 - SLICE_WIDTH // 2, 0
+            SLICE_BACK_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_BACK_WIDTH_IN_SCREEN // 2, 0
+            SLICE_FRONT_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2, 0
+            # positions of the slice's fronts and backs IN THE SCREEN,
+            # aligned in the slices' and screen's center in the X axis,
+            # aligned at the top for the Y axis for easier perspective in the gameplay.
+
+            # DRAWING 3 FACES BEHIND CUBE
+            # (the lower face doesn't need to be drawn,
+            # SINCE THE SLICES ARE ALIGNED AT THE TOP, VERTICALLY,
+            # and therefore won't be visible to the player)
 
             for block_pos_in_game, block_color in slice.items():
-                BLOCK_POS_IN_SCREEN = (
-                    SLICE_POS[0] + BLOCK_WIDTH * block_pos_in_game[0],
-                    SLICE_POS[1] + BLOCK_WIDTH * block_pos_in_game[2]
+
+                block_color = tuple(
+                    DISTANCE_TO_FRONT_SLICE_FRONT ** 2 * block_color[rgb_channel] / distance_to_slice_front ** 2
+                    for rgb_channel in range(3)
+                )
+                # block color is meant to simulate how much light should get to the camera,
+                # from the block at a given distance:
+                # just as how a square with side-lengths S that's N units away from a camera
+                # appears to have sides of length S / N, the amount of light recieved from a
+                # square that's N units away from a camera should reflect 1 / N of the light
+                # that's recieved from a square one unit away.
+
+                TOP_LEFT_BACK_BLOCK_CORNER_POS = (
+                    SLICE_BACK_POS_IN_SCREEN[0] + BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_BACK_POS_IN_SCREEN[1] + BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                )
+                TOP_RIGHT_BACK_BLOCK_CORNER_POS = (
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[0] + BLOCK_BACK_WIDTH_IN_SCREEN,
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[1]
+                )
+                BOTTOM_LEFT_BACK_BLOCK_CORNER_POS = (
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[0],
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[1] + BLOCK_BACK_WIDTH_IN_SCREEN 
+                )
+                BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS = (
+                    BOTTOM_LEFT_BACK_BLOCK_CORNER_POS[0] + BLOCK_BACK_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_BACK_BLOCK_CORNER_POS[1]
                 )
 
-                block_color = (
-                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[0] / slice_distance ** 2,
-                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[1] / slice_distance ** 2,
-                    DISTANCE_TO_FRONT_SLICE ** 2 * block_color[2] / slice_distance ** 2
+                TOP_LEFT_FRONT_BLOCK_CORNER_POS = (
+                    SLICE_FRONT_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_FRONT_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                )
+                TOP_RIGHT_FRONT_BLOCK_CORNER_POS = (
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1]
+                )
+                BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS = (
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0],
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] + BLOCK_FRONT_WIDTH_IN_SCREEN 
+                )
+                BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS = (
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[1]
                 )
 
-                pygame.draw.rect(self.window, block_color, pygame.Rect(*BLOCK_POS_IN_SCREEN, BLOCK_WIDTH, BLOCK_WIDTH))
+                # If we don't draw sides clockwise/counter-clockwise order
+                # each side's 4 corners, polygons may not come out right!
+                # DRAW TOP SIDE OF CUBE
+                pygame.draw.polygon(
+                    self.window,
+                    block_color,
+                    (
+                        TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
+                        TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS
+                    )
+                )
+                # DRAW LEFT SIDE OF CUBE
+                pygame.draw.polygon(
+                    self.window,
+                    block_color,
+                    (
+                       TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS,
+                       BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_BACK_BLOCK_CORNER_POS 
+                    )
+                )
+                # DRAW RIGHT SIDE OF CUBE
+                pygame.draw.polygon(
+                    self.window,
+                    block_color,
+                    (
+                        TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
+                        BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS, BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS
+                    )
+                )
+                # DRAW FRONT SIDE OF CUBE
+                pygame.draw.polygon(
+                    self.window,
+                    block_color,
+                    (
+                        TOP_LEFT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
+                        BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS
+                    )
+                )
 
     def draw_score(self):
         """Draws score and level text at the top of the board."""
