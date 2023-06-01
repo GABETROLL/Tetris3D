@@ -511,6 +511,31 @@ class Window:
                         BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS, BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS
                     )
                 )
+
+            for block_pos_in_game, block_color in slice.items():
+
+                block_color = tuple(
+                    DISTANCE_TO_FRONT_SLICE_FRONT ** 2 * block_color[rgb_channel] / distance_to_slice_front ** 2
+                    for rgb_channel in range(3)
+                )
+
+                TOP_LEFT_FRONT_BLOCK_CORNER_POS = (
+                    SLICE_FRONT_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_FRONT_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                )
+                TOP_RIGHT_FRONT_BLOCK_CORNER_POS = (
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1]
+                )
+                BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS = (
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0],
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] + BLOCK_FRONT_WIDTH_IN_SCREEN 
+                )
+                BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS = (
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[1]
+                )
+
                 # DRAW FRONT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
