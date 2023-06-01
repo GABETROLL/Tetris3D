@@ -352,7 +352,7 @@ class Window:
         and next piece (TODO), IF THE GAME MODE IS 3D.
 
         IF 'self.game_control' is 2D, a TypeError
-        will be raised. (TODO)
+        will be raised.
 
         The method for drawing the pieces is simple:
         the vertical slices are drawn BACK-FRONT
@@ -366,6 +366,9 @@ class Window:
 
         TODO: draw cubes in slices as actual cubes
         """
+
+        if self.mode_menu.option != "3D":
+            raise TypeError("Game mode is 2D, but 'draw_3d' was called!")
 
         slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
         for block_pos_in_game, block_color in self.controls.game.board.items():
