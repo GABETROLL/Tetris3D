@@ -17,6 +17,7 @@ import game
 from game_control import GameControl2D, GameControl3D
 from dataclasses import dataclass
 from itertools import chain
+from numpy import linspace
 
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
@@ -382,7 +383,7 @@ class Window:
 
         MAX_SLICE_SIDE = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
 
-        DISTANCE_TO_FRONT_SLICE = MAX_SLICE_SIDE
+        DISTANCE_TO_FRONT_SLICE = MAX_SLICE_SIDE >> 1
         # arbitrary value
 
         # for each slice in the board (BACK->FRONT),
@@ -395,23 +396,22 @@ class Window:
                 range(DISTANCE_TO_FRONT_SLICE + len(slices) - 1, DISTANCE_TO_FRONT_SLICE - 1, -1),
                 reversed(slices)
         ):
-            PERSPECTIVE_FACTOR = MAX_SLICE_SIDE / slice_distance
+            PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE / slice_distance
             # every front-facing square's side-length APPEARS 1 / distance
             # of the square from the camera, if the distance is measured
             # by the side-length of the square.
 
             # We want the imaginary distance of the front-most slice
-            # to be MAX_SLICE_SIDE from the camera, to avoid super-warped
-            # perspective.
+            # to be MAX_SLICE_SIDE >> 1 from the camera, to achive a BALANCE
+            # between super-warped perspective, and very flat perspective.
 
             # BUT, since we need the front-most slice to remain our pre-determined
             # size, we need to multiply the factor by 'MAX_SLICE_SIDE'.
 
             SLICE_WIDTH = int(FRONT_SLICE_WIDTH * PERSPECTIVE_FACTOR)
-            SLICE_HEIGHT = int(self.BOARD_HEIGHT * PERSPECTIVE_FACTOR)
 
             BLOCK_WIDTH = SLICE_WIDTH // game.game_3d.FLOOR_WIDTH
-            SLICE_POS = self.WIDTH // 2 - SLICE_WIDTH // 2, self.HEIGHT // 2 - SLICE_HEIGHT // 2
+            SLICE_POS = self.WIDTH // 2 - SLICE_WIDTH // 2, 0
 
             for block_pos_in_game, block_color in slice.items():
                 BLOCK_POS_IN_SCREEN = (
