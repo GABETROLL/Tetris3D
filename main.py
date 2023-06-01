@@ -349,14 +349,20 @@ class Window:
     def draw_3d(self):
         """
         Draws the 'self.game_control.game' board, piece
-        and next piece, IF THE GAME MODE IS 3D
+        and next piece (TODO), IF THE GAME MODE IS 3D.
 
         IF 'self.game_control' is 2D, a TypeError
-        will be raised.
+        will be raised. (TODO)
 
         The method for drawing the pieces is simple:
         the vertical slices are drawn BACK-FRONT
         (INCLUDING THE BLOCKS OF THE PIECE AT THAT SLICE)
+        And the slices get bigger and bigger, brighter and brighter,
+        as if they were getting closer to the camera.
+
+        The slice's tops should all be aligned, as if the camera were
+        looking from the very top, in order to help the player
+        know where the pieces land (TODO).
 
         TODO: draw cubes in slices as actual cubes
         """
