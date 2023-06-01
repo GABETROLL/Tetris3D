@@ -365,7 +365,9 @@ class Window:
         looking from the very top, in order to help the player
         know where the pieces land (TODO).
 
-        TODO: draw cubes in slices as actual cubes
+        Right now, the pieces are drawn as cubes one-by-one, the way the set
+        orders them, BUT we want to draw all of the back sides BEFORE
+        the fronts of the cubes. (TODO)
         """
 
         if self.mode_menu.option != "3D":
@@ -380,8 +382,7 @@ class Window:
         # as dictionaries of 3D positions and colors
 
         FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
-
-        DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS)) >> 1
+        DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
         """
         Arbitrary value, meant to represent the imagined distance
         from the "camera" to front of the board,
