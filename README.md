@@ -53,10 +53,10 @@ $ python3.11 main.py
 ### Cntrolling the current piece
 #### Move
 ```
-W/UP       : (3D only) to move to the BACK
-A/LEFT     : (2D & 3D) to move LEFT
-S/DOWN     : to move DOWN (2D) or FRONT (3D)
-D/RIGHT    : (2D & 3D) to move RIGHT
+W          : (3D only) to move to the BACK
+A          : (2D & 3D) to move LEFT
+S          : to move DOWN (2D) or FRONT (3D)
+D          : (2D & 3D) to move RIGHT
 LEFT_SHIFT : (2D & 3D) to soft-drop (move piece down gradually)
 SPACEBAR   : (2D & 3D) to HARD-DROP (teleport piece to its landing position)
 ```
