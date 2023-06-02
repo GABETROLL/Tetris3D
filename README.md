@@ -137,11 +137,11 @@ game/
         Z
         ROWS: int
         COLUMNS: int
-        Piece
+        Piece2D
         Game2D
             pieces = [I, J, L, O, S, T, Z]
-            piece: Piece
-            next_piece: Piece
+            piece: Piece2D
+            next_piece: Piece2D
             score_manager: Score
     game_3d.py
         I_3D
@@ -200,10 +200,10 @@ Window
     controls: GameControl
         window: pygame.Surface
         game: Game2D | Game3D
-            piece: Piece | Piece3D
+            piece: Piece2D | Piece3D
                 pos: <2D | 3D pos>
                 color: <color>
-            next_piece: Piece | Piece3D
+            next_piece: Piece2D | Piece3D
             board: dict[<2D pos>, <color>] | dict[<3d pos>, <color>]
         das: dict
 
