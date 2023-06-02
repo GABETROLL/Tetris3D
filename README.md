@@ -42,13 +42,39 @@ https://www.pygame.org/wiki/GettingStarted\
 $ git clone git@github.com:GABETROLL/Tetris3D.git
 $ cd Tetris3D/
 ```
-## Use
+## Run
 ```
 $ python3.11 main.py
 ```
 ## Rules
-### 2D
-### 3D
+There are 2 ame types: 2D and 3D.
+The game starts off with:
+- a board
+    If the game mode is 2D, the board is 10 x 20.
+    If the game mode is 3D, the board is 4 x 4 x 20.
+- a random piece, spawned at the top of the board, that the player can control and drop. It falls every N frames, N being faster the higher the level
+- a next piece preview.
+    It can rotate in 2 directions when the game mode is 2D, and 6 directions when it's 3D.
+- a level that determines the speed the pieces fall in
+
+The player can control this piece by:
+- moving it in any horizontal direction,
+- lower it gradually (SOFT-DROP),
+- teleport it to its landing position (HARD-DROP)
+- rotating it in the available axii
+
+Every N frames, the piece moves one block down, to fall. If the current level is higher, the piece falls faster.
+
+When a piece lands on top of another block, or the bottom of the board, the piece displayed in the next piece preview spawns as the current piece, and a new 'next piece' gets spawned. This process could go on forever.
+
+When a whole row/floor gets full, that row/floor gets removed from the board, and gets counted to the score. The more rows/floors cleared at the same time, the more points. (The max amount of floors you're able to clear at once is 4)
+
+If a player clears a certain amount of lines, the game "transitions": the level increases, then the levels keep increasing every 10 lines.
+
+The goal is to get as much points as possible, before the pieces stack too high.
+
+When the 'next piece' tries to spawn at the top of the board as the new current piece, but any block in the board blocks it, the game ends.
+
 ## Controls
 ### Cntrolling the current piece
 #### Move
