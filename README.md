@@ -1,6 +1,8 @@
 # Tetris3D!
 ## Requirements
-[Python](https://www.python.org/)\
+### Python
+<img src="https://www.python.org/static/img/python-logo.png" alt="Python logo"/>\
+https://www.python.org/\
 (This project was developed in version 3.11)\
 Install on Debian/Debian-based Linux:
 ```
@@ -19,13 +21,22 @@ Windows:
 ```
 $ python -m pip --version
 ```
-[PIP](https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line)\
-[Git](https://git-scm.com/downloads)\
+### PIP
+<img src="https://pypi.org/static/images/logo-small.2a411bc6.svg" alt="PIP logo"/>\
+https://pip.pypa.io/en/stable/installation/\
+-or-\
+https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line
+### Git
+<img src="https://git-scm.com/images/logo@2x.png" alt="Git logo"/>\
+https://git-scm.com/downloads\
 On Debian-based Linux:
 ```
 $ sudo apt install git
 ```
-[Pygame](https://www.pygame.org/wiki/GettingStarted)
+### Pygame
+<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>\
+https://www.pygame.org/wiki/GettingStarted\
+
 ## Installation
 ```
 $ git clone git@github.com:GABETROLL/Tetris3D.git
