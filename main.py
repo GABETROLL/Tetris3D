@@ -361,13 +361,15 @@ class Window:
         And the slices get bigger and bigger, brighter and brighter,
         as if they were getting closer to the camera.
 
+        The slices are drawn FIRST by drawing each of the slices' block's
+        backs and sides, then each of the blocks' front sides,
+        in order to avoid wrong overlapping order, since the front side is supposed
+        to be on top of every other side by default, and since
+        drawing a plygon into the pygame window overrides any other pixels there.
+
         The slice's tops should all be aligned, as if the camera were
         looking from the very top, in order to help the player
-        know where the pieces land (TODO).
-
-        Right now, the pieces are drawn as cubes one-by-one, the way the set
-        orders them, BUT we want to draw all of the back sides BEFORE
-        the fronts of the cubes. (TODO)
+        know where the pieces land.
         """
 
         if self.mode_menu.option != "3D":
