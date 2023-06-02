@@ -1,7 +1,7 @@
 # Tetris3D!
 ## Requirements
-[Python](https://www.python.org/)
-[This project was developed in version 3.11]
+[Python](https://www.python.org/)\
+(This project was developed in version 3.11)\
 Install on Debian/Debian-based Linux:
 ```
 $ sudo apt install build-essential checkinstall \
@@ -10,7 +10,7 @@ $ sudo apt install build-essential checkinstall \
 $ sudo add-apt-repository ppa:deadsnakes/ppa
 $ sudo apt install python3.11
 ```
-Verify Python3.11 is installed:
+Verify Python3.11 is installed:\
 Linux:
 ```
 $ python3.11 -m pip --version
@@ -19,9 +19,8 @@ Windows:
 ```
 $ python -m pip --version
 ```
-[PIP](https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line)
-
-[Git](https://git-scm.com/downloads)
+[PIP](https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line)\
+[Git](https://git-scm.com/downloads)\
 On Debian-based Linux:
 ```
 $ sudo apt install git
