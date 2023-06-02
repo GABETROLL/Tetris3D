@@ -113,3 +113,110 @@ A/LEFT  : go to previous option
 D/RIGHT : go to next option
 ```
 ## Code Documentation
+### File Structure & Definitions
+```
+game/
+    score.py
+        Score
+    move_data.py
+        LEFT
+        RIGHT
+        SOFT_DROP
+        HARD_DROP
+        BACK
+        FRONT
+        MOVES_2D
+        MOVES_3D
+    game_2d.py
+        I
+        J
+        L
+        O
+        S
+        T
+        Z
+        ROWS: int
+        COLUMNS: int
+        Piece
+        Game2D
+            pieces = [I, J, L, O, S, T, Z]
+            piece: Piece
+            next_piece: Piece
+            score_manager: Score
+    game_3d.py
+        I_3D
+        J_3D
+        L_3D
+        O_3D
+        S_3D
+        T_3D
+        Z_3D
+        FLOOR_WIDTH: int
+        FLOORS: int
+        Piece3D
+        Game3D:
+            piece: Piece3D
+            next_piece: Piece3D
+            score_manager: Score
+game_control.py
+    GameControl
+        game: Game2D
+        das: dict[str, int]
+    GameControl2D(GameControl)
+    GameControl3D(GameControl)
+main.py
+    Menu
+    Window
+        controls: GameControl
+        game_options_menu: Menu
+
+```
+### Object Structure
+(relative to ``main.py``)
+```
+Menu
+    options: object
+    option_index: int
+    option -> options[option_index]
+
+Window
+    window: pygame.Surface
+    BOARD_HEIGHT: int
+    HEIGHT: int = BOARD_HEIGHT
+    WIDTH: int = HEIGHT
+
+    window: pygame.Surface
+    clock = pygame.time.Clock()
+    fps: int
+    running: bool = True
+
+    font: pygame.font.Font
+
+    level_menu = Menu(range(20))
+    mode_menu = Menu(("2D", "3D"))
+    music_menu = Menu(("Tetris Theme", "Silence"))
+    game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+
+    controls: GameControl
+        window: pygame.Surface
+        game: Game2D | Game3D
+            piece: Piece | Piece3D
+                pos: <2D | 3D pos>
+                color: <color>
+            next_piece: Piece | Piece3D
+            board: dict[<2D pos>, <color>] | dict[<3d pos>, <color>]
+        das: dict
+
+    frame_handler: bound method
+    """
+    current "mode" the program is in,
+    a method that will be called each frame.
+    The methods can be:
+    'self.handle_title_screen_frame',
+    'self.handle_game_frame',
+    'self.handle_game_over_screen_frame'
+    """
+
+    game_over_menu =  Menu(("Back to title screen", "Quit"))
+        
+```

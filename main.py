@@ -10,6 +10,14 @@ at which the pieces fall.
 It is meant to be an extension of the Window class,
 but makes this file too long to put in here.
 
+This file also has a Menu class, a very simple class containing
+menu options, a choice pointer index and an option property to recieve it.
+
+'Window' has 'handle_game_over_frame' and 'handle_title_screen_frame', which
+use the Menu objects with the game mode/level/music options
+(kept in 'Window ''self', as well) which render/control the game over and
+title screens.
+
 God bless you, enjoy!
 """
 import pygame
