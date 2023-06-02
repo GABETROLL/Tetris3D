@@ -59,10 +59,21 @@ S/DOWN   : to move DOWN
 D/RIGHT  : to move RIGHT
 ```
 #### Rotate
-##### 2D
+In 2D:
 ```
-...
+U: rotate counter-clockwise
+O: rotate clockwise
 ```
+In 3D:
+```
+U : rotate counter-clockwise around the Y axis
+O : rotate clockwise around the Y axis
+I : rotate counter-clockwise around the X axis
+K : rotate clockwise around the X axis
+J : rotate clockwise around the Z axis
+L : rotate counter-clockwise around the Z axis
+```
+The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
 ### 
 ### Moving in menu screens
 Move between (inner) menus:
@@ -75,5 +86,4 @@ Change menu option:
 A/LEFT  : go to previous option
 D/RIGHT : go to next option
 ```
-
 ## Code Documentation
