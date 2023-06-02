@@ -123,7 +123,7 @@ class GameControl2D(GameControl):
             self.game.try_rotate(False)
         # Rotations shouldn't happen every frame.
 
-        if keys[pygame.K_LSHIFT] and not self.game.landed():
+        if (keys[pygame.K_LSHIFT] or keys[pygame.K_DOWN]) and not self.game.landed():
             self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
