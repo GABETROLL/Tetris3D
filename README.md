@@ -50,4 +50,30 @@ $ python3.11 main.py
 ### 2D
 ### 3D
 ## Controls
+### Cntrolling the current piece
+#### Move
+```
+W/UP     : to move UP
+A/LEFT   : to move LEFT
+S/DOWN   : to move DOWN
+D/RIGHT  : to move RIGHT
+```
+#### Rotate
+##### 2D
+```
+...
+```
+### 
+### Moving in menu screens
+Move between (inner) menus:
+```
+W/UP
+S/DOWN
+```
+Change menu option:
+```
+A/LEFT  : go to previous option
+D/RIGHT : go to next option
+```
+
 ## Code Documentation
