@@ -76,8 +76,7 @@ The goal is to get as much points as possible, before the pieces stack too high.
 When the 'next piece' tries to spawn at the top of the board as the new current piece, but any block in the board blocks it, the game ends.
 
 ## Controls
-### Cntrolling the current piece
-#### Move
+### Move piece
 ```
 W          : (3D only) to move to the BACK
 A          : (2D & 3D) to move LEFT
@@ -86,7 +85,7 @@ D          : (2D & 3D) to move RIGHT
 LEFT_SHIFT : (2D & 3D) to soft-drop (move piece down gradually)
 SPACEBAR   : (2D & 3D) to HARD-DROP (teleport piece to its landing position)
 ```
-#### Rotate
+### Rotate Piece
 In 2D:
 ```
 U: rotate counter-clockwise
@@ -102,7 +101,6 @@ J : rotate clockwise around the Z axis
 L : rotate counter-clockwise around the Z axis
 ```
 The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
-### 
 ### Moving in menu screens
 Move between (inner) menus:
 ```
