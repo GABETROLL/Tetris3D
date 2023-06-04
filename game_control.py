@@ -12,11 +12,9 @@ class GameControl:
         self.game = Game2D()
 
         self.frame_count = 0
-        self.das_bar = [15, 6]
         self.das = {}
         # "DAS" = "delayed auto shift".
         # direction_key: charge setting (same as STARTING_DAS above)
-        self.directions = {}
 
     @staticmethod
     def fall_rate(level):
