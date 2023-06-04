@@ -132,7 +132,7 @@ ROWS = 20
 COLUMNS = 10
 
 
-class Piece2D:
+class Piece:
     """piece player can currently control. (piece data, pos)
     Must be one of these:
 
@@ -200,8 +200,8 @@ class Game2D:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
 
-        self.piece = Piece2D(random.choice(self.pieces))
-        self.next_piece = Piece2D(random.choice(self.pieces))
+        self.piece = Piece(random.choice(self.pieces))
+        self.next_piece = Piece(random.choice(self.pieces))
 
         self.score_manager = Score()
 
@@ -210,7 +210,7 @@ class Game2D:
 
     def init_random_piece(self):
         self.piece = self.next_piece
-        self.next_piece = Piece2D(random.choice(self.pieces))
+        self.next_piece = Piece(random.choice(self.pieces))
 
     def move_piece_down(self):
         self.piece.pos[1] += 1
@@ -323,7 +323,7 @@ class Game2D:
             self.clear_lines(self.piece)
             self.init_random_piece()
 
-    def clear_lines(self, previous_piece: Piece2D):
+    def clear_lines(self, previous_piece: Piece):
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_rows = set()
