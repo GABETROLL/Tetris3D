@@ -358,10 +358,14 @@ class Window:
     def draw_3d(self):
         """
         Draws the 'self.game_control.game' board, piece
-        and next piece (TODO), IF THE GAME MODE IS 3D.
+        and next piece (TODO), AFTER drawing a grid backgound
+        for easier gameplay,
+        IF THE GAME MODE IS 3D.
 
         IF 'self.game_control' is 2D, a TypeError
         will be raised.
+
+        The grid is drawn at the left, right, back and bottom of the board.
 
         The method for drawing the pieces is simple:
         the vertical slices are drawn BACK-FRONT
@@ -398,19 +402,27 @@ class Window:
         from the "camera" to front of the board,
         A.K.A, the front side of the cubes in the front side of the board.
         """
+        DISTANCE_TO_BACK_SLICE_BACK = DISTANCE_TO_FRONT_SLICE_FRONT + len(slices) - 1
 
-        # for each slice in the board (BACK->FRONT),
-        # because drawing a rectangle on the screen
-        # just overrides whatever was there,
-        # We achieve blocks at the front "blocking"
-        # the view from the ones behind.
-        for distance_to_slice_front, slice \
-            in zip(
-                range(DISTANCE_TO_FRONT_SLICE_FRONT + len(slices) - 1, DISTANCE_TO_FRONT_SLICE_FRONT - 1, -1),
-                reversed(slices)
-        ):
-            distance_to_slice_back = distance_to_slice_front + 1
-            BACK_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_back
+        SLICES_LATTICE_POINTS_IN_SCREEN = []
+        """
+        All of the positions
+        of all of the lattice points
+        of all of the slices of the board.
+        AKA:
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game] -> slice lattice points
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game, x_in_game] -> slice lattice point (row? column?)
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game, x_in_game, z_in_game] -> slice lattice point
+
+        The points are the (x_in_screen, y_in_screen) pixel positions of the slices' lattice points,
+        projected by perspective.
+        """
+        # SLICES_LATTICE_POINTS_IN_SCREEN[y, x, z] = slice's (aka y) lattice point (aka (x, y)) in screen
+
+        for y_pos_in_game in range(game.game_3d.FLOOR_WIDTH + 1):
+            DISTANCE_TO_SLICE = DISTANCE_TO_FRONT_SLICE_FRONT + y_pos_in_game
+
+            PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / DISTANCE_TO_SLICE
             # every front-facing square's side-length APPEARS 1 / distance
             # of the square from the camera, if the distance is measured
             # by the side-length of the square.
@@ -421,15 +433,124 @@ class Window:
 
             # BUT, since we need the front-most slice to remain our pre-determined
             # size, we need to multiply the factor by 'MAX_SLICE_SIDE'.
+            SLICE_FRONT_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * PERSPECTIVE_FACTOR)
+            BLOCK_FRONT_WIDTH_IN_SCREEN = SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+            # since 'SLICE_FRONT_WIDTH_IN_SCREEN' is the slice's width IN THE SCREEN,
+            # and the slice's width is just the sum of all of the block's widths in the slice,
+            # which is 'game.game_3d.FLOOR_WIDTH',
+            # the slice's front and back display size are these.
+            SLICE_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2, 0
+            # positions of the slice's BACKS, IN SCREEN,
+            # aligned in the slices' and screen's center in the X axis,
+            # aligned at the top for the Y axis for easier perspective in the gameplay.
+
+            SLICES_LATTICE_POINTS_IN_SCREEN.append(
+                list(
+                    list(
+                    (
+                        SLICE_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_x_pos,
+                        SLICE_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_z_pos
+                    )
+                    for block_z_pos in range(game.game_3d.FLOORS + 1)
+                )
+                for block_x_pos in range(game.game_3d.FLOOR_WIDTH + 1)
+                )
+            )
+
+        # We must draw the background mesh
+        # (BEFORE we draw the board/piece blocks),
+        # to help the player see better.
+
+        # draw back side vertical grid lines
+        for x_pos in range(game.game_3d.FLOOR_WIDTH + 1):
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][0],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][game.game_3d.FLOORS]
+            )
+        # draw back side horizontal grid lines
+        for z_pos in range(game.game_3d.FLOORS + 1):
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][0][z_pos],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][game.game_3d.FLOOR_WIDTH][z_pos]
+            )
+        
+        # draw sides' vertical grid lines
+        for y_pos in range(game.game_3d.FLOOR_WIDTH):
+            # left
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][0][0],
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][0][game.game_3d.FLOORS]
+            )
+            # right
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][0],
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][game.game_3d.FLOORS]
+            )
+        # draw sides' horizontal grid lines
+        for z_pos in range(game.game_3d.FLOORS):
+            # left
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[0][0][z_pos],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][0][z_pos]
+            )
+            # right
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[0][game.game_3d.FLOOR_WIDTH][z_pos],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][game.game_3d.FLOOR_WIDTH][z_pos]
+            )
+        
+        # draw floor's horizontal grid lines
+        for x_pos in range(game.game_3d.FLOOR_WIDTH):
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[0][x_pos][game.game_3d.FLOORS],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][game.game_3d.FLOORS]
+            )
+        # draw floor's "vertical" grid lines
+        for y_pos in range(game.game_3d.FLOOR_WIDTH):
+            pygame.draw.line(
+                self.window,
+                BRIGHT_GREY,
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][0][game.game_3d.FLOORS],
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][game.game_3d.FLOORS]
+            )
+
+        # IMPORTANT: IF THE GAME LAGS, YOU COULD JUST USE THE LATTICE POINTS STORED IN
+        # 'SLICES_LATTICE_POINTS' CONSTANT, IN THIS METHOD SCOPE,
+        # TO AVOID HAVING TO CALCULATE ALL OF THE BLOCK POLYGON PIXEL POSITIONS!
+
+        # for each slice in the board (BACK->FRONT),
+        # because drawing a rectangle on the screen
+        # just overrides whatever was there,
+        # We achieve blocks at the front "blocking"
+        # the view from the ones behind.
+        for distance_to_slice_front, slice \
+            in zip(
+                range(DISTANCE_TO_BACK_SLICE_BACK, DISTANCE_TO_FRONT_SLICE_FRONT - 1, -1),
+                reversed(slices)
+        ):
+            distance_to_slice_back = distance_to_slice_front + 1
+            BACK_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_back
+            
             FRONT_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_front
             # (again with this one)
 
             SLICE_BACK_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * BACK_PERSPECTIVE_FACTOR)
             BLOCK_BACK_WIDTH_IN_SCREEN = SLICE_BACK_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
-            # since 'SLICE_BACK_WIDTH' is the slice's width IN THE SCREEN,
-            # and the slice's width is just the sum of all of the block's widths in the slice,
-            # which is 'game.game_3d.FLOOR_WIDTH',
-            # the slice's front and back display size are these.
+           
             SLICE_FRONT_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * FRONT_PERSPECTIVE_FACTOR)
             BLOCK_FRONT_WIDTH_IN_SCREEN = SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
             # (again with this one)
