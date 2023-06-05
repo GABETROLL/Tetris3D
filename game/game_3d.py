@@ -154,6 +154,7 @@ class Piece3D:
         however 'clockwise' specifies,
 
         ASSUMING 'self.blocks' is a cube.
+        (Read this class' docstring)
         """
         rotation_axii = [X_AXIS, Y_AXIS, Z_AXIS]
 
@@ -162,7 +163,12 @@ class Piece3D:
         
         rotation_axii.remove(axis)
 
-        self.blocks = rot90(self.blocks, 1 if clockwise else 3, tuple(rotation_axii))
+        if axis == Z_AXIS:
+            clockwise = not clockwise
+        # numpy matrix rotation is flipped in the Y axis, according to our description
+        # of the piece
+
+        self.blocks = rot90(self.blocks, 1 if clockwise and axis else 3, tuple(rotation_axii))
 
     def block_positions(self):
         """
