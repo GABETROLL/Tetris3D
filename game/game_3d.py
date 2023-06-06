@@ -168,7 +168,7 @@ class Piece3D:
         # numpy matrix rotation is flipped in the Y axis, according to our description
         # of the piece
 
-        self.blocks = rot90(self.blocks, 1 if clockwise and axis else 3, tuple(rotation_axii))
+        self.blocks = rot90(self.blocks, 1 if clockwise else 3, tuple(rotation_axii))
 
     def block_positions(self):
         """
