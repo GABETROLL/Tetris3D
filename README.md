@@ -101,7 +101,7 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | I   | X    | False     |  | :heavy_check_mark: |
 | K   | X    | True      |  | :heavy_check_mark: |
 | J   | Z    | True      |  | :heavy_check_mark: |
-| L   | Z    | False     |  | :heavy_check_mark: |
+| L   | Z    | False     |  | :heavy_check_mark: |\
 The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
 ### Moving in menu screens
 Move between (inner) menus:
