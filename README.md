@@ -52,8 +52,8 @@ The game starts off with:
 - a board
     If the game mode is 2D, the board is 10 x 20.
     If the game mode is 3D, the board is 4 x 4 x 20.
-    ![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/2.png)
-    ![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/1.png)
+    ![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/2.png?raw=true)\
+    ![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/1.png?raw=true)
 
 - a random piece, spawned at the top of the board, that the player can control and drop. It falls every N frames, N being faster the higher the level
 - a next piece preview.
@@ -85,8 +85,8 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | y    | FRONT->BACK |
 | z    | UP->DOWN    |
 -------------------
-![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/2.png)
-![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/1.png)
+![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/2.png?raw=true)\
+![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/1.png?raw=true)
 
 ## Controls
 ### Move piece
