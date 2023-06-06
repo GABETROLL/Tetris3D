@@ -566,11 +566,14 @@ class Window:
             # SINCE THE SLICES ARE ALIGNED AT THE TOP, VERTICALLY,
             # and therefore won't be visible to the player)
 
+            BRIGHTNESS_DISTANCE = DISTANCE_TO_FRONT_SLICE_FRONT >> 2
+            BRIGHTNESS_FACTOR = BRIGHTNESS_DISTANCE ** 2 / (distance_to_slice_front - DISTANCE_TO_FRONT_SLICE_FRONT + BRIGHTNESS_DISTANCE) ** 2
+
             for block_pos_in_game, block_color in slice.items():
 
                 block_color = tuple(
-                    DISTANCE_TO_FRONT_SLICE_FRONT ** 2 * block_color[rgb_channel] / distance_to_slice_front ** 2
-                    for rgb_channel in range(3)
+                    rgb_brightness * BRIGHTNESS_FACTOR
+                    for rgb_brightness in block_color
                 )
                 # block color is meant to simulate how much light should get to the camera,
                 # from the block at a given distance:
@@ -646,9 +649,15 @@ class Window:
             for block_pos_in_game, block_color in slice.items():
 
                 block_color = tuple(
-                    DISTANCE_TO_FRONT_SLICE_FRONT ** 2 * block_color[rgb_channel] / distance_to_slice_front ** 2
-                    for rgb_channel in range(3)
+                    rgb_brightness * BRIGHTNESS_FACTOR
+                    for rgb_brightness in block_color
                 )
+                # block color is meant to simulate how much light should get to the camera,
+                # from the block at a given distance:
+                # just as how a square with side-lengths S that's N units away from a camera
+                # appears to have sides of length S / N, the amount of light recieved from a
+                # square that's N units away from a camera should reflect 1 / N of the light
+                # that's recieved from a square one unit away.
 
                 TOP_LEFT_FRONT_BLOCK_CORNER_POS = (
                     SLICE_FRONT_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
