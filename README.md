@@ -69,7 +69,14 @@ Every N frames, the piece moves one block down, to fall. If the current level is
 
 When a piece lands on top of another block, or the bottom of the board, the piece displayed in the next piece preview spawns as the current piece, and a new 'next piece' gets spawned. This process could go on forever.
 
-When a whole row/floor gets full, that row/floor gets removed from the board, and gets counted to the score. The more rows/floors cleared at the same time, the more points. (The max amount of floors you're able to clear at once is 4)
+When a whole row/floor gets full, that row/floor gets removed from the board, and gets counted to the score. The amount of lines cleared determines the score gained, like this:
+| lines | points |
+| ----- | ------ |
+| 0     | 0      |
+| 1     | 40     |
+| 2     | 100    |
+| 3     | 300    |
+| 4     | 1200   |
 
 If a player clears a certain amount of lines, the game "transitions": the level increases, then the levels keep increasing every 10 lines.
 
