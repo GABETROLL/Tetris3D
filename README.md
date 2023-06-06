@@ -75,31 +75,33 @@ The goal is to get as much points as possible, before the pieces stack too high.
 
 When the 'next piece' tries to spawn at the top of the board as the new current piece, but any block in the board blocks it, the game ends.
 
+## Axii and their Directions
+| axis | direction |
+| ---- | --------- |
+| x    | LEFT->RIGHT |
+| y    | FRONT->BACK |
+| z    | UP->DOWN    |
+-------------------
+
 ## Controls
 ### Move piece
-```
-W          : (3D only) to move to the BACK
-A          : (2D & 3D) to move LEFT
-S          : to move DOWN (2D) or FRONT (3D)
-D          : (2D & 3D) to move RIGHT
-LEFT_SHIFT : (2D & 3D) to soft-drop (move piece down gradually)
-SPACEBAR   : (2D & 3D) to HARD-DROP (teleport piece to its landing position)
-```
+| Key | Direction In 2D | Direction in 3D |
+| --- | --------------- | --------------- |
+| W   |                 | BACK            |
+| A          | LEFT | LEFT |
+| S          | DOWN/SOFT-DROP | FRONT |
+| D          | RIGHT | RIGHT |
+| LEFT_SHIFT | DOWN/SOFT-DROP | DOWN/SOFT-DROP |
+| SPACEBAR   | HARD-DROP | HARD-DROP |
 ### Rotate Piece
-In 2D:
-```
-U: rotate counter-clockwise
-O: rotate clockwise
-```
-In 3D:
-```
-U : rotate counter-clockwise around the Y axis
-O : rotate clockwise around the Y axis
-I : rotate counter-clockwise around the X axis
-K : rotate clockwise around the X axis
-J : rotate clockwise around the Z axis
-L : rotate counter-clockwise around the Z axis
-```
+| key | axis | clockwise | 2D | 3D |
+| --- | ---- | --------- | -- | -- |
+| U   | Y    | False     | :heavy_check_mark: |  |
+| O   | Y    | True      | :heavy_check_mark: |  |
+| I   | X    | False     | :heavy_check_mark: | :heavy_check_mark: |
+| K   | X    | True      | :heavy_check_mark: | :heavy_check_mark: |
+| J   | Z    | True      | :heavy_check_mark: | :heavy_check_mark: |
+| L   | Z    | False     | :heavy_check_mark: | :heavy_check_mark: |
 The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
 ### Moving in menu screens
 Move between (inner) menus:
