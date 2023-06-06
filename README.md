@@ -52,9 +52,8 @@ The game starts off with:
 - a board
     If the game mode is 2D, the board is 10 x 20.
     If the game mode is 3D, the board is 4 x 4 x 20.
-    ![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_dimensions.png?raw=true)\
-    ![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_dimensions.png?raw=true)
-
+    <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_dimensions.png?raw=true" alt="10x20 Tetris board and lines showing its dimensions" width=40%/>
+    <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_dimensions.png?raw=true" alt="4x4x20 Tetris board with grid lines in the sides behind it and lines showing its dimensions" width=40%/>
 - a random piece, spawned at the top of the board, that the player can control and drop. It falls every N frames, N being faster the higher the level
 - a next piece preview.
     It can rotate in 2 directions when the game mode is 2D, and 6 directions when it's 3D.
@@ -88,8 +87,10 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | D          | RIGHT | RIGHT |
 | LEFT_SHIFT | DOWN/SOFT-DROP | DOWN/SOFT-DROP |
 | SPACEBAR   | HARD-DROP | HARD-DROP |
-![key-direction pair illustration with 2D board screenshot and arrows](https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_moves.png?raw=true)
-![key-direction pair illustration with 3D board screenshot and arrows](https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_moves.png?raw=true)
+
+<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_moves.png?raw=true" alt="key-direction pair illustration with 2D board screenshot and arrows" width=40%/>
+<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_moves.png?raw=true" alt="key-direction pair illustration with 3D board screenshot and arrows" width=40%/>
+
 ### Rotate Piece
 | key | axis | clockwise | 2D | 3D |
 | --- | ---- | --------- | -- | -- |
