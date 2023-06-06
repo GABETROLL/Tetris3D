@@ -52,6 +52,9 @@ The game starts off with:
 - a board
     If the game mode is 2D, the board is 10 x 20.
     If the game mode is 3D, the board is 4 x 4 x 20.
+    ![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/2.png)
+    ![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/1.png)
+
 - a random piece, spawned at the top of the board, that the player can control and drop. It falls every N frames, N being faster the higher the level
 - a next piece preview.
     It can rotate in 2 directions when the game mode is 2D, and 6 directions when it's 3D.
@@ -82,6 +85,8 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | y    | FRONT->BACK |
 | z    | UP->DOWN    |
 -------------------
+![10x20 Tetris board and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/2.png)
+![4x4x20 Tetris board with grid lines in the sides behind it and lines showin its dimensions](https://github.com/GABETROLL/Tetris3D.git/images/1.png)
 
 ## Controls
 ### Move piece
@@ -101,7 +106,8 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | I   | X    | False     |  | :heavy_check_mark: |
 | K   | X    | True      |  | :heavy_check_mark: |
 | J   | Z    | True      |  | :heavy_check_mark: |
-| L   | Z    | False     |  | :heavy_check_mark: |\
+| L   | Z    | False     |  | :heavy_check_mark: |
+--------------------------------------------------
 The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
 ### Moving in menu screens
 Move between (inner) menus:
