@@ -108,6 +108,7 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 | J   | Z    | True      |  | :heavy_check_mark: |
 | L   | Z    | False     |  | :heavy_check_mark: |
 --------------------------------------------------
+<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_rotation.png?raw=true" alt="O-piece in 2D mode with arrows in both 2D rotation directions">
 <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_rotation.png?raw=true" alt="T-piece in 3D mode with arrows in all rotation axii, mapped to their keys">
 
 The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
