@@ -381,7 +381,7 @@ class Window:
     def draw_3d(self):
         """
         Draws the 'self.game_control.game' board, piece
-        and next piece (TODO), AFTER drawing a grid backgound
+        and next piece, AFTER drawing a grid backgound
         for easier gameplay,
         IF THE GAME MODE IS 3D.
 
@@ -405,18 +405,44 @@ class Window:
         The slice's tops should all be aligned, as if the camera were
         looking from the very top, in order to help the player
         know where the pieces land.
+
+        The next piece is drawn as if it were in the board, beside the board,
+        at a certain amount of blocks away from it.
+        (For now I've chosen 1 block of distance)
         """
 
         if self.mode_menu.option != "3D":
             raise TypeError("Game mode is 2D, but 'draw_3d' was called!")
 
         slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
+        """
+        Each FRONT-FACING SLICE of the board, AS IF IT INCLUDED THE PIECE'S BLOCKS,
+        as dictionaries of 3D positions and colors.
+
+        It also contains the game's next piece's blocks, as if the piece were
+        floating beside the board, in order to draw the next piece in 3D,
+        without needing to repeat much code.
+        """
+        # add board blocks to 'slices'
         for block_pos_in_game, block_color in self.controls.game.board.items():
             slices[block_pos_in_game[1]][block_pos_in_game] = block_color
+        # add piece blocks 'slices'
         for block_pos_in_game in self.controls.game.piece.block_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
-        # Each FRONT-FACING SLICE of the board, AS IF IT INCLUDED THE PIECE'S BLOCKS,
-        # as dictionaries of 3D positions and colors
+        # add next_piece blocks to 'slices'
+        NEXT_PIECE_DISPLAY_POSITION = (
+            5,
+            (game.game_3d.FLOOR_WIDTH >> 1) - (self.controls.game.next_piece.blocks.shape[1] >> 1),
+            (game.game_3d.FLOORS >> 1) - (self.controls.game.next_piece.blocks.shape[2] >> 1)
+        )
+        OLD_NEXT_PIECE_POS = self.controls.game.next_piece.pos
+        # temporarily change the next piece's pos to store its block positions
+        self.controls.game.next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
+        # store the next piece's block positions
+        for block_pos_in_game in self.controls.game.next_piece.block_positions():
+            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.next_piece.color
+        # change it back
+        self.controls.game.next_piece.pos = OLD_NEXT_PIECE_POS
 
         FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
         DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
