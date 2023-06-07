@@ -65,7 +65,40 @@ The player can control this piece by:
 - teleport it to its landing position (HARD-DROP)
 - rotating it in the available axii
 
-Every N frames, the piece moves one block down, to fall. If the current level is higher, the piece falls faster.
+Every N frames, the piece moves one block down, to fall. If the current level is higher, the piece falls faster.\
+The amount of frames a piece waits before it drops looks like this:
+| level | frames |
+| ----- | ------ |
+| 0 | 48 |
+| 1 | 43 |
+| 2 | 38 |
+| 3 | 33 |
+| 4 | 28 |
+| 5 | 23 |
+| 6 | 18 |
+| 7 | 13 |
+| 8 | 8 |
+| 9 | 6 |
+| 10 | 5 |
+| 11 | 5 |
+| 12 | 5 |
+| 13 | 4 |
+| 14 | 4 |
+| 15 | 4 |
+| 16 | 3 |
+| 17 | 3 |
+| 18 | 3 |
+| 19 | 2 |
+| 20 | 2 |
+| 21 | 2 |
+| 22 | 2 |
+| 23 | 2 |
+| 24 | 2 |
+| 25 | 2 |
+| 26 | 2 |
+| 27 | 2 |
+| 28 | 2 |
+| 29 | 1 |
 
 When a piece lands on top of another block, or the bottom of the board, the piece displayed in the next piece preview spawns as the current piece, and a new 'next piece' gets spawned. This process could go on forever.
 
