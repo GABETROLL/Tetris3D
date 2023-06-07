@@ -55,6 +55,9 @@ class Menu:
 
 
 class Window:
+    BORDER_WIDTH = 20
+    """in pixels"""
+
     def __init__(self, board_height: int, font: pygame.font.Font):
         # We have to make sure the board )and the next piece) can fit in the window.
         # So, we define the window size later
@@ -292,9 +295,9 @@ class Window:
         # DRAW BOARD:
 
         # board outline
-        outline = pygame.Surface((BOARD_WIDTH + 40, self.BOARD_HEIGHT + 40))
+        outline = pygame.Surface((BOARD_WIDTH + (Window.BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.BORDER_WIDTH << 1)))
         outline.fill(BRIGHT_GREY)
-        self.window.blit(outline, (BOARD_POS[0] - 20, BOARD_POS[1] - 20))
+        self.window.blit(outline, (BOARD_POS[0] - Window.BORDER_WIDTH, BOARD_POS[1] - Window.BORDER_WIDTH))
 
         # board background
         board = pygame.Surface((BOARD_WIDTH, self.BOARD_HEIGHT))
@@ -334,7 +337,12 @@ class Window:
         NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * BLOCK_WIDTH
         NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * BLOCK_WIDTH
 
-        outline = pygame.Surface((NEXT_PIECE_BOX_WIDTH + 40, NEXT_PIECE_BOX_HEIGHT + 40))
+        outline = pygame.Surface(
+            (
+                NEXT_PIECE_BOX_WIDTH + (Window.BORDER_WIDTH << 1),
+                NEXT_PIECE_BOX_HEIGHT + (Window.BORDER_WIDTH << 1)
+            )
+        )
         outline.fill(BRIGHT_GREY)
 
         # The plan here is to make a "next piece box" surface,
@@ -349,11 +357,26 @@ class Window:
         for square_position in self.controls.game.next_piece.relative_square_positions():
             SQUARE_POSITION_IN_BOX = square_position[0] * BLOCK_WIDTH, square_position[1] * BLOCK_WIDTH
             next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
+        
+        BOARD_RIGHT = BOARD_POS[0] + BOARD_WIDTH
 
         # Next box rendering complete, now it's time to blit the next box.
-        self.window.blit(next_piece_box, (BOARD_POS[0] + BOARD_WIDTH, BOARD_POS[1] + self.BOARD_HEIGHT // 2))
-        # The box is blit half-way down the right side of the board,
-        # with 0 pixels of gap between the two.
+        # First the outline.
+        # Its outline will be overlayed on the board's outline.
+        self.window.blit(
+            outline,
+            (
+                BOARD_RIGHT,
+                BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (outline.get_height() >> 1)
+            )
+        )
+        self.window.blit(
+            next_piece_box,
+            (
+                BOARD_RIGHT + Window.BORDER_WIDTH,
+                BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (next_piece_box.get_height() >> 1)
+            )
+        )
     
     def draw_3d(self):
         """
