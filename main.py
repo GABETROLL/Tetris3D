@@ -22,11 +22,12 @@ God bless you, enjoy!
 """
 import pygame
 import game
-from game_control import GameControl2D, GameControl3D
+from game_control import GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 from itertools import chain
 from numpy import linspace
 
+WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 YELLOW = (128, 128, 0)
@@ -437,12 +438,11 @@ class Window:
         )
         OLD_NEXT_PIECE_POS = self.controls.game.next_piece.pos
         # temporarily change the next piece's pos to store its block positions
+        # (I CHANGE IT BACK AT THE BOTTOM OF THIS FUNCTION)
         self.controls.game.next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
         # store the next piece's block positions
         for block_pos_in_game in self.controls.game.next_piece.block_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.next_piece.color
-        # change it back
-        self.controls.game.next_piece.pos = OLD_NEXT_PIECE_POS
 
         FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
         DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
@@ -460,8 +460,8 @@ class Window:
         of all of the slices of the board.
         AKA:
         SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game] -> slice lattice points
-        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game, x_in_game] -> slice lattice point (row? column?)
-        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game, x_in_game, z_in_game] -> slice lattice point
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game] -> slice lattice point (row? column?)
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game][z_in_game] -> slice lattice point
 
         The points are the (x_in_screen, y_in_screen) pixel positions of the slices' lattice points,
         projected by perspective.
@@ -735,9 +735,33 @@ class Window:
                     )
                 )
 
+        # Draw "next" text
+        NEXT_PIECE_TEXT = self.font.render("Next", False, WHITE)
+        # The text's bottom should be higher than the next piece's highest block,
+        # if that block were in the front-most slice of the board
+
+        NEXT_PIECE_TEXT_POS = (
+            SLICES_LATTICE_POINTS_IN_SCREEN[0][game.game_3d.FLOOR_WIDTH][0][0],
+            # text's left pos is just the right of the board
+            # IF BOARD IS TOO WIDE, THE TEXT MAY NOT FIT IN THE WINDOW!
+            SLICES_LATTICE_POINTS_IN_SCREEN[0][0][
+                max(
+                    block_pos[Z_AXIS]
+                    for block_pos in self.controls.game.next_piece.block_positions()
+                )
+            ][1]
+        )
+        # HERE we change the next piece's pos back to normal.
+        self.controls.game.next_piece.pos = OLD_NEXT_PIECE_POS
+
+        # print(SLICES_LATTICE_POINTS_IN_SCREEN)
+        print(NEXT_PIECE_TEXT_POS)
+
+        self.window.blit(NEXT_PIECE_TEXT, NEXT_PIECE_TEXT_POS)
+
     def draw_score(self):
         """Draws score and level text at the top of the board."""
-        white = (255, 255, 255)
+        white = WHITE
         text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
                                 f"Level: {self.controls.game.score_manager.level}, "
                                 f"Lines: {self.controls.game.score_manager.lines}",
