@@ -118,32 +118,36 @@ class Window:
         self.controls.game.score_manager.level = self.level_menu.option
 
     @staticmethod
-    def text_fit_to_screen(
+    def text_font_size_fit_to_screen(
         text_str: str,
-        color: tuple[int, int, int],
         width: int,
         height: int,
         font_name: str
-    ):
+    ) -> pygame.font.Font:
+        """
+        Returns (an estimate of) the biggest font
+        that fits the rendered text 'text_str'
+        in a surface
+        with 'width' width and 'height' height
+        """
+        # guess font with its size being the window's height
+        font_size: int = height
         font = pygame.font.SysFont(font_name, height)
 
-        # assume text can fit with font-size being the window's height
-        controls_font_size: int = height
-        controls_font = pygame.font.SysFont("Consolas", controls_font_size)
-
         # test to see if text would fit window
-        controls_text_width, controls_text_height = controls_font.size(text_str)
+        text_width, text_height = font.size(text_str)
 
         # shrink font size to fit text to screen, in both x and y
-        if controls_text_width > width:
-            controls_font_size = int(controls_font_size * (width / controls_text_width))
-        if controls_text_height > height:
-            controls_font_size = int(controls_font_size * (height / controls_text_height))
+        # (I only claim that this approximates the screen's size)
+        if text_width > width:
+            font_size = int(font_size * (width / text_width))
+        if text_height > height:
+            font_size = int(font_size * (height / text_height))
 
-        # re-define font and render text
-        controls_font = pygame.font.SysFont("Consolas", controls_font_size)
+        # re-define font with its size actually fitting screen
+        font = pygame.font.SysFont(font_name, font_size)
 
-        return controls_font.render(text_str, False, color)
+        return font
 
     def handle_title_screen_frame(self):
         """
@@ -205,16 +209,22 @@ class Window:
         )
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
-        CONTROLS_TEXT = self.text_fit_to_screen(
-            "W/S: scroll through menu A/D: change option ENTER: play",
-            WHITE,
+        CONTROLS_STR = "W/S: scroll through menu A/D: change option ENTER: play"
+        CONTROLS_FONT = self.text_font_size_fit_to_screen(
+            CONTROLS_STR,
             self.WIDTH,
             self.HEIGHT,
             "Consolas"
         )
+        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
+        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
         self.window.blit(
             CONTROLS_TEXT,
             (0, self.HEIGHT - CONTROLS_TEXT.get_height())
+        )
+        self.window.blit(
+            CONTROLS_TITLE,
+            (0, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
         )
 
     def handle_game_frame(self):
@@ -309,16 +319,22 @@ class Window:
                     else:  # elif menu.option == "Back to title screen"
                         self.frame_handler = self.handle_title_screen_frame
 
-        CONTROLS_TEXT = self.text_fit_to_screen(
-            "W/S: scroll through menu ENTER: choose option",
-            WHITE,
+        CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
+        CONTROLS_FONT = self.text_font_size_fit_to_screen(
+            CONTROLS_STR,
             self.WIDTH,
             self.HEIGHT,
             "Consolas"
         )
+        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
+        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
         self.window.blit(
             CONTROLS_TEXT,
             (0, self.HEIGHT - CONTROLS_TEXT.get_height())
+        )
+        self.window.blit(
+            CONTROLS_TITLE,
+            (0, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
         )
 
     def draw_2d(self):
