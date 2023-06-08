@@ -24,8 +24,6 @@ import pygame
 import game
 from game_control import GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
-from itertools import chain
-from numpy import linspace
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
