@@ -22,7 +22,7 @@ God bless you, enjoy!
 """
 import pygame
 import game
-from game_control import GameControl2D, GameControl3D, Z_AXIS
+from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 
 WHITE = (255, 255, 255)
@@ -79,7 +79,7 @@ class Window:
         self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
         # game options information
 
-        self.controls = GameControl2D(self.window)
+        self.controls: GameControl = GameControl2D()
 
         self.frame_handler = self.handle_title_screen_frame
         """
@@ -109,9 +109,9 @@ class Window:
         game level to start in.
         """
         if self.mode_menu.option == "2D":
-            self.controls = GameControl2D(self.window)
+            self.controls = GameControl2D()
         elif self.mode_menu.option == "3D":
-            self.controls = GameControl3D(self.window)
+            self.controls = GameControl3D()
         else:
             raise ValueError("Dimension chosen shouldn't be possible!")
 

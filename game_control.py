@@ -6,9 +6,7 @@ from game.move_data import *
 
 class GameControl:
     STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
-    def __init__(self, window: pygame.Surface):
-        self.window = window
-
+    def __init__(self):
         self.game = Game2D()
 
         self.frame_count = 0
@@ -57,8 +55,8 @@ class GameControl:
 
 
 class GameControl2D(GameControl):
-    def __init__(self, window):
-        GameControl.__init__(self, window)
+    def __init__(self):
+        GameControl.__init__(self)
 
         self.game = Game2D()
         self.das = {
@@ -125,8 +123,8 @@ class GameControl2D(GameControl):
 
 
 class GameControl3D(GameControl):
-    def __init__(self, window):
-        self.window = window
+    def __init__(self):
+        GameControl.__init__(self)
 
         self.game = Game3D()
 
