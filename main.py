@@ -117,6 +117,34 @@ class Window:
 
         self.controls.game.score_manager.level = self.level_menu.option
 
+    @staticmethod
+    def text_fit_to_screen(
+        text_str: str,
+        color: tuple[int, int, int],
+        width: int,
+        height: int,
+        font_name: str
+    ):
+        font = pygame.font.SysFont(font_name, height)
+
+        # assume text can fit with font-size being the window's height
+        controls_font_size: int = height
+        controls_font = pygame.font.SysFont("Consolas", controls_font_size)
+
+        # test to see if text would fit window
+        controls_text_width, controls_text_height = controls_font.size(text_str)
+
+        # shrink font size to fit text to screen, in both x and y
+        if controls_text_width > width:
+            controls_font_size = int(controls_font_size * (width / controls_text_width))
+        if controls_text_height > height:
+            controls_font_size = int(controls_font_size * (height / controls_text_height))
+
+        # re-define font and render text
+        controls_font = pygame.font.SysFont("Consolas", controls_font_size)
+
+        return controls_font.render(text_str, False, color)
+
     def handle_title_screen_frame(self):
         """
         Displays and gets level, mode and music selection from the player,
@@ -177,10 +205,12 @@ class Window:
         )
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
-        CONTROLS_TEXT = MENU_FONT.render(
+        CONTROLS_TEXT = self.text_fit_to_screen(
             "W/S: scroll through menu A/D: change option ENTER: play",
-            False,
-            BRIGHT_GREY
+            WHITE,
+            self.WIDTH,
+            self.HEIGHT,
+            "Consolas"
         )
         self.window.blit(
             CONTROLS_TEXT,
@@ -278,17 +308,13 @@ class Window:
                         # quit
                     else:  # elif menu.option == "Back to title screen"
                         self.frame_handler = self.handle_title_screen_frame
-        
-        CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
-        CONTROLS_FONT = pygame.font.SysFont(
-            "consolas",
-            self.WIDTH // len(CONTROLS_STR)  # Assuming every letter in the str is approximately a square
-            # and that font size is the height of the rectangle, roughly.
-        )
-        CONTROLS_TEXT = CONTROLS_FONT.render(
-            CONTROLS_STR,
-            False,
-            BRIGHT_GREY
+
+        CONTROLS_TEXT = self.text_fit_to_screen(
+            "W/S: scroll through menu ENTER: choose option",
+            WHITE,
+            self.WIDTH,
+            self.HEIGHT,
+            "Consolas"
         )
         self.window.blit(
             CONTROLS_TEXT,
@@ -411,6 +437,28 @@ class Window:
                 NEXT_PIECE_OUTLINE_POS[1] + NEXT_PIECE_OUTLINE.get_height()
             )
         )
+
+        CONTROLS_TEXTS = (
+                self.font.render(
+                controls_str,
+                False,
+                WHITE
+            ) for controls_str in (
+                "A/D: move piece LEFT/RIGHT",
+                "S/LEFT SHIFT: SOFT-DROP",
+                "SPACEBAR: HARD-DROP",
+                "U: rotate counter-clockwise",
+                "O: rotate clockwise"
+            )
+        )
+        blit_pos = [0, 0]
+
+        for controls_text in CONTROLS_TEXTS:
+            self.window.blit(
+                controls_text,
+                blit_pos
+            )
+            blit_pos[1] += controls_text.get_height()
 
     def draw_3d(self):
         """
