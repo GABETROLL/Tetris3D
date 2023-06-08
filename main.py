@@ -177,6 +177,16 @@ class Window:
         )
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
+        CONTROLS_TEXT = MENU_FONT.render(
+            "W/S: scroll through menu A/D: change option ENTER: play",
+            False,
+            BRIGHT_GREY
+        )
+        self.window.blit(
+            CONTROLS_TEXT,
+            (0, self.HEIGHT - CONTROLS_TEXT.get_height())
+        )
+
     def handle_game_frame(self):
         """
         Controls Tetris game.
@@ -268,7 +278,23 @@ class Window:
                         # quit
                     else:  # elif menu.option == "Back to title screen"
                         self.frame_handler = self.handle_title_screen_frame
-    
+        
+        CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
+        CONTROLS_FONT = pygame.font.SysFont(
+            "consolas",
+            self.WIDTH // len(CONTROLS_STR)  # Assuming every letter in the str is approximately a square
+            # and that font size is the height of the rectangle, roughly.
+        )
+        CONTROLS_TEXT = CONTROLS_FONT.render(
+            CONTROLS_STR,
+            False,
+            BRIGHT_GREY
+        )
+        self.window.blit(
+            CONTROLS_TEXT,
+            (0, self.HEIGHT - CONTROLS_TEXT.get_height())
+        )
+
     def draw_2d(self):
         """
         Draws the 'self.game_control.game' board, piece
