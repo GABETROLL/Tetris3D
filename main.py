@@ -836,7 +836,7 @@ class Window:
         self.controls.game.next_piece.pos = OLD_NEXT_PIECE_POS
 
         # print(SLICES_LATTICE_POINTS_IN_SCREEN)
-        print(NEXT_PIECE_TEXT_POS)
+        # print(NEXT_PIECE_TEXT_POS)
 
         self.window.blit(NEXT_PIECE_TEXT, NEXT_PIECE_TEXT_POS)
 
