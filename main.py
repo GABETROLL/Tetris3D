@@ -73,7 +73,7 @@ class Window:
 
         self.font = font
 
-        self.level_menu = Menu(range(20))
+        self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
         self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))

@@ -18,21 +18,7 @@ class GameControl:
 
     @staticmethod
     def fall_rate(level):
-        if level <= 8:
-            return - 5 * level + 48
-        elif level == 9:
-            return 6
-        elif 10 <= level <= 12:
-            return 5
-        elif 13 <= level <= 15:
-            return 4
-        elif 16 <= level <= 18:
-            return 3
-        elif 19 <= level <= 28:
-            return 2
-        else:
-            return 1
-    # Pieces fall faster in higher levels; NES Tetris rules.
+        return int(49 / 1.1 ** level) + 1
 
     def input_handler(self, key_down_keys: set[int]):
         """
