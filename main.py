@@ -152,14 +152,14 @@ class Window:
         'self.handle_game_frame' if the player pressed ENTER.
         """
         TITLE_FONT = pygame.font.SysFont("consolas", 50)
-        TITLE = TITLE_FONT.render("Tetris 3D!", False, BRIGHT_GREY)
+        TITLE = TITLE_FONT.render("Tetris 3D!", False, WHITE)
 
         MENU_FONT = pygame.font.SysFont("consolas", 20)
         CHOSEN_OPTION_FONT = pygame.font.SysFont("consolas", 30)
 
-        STARTING_LEVEL_TEXT = MENU_FONT.render("Starting level:", False, BRIGHT_GREY)
-        GAME_MODE_TEXT = MENU_FONT.render("Game mode:", False, BRIGHT_GREY)
-        BACKGROUND_MUSIC_TEXT = MENU_FONT.render("Background music:", False, BRIGHT_GREY)
+        STARTING_LEVEL_TEXT = MENU_FONT.render("Starting level:", False, WHITE)
+        GAME_MODE_TEXT = MENU_FONT.render("Game mode:", False, WHITE)
+        BACKGROUND_MUSIC_TEXT = MENU_FONT.render("Background music:", False, WHITE)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -185,7 +185,7 @@ class Window:
         CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(
             str(self.level_menu.option),
             False,
-            YELLOW if self.game_options_menu.option is self.level_menu else BRIGHT_GREY
+            YELLOW if self.game_options_menu.option is self.level_menu else WHITE
         )
         self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
 
@@ -193,7 +193,7 @@ class Window:
         CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(
             str(self.mode_menu.option),
             False,
-            YELLOW if self.game_options_menu.option is self.mode_menu else BRIGHT_GREY
+            YELLOW if self.game_options_menu.option is self.mode_menu else WHITE
         )
         self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
 
@@ -201,7 +201,7 @@ class Window:
         CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(
             str(self.music_menu.option),
             False,
-            YELLOW if self.game_options_menu.option is self.music_menu else BRIGHT_GREY
+            YELLOW if self.game_options_menu.option is self.music_menu else WHITE
         )
         self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
 
@@ -265,7 +265,7 @@ class Window:
         # 1/9 of the window's width, OR LESS, AND
         # the "GAME OVER" and buttons texts have to fit in 'self.HEIGHT'.
 
-        GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, BRIGHT_GREY)
+        GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, WHITE)
 
         TEXT_POS = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
@@ -285,7 +285,7 @@ class Window:
             OPTION_TEXT = OPTION_FONT.render(
                 option,
                 False,
-                YELLOW if option == self.game_over_menu.option else BRIGHT_GREY
+                YELLOW if option == self.game_over_menu.option else WHITE
             )
             self.window.blit(OPTION_TEXT, TEXT_POS)
             TEXT_POS[1] += OPTION_TEXT.get_height()
