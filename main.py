@@ -24,6 +24,7 @@ import pygame
 import game
 from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
+from random import choice as random_choice
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -71,6 +72,22 @@ class Window:
 
         self.font = font
 
+        self.border_blocks = {}
+        """
+        (The only reason this is here, is so that
+        we can produce the same squares every frame,
+        and not have them randomly chosen every frame,
+        which can hurt to look at, and could cause seizures)
+
+        Almost like 'self.controls.game.board',
+        but for the title/gamover screen's border
+        decoration, which should be made of blocks
+        of Tetromino colors
+
+        (TODO: MAKE THEM TETROMINOS)
+        """
+        self._init_border()
+
         self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
@@ -114,6 +131,42 @@ class Window:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
         self.controls.game.score_manager.level = self.level_menu.option
+    
+    def _init_border(self):
+        """
+        Fills 'self.border_blocks' with random-colored blocks, to fulfill
+        the promis in its docstring.
+        
+        Put this code here, since it would be too long to put in the __init__.
+        Shouldn't be used for anything more than just the __init__.
+        """
+        BLOCK_WIDTH = self.HEIGHT // self.BOARD_HEIGHT
+
+        PIECE_COLORS = tuple(
+            piece_data[-1]
+            for piece_data in (
+                game.game_2d.I,
+                game.game_2d.J,
+                game.game_2d.L,
+                game.game_2d.O,
+                game.game_2d.S,
+                game.game_2d.T,
+                game.game_2d.Z
+            )
+        )
+
+        for ri in range(game.game_2d.ROWS):
+            for ci in range(3):
+                self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
+        for ri in range(3):
+            for ci in range(game.game_2d.ROWS):
+                self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
+        for ri in range(game.game_2d.ROWS):
+            for ci in range(game.game_2d.ROWS - 3, game.game_2d.ROWS):
+                self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
+        for ri in range(game.game_2d.ROWS - 3, game.game_2d.ROWS):
+            for ci in range(game.game_2d.ROWS):
+                self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
 
     @staticmethod
     def text_font_size_fit_to_screen(
@@ -182,13 +235,20 @@ class Window:
         assert self.window.get_height() == self.HEIGHT
 
         BLOCK_WIDTH = self.BOARD_HEIGHT // game.game_2d.ROWS
-        BORDER_BOARD_POS = (0, 0)
 
-        t_piece = game.game_2d.Piece2D(game.game_2d.T)
-        t_piece.pos = [0, 0]
-        t_piece.rotation = 2
+        for (ci, ri), color in self.border_blocks.items():
+            pygame.draw.rect(
+                self.window,
+                color,
+                pygame.Rect(
+                    ci * BLOCK_WIDTH,
+                    ri * BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                    BLOCK_WIDTH
+                )
+            )
 
-        self._draw_piece2D(t_piece, BLOCK_WIDTH, BORDER_BOARD_POS)
+        # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
 
     def handle_title_screen_frame(self):
         """
@@ -298,7 +358,8 @@ class Window:
 
     def handle_game_over_screen_frame(self):
         """
-        Just draws "GAME OVER" on the screen,
+        Draws asthetic border in 'self.border_blocks',
+        "GAME OVER" on the screen,
         along with two options:
         one to go back to the title screen,
         and one to exit the script.
@@ -310,6 +371,8 @@ class Window:
         w/UP or s/DOWN
         To select: ENTER
         """
+        self._draw_design_border()
+
         FONT_NAME = "consolas"
 
         GAME_OVER_STR = "GAME OVER"
