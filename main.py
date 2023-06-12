@@ -351,7 +351,7 @@ class Window:
             SUB_TITLE_STRINGS,
             self.game_options_menu.options,
         ):
-            print(sub_title, menu)
+            # print(sub_title, menu)
             CHOSEN_OPTION_STR = str(menu.option)
 
             # draw sub-title
