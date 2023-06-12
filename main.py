@@ -25,6 +25,7 @@ import game
 from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 from random import choice as random_choice
+from itertools import count
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -72,6 +73,13 @@ class Window:
 
         self.font = font
 
+        self.COLORED_BORDER_BLOCK_WIDTH = 3
+        """
+        It's here to make sure that the titles and options
+        in the title/game-over screens don't overlap
+        with the border, and to center them COMPLETELY INSIDE
+        the border.
+        """
         self.border_blocks = {}
         """
         (The only reason this is here, is so that
@@ -131,7 +139,23 @@ class Window:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
         self.controls.game.score_manager.level = self.level_menu.option
+
+    @property
+    def block_width_2D(self):
+        """
+        The width of a 2D block in the game's board,
+        'self.BOARD_HEIGHT // game.game_2d.ROWS'
+        """
+        return self.BOARD_HEIGHT // game.game_2d.ROWS
     
+    @property
+    def colored_border_pixel_width(self):
+        """
+        The amount of PIXELS of width OR HEIGHT that the colorful
+        borders have.
+        """
+        return self.block_width_2D * self.COLORED_BORDER_BLOCK_WIDTH
+
     def _init_border(self):
         """
         Fills 'self.border_blocks' with random-colored blocks, to fulfill
@@ -140,8 +164,6 @@ class Window:
         Put this code here, since it would be too long to put in the __init__.
         Shouldn't be used for anything more than just the __init__.
         """
-        BLOCK_WIDTH = self.HEIGHT // self.BOARD_HEIGHT
-
         PIECE_COLORS = tuple(
             piece_data[-1]
             for piece_data in (
@@ -155,16 +177,17 @@ class Window:
             )
         )
 
+        # draw each side of the border, first the top
         for ri in range(game.game_2d.ROWS):
-            for ci in range(3):
+            for ci in range(self.COLORED_BORDER_BLOCK_WIDTH):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
-        for ri in range(3):
+        for ri in range(self.COLORED_BORDER_BLOCK_WIDTH):
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
         for ri in range(game.game_2d.ROWS):
-            for ci in range(game.game_2d.ROWS - 3, game.game_2d.ROWS):
+            for ci in range(game.game_2d.ROWS - self.COLORED_BORDER_BLOCK_WIDTH, game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
-        for ri in range(game.game_2d.ROWS - 3, game.game_2d.ROWS):
+        for ri in range(game.game_2d.ROWS - self.COLORED_BORDER_BLOCK_WIDTH, game.game_2d.ROWS):
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
 
@@ -252,23 +275,120 @@ class Window:
 
     def handle_title_screen_frame(self):
         """
-        Displays and gets level, mode and music selection from the player,
-        stores in 'self', and switches 'self.frame_handler' to
+        Dislays:
+        - border in 'self.border_blocks' (in __init__).
+        - title centered at the top of the "hole" of the border.
+        - level, mode and music selection from the player
+        All of these, COMPLETELY INSIDE the border.
+        ---
+        Keeps track of those selections in 'self.game_options_menu',
+        and switches 'self.frame_handler' to
         'self.handle_game_frame' if the player pressed ENTER.
+
         """
         assert self.WIDTH == self.HEIGHT
+        # Make sure the screen is a square, so that all of the tiles fit.
+
+        # DRAWING FIRST, THEN HANDLING MENU INPUTS
 
         self._draw_design_border()
-        
-        TITLE_FONT = pygame.font.SysFont("consolas", 50)
+
+        TITLE_STR = "Tetris 3D!"
+        TITLE_FONT = self.text_font_size_fit_to_screen(
+            TITLE_STR,
+            self.WIDTH - 2 * self.colored_border_pixel_width,
+            2 * self.block_width_2D,
+            "consolas"
+        )
         TITLE = TITLE_FONT.render("Tetris 3D!", False, WHITE)
 
-        MENU_FONT = pygame.font.SysFont("consolas", 20)
-        CHOSEN_OPTION_FONT = pygame.font.SysFont("consolas", 30)
+        ALL_OPTION_STRINGS = sum(
+            ([str(option) for option in menu.options] for menu in self.game_options_menu.options),
+            start=[]
+        )
+        SUB_TITLE_STRINGS = "Starting level:", "Game mode:", "Background music:"
 
-        STARTING_LEVEL_TEXT = MENU_FONT.render("Starting level:", False, WHITE)
-        GAME_MODE_TEXT = MENU_FONT.render("Game mode:", False, WHITE)
-        BACKGROUND_MUSIC_TEXT = MENU_FONT.render("Background music:", False, WHITE)
+        # (except the title string)
+
+        MENU_FONT = self.text_font_size_fit_to_screen(
+            max(
+                ALL_MENU_STRINGS := ALL_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
+                key=lambda any_menu_str: len(any_menu_str)
+            ),
+            self.WIDTH - self.colored_border_pixel_width,
+            self.block_width_2D,
+            "consolas"
+        )
+        # The font for all things in the menu string (except the title)
+        # NEEDS to be small enough for the biggest string ("static" text or chosen option)
+        # to fit withing one tile of height, and between the borders of the screen
+        # (drawn near the top of this function)
+
+        current_text_y_pos: int = self.colored_border_pixel_width
+        """
+        to blit everything lower and lower in the window
+        """
+
+        self.window.blit(
+            TITLE,
+            (
+                (self.WIDTH >> 1) - (TITLE.get_width() >> 1),
+                current_text_y_pos
+            )
+        )
+
+        TEXT_X_POS: int = self.colored_border_pixel_width
+        """
+        The texts' left sides should be "glued" to the right of the left border
+        (except the title, that was just blitted, just above)
+        """
+
+        # drawing every text in the screen with 1 tile of space in between
+        # (not considering the controls text at the bottom of the screen)
+        current_text_y_pos += 3 * self.block_width_2D
+
+        for sub_title, menu in zip(
+            SUB_TITLE_STRINGS,
+            self.game_options_menu.options,
+        ):
+            print(sub_title, menu)
+            CHOSEN_OPTION_STR = str(menu.option)
+
+            # draw sub-title
+            SUB_TITLE_TEXT = MENU_FONT.render(sub_title, False, WHITE)
+            self.window.blit(SUB_TITLE_TEXT, (TEXT_X_POS, current_text_y_pos))
+
+            current_text_y_pos += self.block_width_2D
+
+            # draw chosen menu option
+            CHOSEN_OPTION_TEXT = MENU_FONT.render(
+                CHOSEN_OPTION_STR,
+                False,
+                YELLOW if menu is self.game_options_menu.option else WHITE
+            )
+            self.window.blit(CHOSEN_OPTION_TEXT, (TEXT_X_POS, current_text_y_pos))
+
+            current_text_y_pos += 2 * self.block_width_2D
+
+        CONTROLS_STR = "W/S: scroll through menu A/D: change option ENTER: play"
+        CONTROLS_FONT = self.text_font_size_fit_to_screen(
+            CONTROLS_STR,
+            self.WIDTH,
+            self.block_width_2D,
+            "Consolas"
+        )
+        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
+        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
+        self.window.blit(
+            CONTROLS_TEXT,
+            (TEXT_X_POS, self.HEIGHT - CONTROLS_TEXT.get_height())
+        )
+        self.window.blit(
+            CONTROLS_TITLE,
+            (TEXT_X_POS, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
+        )
+
+        # DRAWING DONE, HANDLING MENU INPUTS
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -287,50 +407,6 @@ class Window:
                 if event.key == pygame.K_RETURN:
                     self.init_game()
                     self.frame_handler = self.handle_game_frame
-
-        self.window.blit(TITLE, (20, 50))
-
-        self.window.blit(STARTING_LEVEL_TEXT, (20, 100))
-        CHOSEN_LEVEL_TEXT = CHOSEN_OPTION_FONT.render(
-            str(self.level_menu.option),
-            False,
-            YELLOW if self.game_options_menu.option is self.level_menu else WHITE
-        )
-        self.window.blit(CHOSEN_LEVEL_TEXT, (20, 150))
-
-        self.window.blit(GAME_MODE_TEXT, (20, 200))
-        CHOSEN_GAME_MODE_TEXT = CHOSEN_OPTION_FONT.render(
-            str(self.mode_menu.option),
-            False,
-            YELLOW if self.game_options_menu.option is self.mode_menu else WHITE
-        )
-        self.window.blit(CHOSEN_GAME_MODE_TEXT, (20, 250))
-
-        self.window.blit(BACKGROUND_MUSIC_TEXT, (20, 300))
-        CHOSEN_MUSIC_TEXT = CHOSEN_OPTION_FONT.render(
-            str(self.music_menu.option),
-            False,
-            YELLOW if self.game_options_menu.option is self.music_menu else WHITE
-        )
-        self.window.blit(CHOSEN_MUSIC_TEXT, (20, 350))
-
-        CONTROLS_STR = "W/S: scroll through menu A/D: change option ENTER: play"
-        CONTROLS_FONT = self.text_font_size_fit_to_screen(
-            CONTROLS_STR,
-            self.WIDTH,
-            self.HEIGHT,
-            "Consolas"
-        )
-        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
-        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
-        self.window.blit(
-            CONTROLS_TEXT,
-            (0, self.HEIGHT - CONTROLS_TEXT.get_height())
-        )
-        self.window.blit(
-            CONTROLS_TITLE,
-            (0, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
-        )
 
     def handle_game_frame(self):
         """
