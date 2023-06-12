@@ -28,7 +28,7 @@ from dataclasses import dataclass
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
-YELLOW = (128, 128, 0)
+YELLOW = (255, 255, 0)
 
 RAINBOW = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (255, 0, 255)]
 
