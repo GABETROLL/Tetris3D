@@ -146,6 +146,49 @@ class Window:
         font = pygame.font.SysFont(font_name, font_size)
 
         return font
+    
+    def _draw_piece2D(self, piece: game.game_2d.Piece2D, block_width: int, board_pos: tuple[int, int]):
+        """
+        Draws 2D piece in 'self.window' in its correct position in the board,
+        which should be located in the window at 'board_pos', and have its blocks'
+        widths AND HEIGHTS be 'block_width.
+        """
+        for ci, ri in piece.square_positions():
+            pygame.draw.rect(
+                self.window,
+                piece.color,
+                pygame.Rect(
+                    ci * block_width + board_pos[0],
+                    ri * block_width + board_pos[1],
+                    block_width,
+                    block_width
+                )
+            )
+
+    def _draw_design_border(self):
+        """
+        Draws tetrominos as borders inside the screen, as an asthetic design.
+
+        Uses a bunch of hard-coded piece objects and places them on the screen,
+        VERYFING that this window's WIDTH and HEIGHT are the same, so that
+        the pieces can be written
+        AS IF the window was a board
+        with dimensions (ROWS x ROWS) INSTEAD OF (COLUNMS x COLUMNS)
+        """
+        assert self.WIDTH == self.HEIGHT
+        assert self.HEIGHT == self.BOARD_HEIGHT
+
+        assert self.window.get_width() == self.WIDTH
+        assert self.window.get_height() == self.HEIGHT
+
+        BLOCK_WIDTH = self.BOARD_HEIGHT // game.game_2d.ROWS
+        BORDER_BOARD_POS = (0, 0)
+
+        t_piece = game.game_2d.Piece2D(game.game_2d.T)
+        t_piece.pos = [0, 0]
+        t_piece.rotation = 2
+
+        self._draw_piece2D(t_piece, BLOCK_WIDTH, BORDER_BOARD_POS)
 
     def handle_title_screen_frame(self):
         """
@@ -153,6 +196,10 @@ class Window:
         stores in 'self', and switches 'self.frame_handler' to
         'self.handle_game_frame' if the player pressed ENTER.
         """
+        assert self.WIDTH == self.HEIGHT
+
+        self._draw_design_border()
+        
         TITLE_FONT = pygame.font.SysFont("consolas", 50)
         TITLE = TITLE_FONT.render("Tetris 3D!", False, WHITE)
 
@@ -384,23 +431,7 @@ class Window:
                                          BLOCK_WIDTH))
     
         # draw piece
-        for ri, row in zip(range(self.controls.game.piece.pos[1],
-                                 self.controls.game.piece.pos[1] + len(self.controls.game.piece.piece)),
-                           self.controls.game.piece.piece):
-            for ci, square in zip(range(self.controls.game.piece.pos[0],  self.controls.game.piece.pos[0] + len(row)),
-                                  row):
-                # We iterate over both the positions of the squares in the piece
-                # Based on its position and each square,
-                # row by row, column by column,
-
-                if square == "#":
-                    # If the square is a pound symbol, we draw the square (see pieces.py).
-                    pygame.draw.rect(self.window,
-                                     self.controls.game.piece.color,
-                                     pygame.Rect(ci * BLOCK_WIDTH + BOARD_POS[0],
-                                                 ri * BLOCK_WIDTH + BOARD_POS[1],
-                                                 BLOCK_WIDTH,
-                                                 BLOCK_WIDTH))
+        self._draw_piece2D(self.controls.game.piece, BLOCK_WIDTH, BOARD_POS)
 
         # draw next piece in its own little box beside the board
         NEXT_PIECE: game.game_2d.Piece = self.controls.game.next_piece
