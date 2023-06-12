@@ -277,11 +277,17 @@ class Window:
 
         TEXT_POS = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
-            (self.HEIGHT >> 1) - (GAME_OVER_TEXT.get_height() >> 1)
+            0
         ]
 
         self.window.blit(GAME_OVER_TEXT, TEXT_POS)
         TEXT_POS[1] += GAME_OVER_TEXT.get_height()
+
+        SCORE_STR = f"Score: {self.controls.game.score_manager.points}"
+        SCORE_FONT = self.text_font_size_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
+        SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
+        TEXT_POS[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
+        self.window.blit(SCORE_TEXT, TEXT_POS)
 
         MAX_OPTION_STR_LEN = max(len(option) for option in self.game_over_menu.options)
         # to make sure both menu options fit the screen's width
