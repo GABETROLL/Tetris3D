@@ -23,7 +23,7 @@ class GameControl:
     """
 
     STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
-    def __init__(self, direction_keys: dict[int, str]):
+    def __init__(self, direction_keys: dict[int, str], forefeit_key: int):
         """
         'direction_keys' should be a dictionary of pygame keyboard codes
         (like 'pygame.K_a') and directions ('LEFT', 'UP', ...)
@@ -41,6 +41,8 @@ class GameControl:
         "DAS" = "delayed auto shift".
         direction_key: charge setting (same as STARTING_DAS above)
         """
+        self.forefeit_key = forefeit_key
+        self.game_can_continue = True
 
     @staticmethod
     def fall_rate(level):
@@ -49,6 +51,8 @@ class GameControl:
     def direction_input_handler(self, keys):
         """
         Plays 'self.game' with direction keys found in 'keys'.
+
+        Please call in 'self.input_handler' overrides.
         """
 
         for direction_key, direction in self.direction_keys.items():
@@ -83,8 +87,13 @@ class GameControl:
     def input_handler(self, key_down_keys: set[int]):
         """
         Checks for pygame key inputs and plays game accordingly.
+        Checks for the player pressing 'self.forefeit_key',
+        to end the game.
+
+        Please call in overrides.
         """
-        raise NotImplementedError
+        if self.forefeit_key in key_down_keys:
+            self.game_can_continue = False
 
     def play_game_step(self, key_down_keys: set[int]) -> bool:
         """
@@ -106,21 +115,23 @@ class GameControl:
         self.frame_count += 1
         self.input_handler(key_down_keys)
 
-        game_can_continue = True
+        if not self.game_can_continue:
+            return False
 
         if self.frame_count == self.fall_rate(self.game.score_manager.level):
-            game_can_continue = self.game.play()
+            self.game_can_continue = self.game.play()
             self.frame_count = 0
 
-        return game_can_continue
+        return self.game_can_continue
     # Counting frames.
 
 
 class GameControl2D(GameControl):
-    def __init__(self):
+    def __init__(self, forefeit_key: int):
         GameControl.__init__(
             self, 
-            {pygame.K_a: LEFT, pygame.K_d: RIGHT}
+            {pygame.K_a: LEFT, pygame.K_d: RIGHT},
+            forefeit_key
         )
         self.game = Game2D()
 
@@ -129,6 +140,7 @@ class GameControl2D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
+        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
         if pygame.K_o in key_down_keys:
@@ -156,13 +168,14 @@ class GameControl2D(GameControl):
 
 
 class GameControl3D(GameControl):
-    def __init__(self):
+    def __init__(self, forefeit_key: int):
         GameControl.__init__(
             self, 
             {
                 pygame.K_a: LEFT, pygame.K_d: RIGHT,
                 pygame.K_s: FRONT, pygame.K_w: BACK
-            }
+            },
+            forefeit_key
         )
         self.game = Game3D()
 
@@ -171,6 +184,7 @@ class GameControl3D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
+        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
         if keys[pygame.K_LSHIFT] and not self.game.landed():

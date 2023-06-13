@@ -77,7 +77,7 @@ class Window:
         self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
         # game options information
 
-        self.controls: GameControl = GameControl2D()
+        self.controls: GameControl = None
 
         self.frame_handler = self.handle_title_screen_frame
         """
@@ -106,10 +106,12 @@ class Window:
         Initializes 'self.controls' with the appropiate
         game level to start in.
         """
+        FORFEIT_KEY = pygame.K_ESCAPE
+
         if self.mode_menu.option == "2D":
-            self.controls = GameControl2D()
+            self.controls = GameControl2D(FORFEIT_KEY)
         elif self.mode_menu.option == "3D":
-            self.controls = GameControl3D()
+            self.controls = GameControl3D(FORFEIT_KEY)
         else:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
