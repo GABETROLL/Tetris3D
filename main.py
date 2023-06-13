@@ -665,27 +665,34 @@ class Window:
             )
         )
 
-        CONTROLS_TEXTS = (
-                self.font.render(
-                controls_str,
-                False,
-                WHITE
-            ) for controls_str in (
-                "A/D: move piece LEFT/RIGHT",
-                "S/LEFT SHIFT: SOFT-DROP",
-                "SPACEBAR: HARD-DROP",
-                "U: rotate counter-clockwise",
-                "O: rotate clockwise"
-            )
+        CONTROLS_STRINGS = (
+            "A/D: move piece LEFT/RIGHT",
+            "S/LEFT SHIFT: SOFT-DROP",
+            "SPACEBAR: HARD-DROP",
+            "U: rotate counter-clockwise",
+            "O: rotate clockwise"
         )
-        blit_pos = [0, 0]
 
-        for controls_text in CONTROLS_TEXTS:
+        CONTROLS_FONT = self.text_font_fit_to_screen(
+            max(CONTROLS_STRINGS, key=lambda s: len(s)),
+            BOARD_POS[0],
+            self.HEIGHT,
+            "consolas"
+        )
+
+        blit_pos = [0, self.HEIGHT]
+
+        for controls_string in reversed(CONTROLS_STRINGS):
+            CONTROLS_TEXT = CONTROLS_FONT.render(
+                controls_string, False, WHITE
+            )
+
+            blit_pos[1] -= CONTROLS_TEXT.get_height()
+
             self.window.blit(
-                controls_text,
+                CONTROLS_TEXT,
                 blit_pos
             )
-            blit_pos[1] += controls_text.get_height()
 
     def draw_3d(self):
         """
