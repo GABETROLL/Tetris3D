@@ -179,15 +179,15 @@ class Window:
 
         # draw each side of the border, first the top
         for ri in range(game.game_2d.ROWS):
-            for ci in range(self.COLORED_BORDER_BLOCK_WIDTH):
+            for ci in range(self.COLORED_BORDER_BLOCK_WIDTH - 1):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
-        for ri in range(self.COLORED_BORDER_BLOCK_WIDTH):
+        for ri in range(self.COLORED_BORDER_BLOCK_WIDTH - 1):
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
         for ri in range(game.game_2d.ROWS):
-            for ci in range(game.game_2d.ROWS - self.COLORED_BORDER_BLOCK_WIDTH, game.game_2d.ROWS):
+            for ci in range(game.game_2d.ROWS - (self.COLORED_BORDER_BLOCK_WIDTH - 1), game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
-        for ri in range(game.game_2d.ROWS - self.COLORED_BORDER_BLOCK_WIDTH, game.game_2d.ROWS):
+        for ri in range(game.game_2d.ROWS - (self.COLORED_BORDER_BLOCK_WIDTH - 1), game.game_2d.ROWS):
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
 
