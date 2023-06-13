@@ -260,6 +260,7 @@ class Window:
         BLOCK_WIDTH = self.BOARD_HEIGHT // game.game_2d.ROWS
 
         for (ci, ri), color in self.border_blocks.items():
+            color = tuple(3 * channel >> 2 for channel in color)
             pygame.draw.rect(
                 self.window,
                 color,
