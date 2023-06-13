@@ -465,8 +465,17 @@ class Window:
 
         FONT_NAME = "consolas"
 
+        assert self.WIDTH == self.HEIGHT
+
+        WIDTH_INSIDE_BORDER = self.WIDTH - 2 * self.colored_border_pixel_width
+
         GAME_OVER_STR = "GAME OVER"
-        GAME_OVER_FONT = self.text_font_fit_to_screen()
+        GAME_OVER_FONT = self.text_font_fit_to_screen(
+            GAME_OVER_STR,
+            WIDTH_INSIDE_BORDER,
+            3 * self.block_width_2D,
+            FONT_NAME
+        )
         # If the letters in "GAME OVER" are roughly squares
         # in the rendered Surface with the word,
         # then you'd expect the font size that fits the window to be
@@ -477,23 +486,35 @@ class Window:
 
         TEXT_POS = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
-            0
+            self.colored_border_pixel_width
         ]
+        # should be "moved" vertically,
+        # to make sure the texts don't overlap
 
         self.window.blit(GAME_OVER_TEXT, TEXT_POS)
-        TEXT_POS[1] += GAME_OVER_TEXT.get_height()
+        TEXT_POS[1] += 3 * self.block_width_2D
+        # "GAME OVER" should occupy 3 tiles vertically,
+        # and we want the score to be directly under the "GAME OVER",
+        # so the new text pos should be 3 tiles below.
 
         SCORE_STR = f"Score: {self.controls.game.score_manager.points}"
         SCORE_FONT = self.text_font_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
         SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
+
         TEXT_POS[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
         self.window.blit(SCORE_TEXT, TEXT_POS)
 
-        MAX_OPTION_STR_LEN = max(len(option) for option in self.game_over_menu.options)
-        # to make sure both menu options fit the screen's width
-        # the 'self.HEIGHT // 4' is to ensure that "GAME OVER" and these menu options
-        # fit vertically ("GAME OVER" being double the height of the option text rectangles)
-        OPTION_FONT = pygame.font.SysFont(FONT_NAME, min(self.WIDTH // MAX_OPTION_STR_LEN, self.HEIGHT // 4))
+        TEXT_POS[1] += 4 * self.block_width_2D
+        # we want the options to be one tile of distance from the score text
+
+        OPTION_FONT = self.text_font_fit_to_screen(
+            max(self.game_over_menu.options, key=lambda option: len(str(option))),
+            # To make sure both menu options fit the screen's width,
+            # the longest option string is the one we must try to fit in 'WIDTH_INSIDE_BORDER'.
+            WIDTH_INSIDE_BORDER,
+            self.block_width_2D,
+            FONT_NAME
+        )
 
         for option in self.game_over_menu.options:
             OPTION_TEXT = OPTION_FONT.render(
@@ -502,7 +523,7 @@ class Window:
                 YELLOW if option == self.game_over_menu.option else WHITE
             )
             self.window.blit(OPTION_TEXT, TEXT_POS)
-            TEXT_POS[1] += OPTION_TEXT.get_height()
+            TEXT_POS[1] += self.block_width_2D
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -526,20 +547,21 @@ class Window:
         CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
         CONTROLS_FONT = self.text_font_fit_to_screen(
             CONTROLS_STR,
-            self.WIDTH,
-            self.HEIGHT,
-            "Consolas"
+            WIDTH_INSIDE_BORDER,
+            self.block_width_2D,
+            FONT_NAME
         )
         CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
         CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
-        self.window.blit(
-            CONTROLS_TEXT,
-            (0, self.HEIGHT - CONTROLS_TEXT.get_height())
-        )
-        self.window.blit(
-            CONTROLS_TITLE,
-            (0, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
-        )
+
+        BOTTOM_INSIDE_BORDER: int = self.HEIGHT - self.colored_border_pixel_width
+        TEXT_POS = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER - CONTROLS_TEXT.get_height()]
+
+        self.window.blit(CONTROLS_TEXT, TEXT_POS)
+
+        TEXT_POS[1] += CONTROLS_TITLE.get_height()
+
+        self.window.blit(CONTROLS_TITLE, TEXT_POS)
 
     def draw_2d(self):
         """
