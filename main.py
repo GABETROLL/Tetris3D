@@ -293,10 +293,12 @@ class Window:
 
         self._draw_design_border()
 
+        WIDTH_INSIDE_BORDER: int = self.WIDTH - 2 * self.colored_border_pixel_width
+
         TITLE_STR = "Tetris 3D!"
         TITLE_FONT = self.text_font_size_fit_to_screen(
             TITLE_STR,
-            self.WIDTH - 2 * self.colored_border_pixel_width,
+            WIDTH_INSIDE_BORDER,
             2 * self.block_width_2D,
             "consolas"
         )
@@ -315,7 +317,7 @@ class Window:
                 ALL_MENU_STRINGS := ALL_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
                 key=lambda any_menu_str: len(any_menu_str)
             ),
-            self.WIDTH - self.colored_border_pixel_width,
+            WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             "consolas"
         )
@@ -369,24 +371,36 @@ class Window:
             self.window.blit(CHOSEN_OPTION_TEXT, (TEXT_X_POS, current_text_y_pos))
 
             current_text_y_pos += 2 * self.block_width_2D
+        
+        CONTROLS_STRINGS = (
+            "W/S: scroll through menu",
+            "A/D: change option ENTER: play",
+            "Controls: "
+        )
 
-        CONTROLS_STR = "W/S: scroll through menu A/D: change option ENTER: play"
         CONTROLS_FONT = self.text_font_size_fit_to_screen(
-            CONTROLS_STR,
-            self.WIDTH,
+            max(CONTROLS_STRINGS, key=lambda s: len(s)),
+            WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             "Consolas"
         )
-        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
-        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
-        self.window.blit(
-            CONTROLS_TEXT,
-            (TEXT_X_POS, self.HEIGHT - CONTROLS_TEXT.get_height())
-        )
-        self.window.blit(
-            CONTROLS_TITLE,
-            (TEXT_X_POS, self.HEIGHT - CONTROLS_TEXT.get_height() - CONTROLS_TITLE.get_height())
-        )
+
+        BORDER_BOTTOM: int = self.HEIGHT - self.colored_border_pixel_width
+
+        current_text_y_pos: int = BORDER_BOTTOM
+        """
+        Now we're using it to blit the controls texts
+        from the bottom-border-up
+        """
+
+        for control_str in reversed(CONTROLS_STRINGS):
+            CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
+
+            current_text_y_pos -= CONTROL_TEXT.get_height()
+
+            self.window.blit(
+                CONTROL_TEXT, (TEXT_X_POS, current_text_y_pos)
+            )
 
         # DRAWING DONE, HANDLING MENU INPUTS
 
