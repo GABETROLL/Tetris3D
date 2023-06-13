@@ -192,7 +192,7 @@ class Window:
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
 
     @staticmethod
-    def text_font_size_fit_to_screen(
+    def text_font_fit_to_screen(
         text_str: str,
         width: int,
         height: int,
@@ -296,7 +296,7 @@ class Window:
         WIDTH_INSIDE_BORDER: int = self.WIDTH - 2 * self.colored_border_pixel_width
 
         TITLE_STR = "Tetris 3D!"
-        TITLE_FONT = self.text_font_size_fit_to_screen(
+        TITLE_FONT = self.text_font_fit_to_screen(
             TITLE_STR,
             WIDTH_INSIDE_BORDER,
             2 * self.block_width_2D,
@@ -312,7 +312,7 @@ class Window:
 
         # (except the title string)
 
-        MENU_FONT = self.text_font_size_fit_to_screen(
+        MENU_FONT = self.text_font_fit_to_screen(
             max(
                 ALL_MENU_STRINGS := ALL_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
                 key=lambda any_menu_str: len(any_menu_str)
@@ -378,7 +378,7 @@ class Window:
             "Controls: "
         )
 
-        CONTROLS_FONT = self.text_font_size_fit_to_screen(
+        CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
@@ -466,7 +466,7 @@ class Window:
         FONT_NAME = "consolas"
 
         GAME_OVER_STR = "GAME OVER"
-        GAME_OVER_FONT = pygame.font.SysFont(FONT_NAME, min((self.WIDTH // len(GAME_OVER_STR), self.HEIGHT // 2)))
+        GAME_OVER_FONT = self.text_font_fit_to_screen()
         # If the letters in "GAME OVER" are roughly squares
         # in the rendered Surface with the word,
         # then you'd expect the font size that fits the window to be
@@ -484,7 +484,7 @@ class Window:
         TEXT_POS[1] += GAME_OVER_TEXT.get_height()
 
         SCORE_STR = f"Score: {self.controls.game.score_manager.points}"
-        SCORE_FONT = self.text_font_size_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
+        SCORE_FONT = self.text_font_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
         SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
         TEXT_POS[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
         self.window.blit(SCORE_TEXT, TEXT_POS)
@@ -524,7 +524,7 @@ class Window:
                         self.frame_handler = self.handle_title_screen_frame
 
         CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
-        CONTROLS_FONT = self.text_font_size_fit_to_screen(
+        CONTROLS_FONT = self.text_font_fit_to_screen(
             CONTROLS_STR,
             self.WIDTH,
             self.HEIGHT,
