@@ -26,6 +26,7 @@ from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 from random import choice as random_choice
 from collections.abc import Sequence
+from itertools import count
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -380,8 +381,19 @@ class Window:
             )
             self.window.blit(CHOSEN_OPTION_TEXT, (TEXT_X_POS, current_text_y_pos))
 
-            current_text_y_pos += 2 * self.block_width_2D
+            current_text_y_pos += self.block_width_2D
         
+        # render "Play!" button
+        current_text_y_pos += self.block_width_2D
+
+        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, (0, 0, 0xC0))
+        PLAY_BUTTON_POS = ((self.WIDTH >> 1) - (PLAY_BUTTON.get_width() >> 1), current_text_y_pos)
+        self.window.blit(PLAY_BUTTON, PLAY_BUTTON_POS)
+
+        # TO HANDLE CLICK for "Play!" button
+        PLAY_RECT = PLAY_BUTTON.get_rect()
+        PLAY_RECT.topleft = PLAY_BUTTON_POS
+
         CONTROLS_STRINGS = (
             "W/S: scroll through menu",
             "A/D: change option ENTER: play",
@@ -428,9 +440,14 @@ class Window:
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     self.game_options_menu.option.move_to_previous()
 
-                if event.key == pygame.K_RETURN:
-                    self.init_game()
-                    self.frame_handler = self.handle_game_frame
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN) \
+                or ( # left click with mouse INSIDE button
+                    event.type == pygame.MOUSEBUTTONDOWN
+                    and pygame.mouse.get_pressed()[0]
+                    and PLAY_RECT.collidepoint(*pygame.mouse.get_pos())
+            ):
+                self.init_game()
+                self.frame_handler = self.handle_game_frame
 
     def handle_game_frame(self):
         """
