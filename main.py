@@ -448,11 +448,18 @@ class Window:
             )
 
         # DRAWING DONE, HANDLING MENU INPUTS
+        MOUSE_BUTTONS = pygame.mouse.get_pressed()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             
+            LEFT_MOUSE_BUTTON = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+            RIGHT_MOUSE_BUTTON = event.type == pygame.MOUSEBUTTONDOWN and event.button == 3
+
+            SCROLLING_UP = event.type == pygame.MOUSEWHEEL and event.y < 0
+            SCROLLING_DOWN = event.type == pygame.MOUSEWHEEL and event.y > 0
+
             # scroll through menu menu
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
@@ -467,20 +474,19 @@ class Window:
             # Play!
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN) \
                 or ( # left click with mouse INSIDE button
-                    event.type == pygame.MOUSEBUTTONDOWN
-                    and pygame.mouse.get_pressed()[0]
+                    LEFT_MOUSE_BUTTON
                     and PLAY_RECT.collidepoint(*MOUSE_POS)
             ):
                 self.init_game()
                 self.frame_handler = self.handle_game_frame
-            
-            if event.type == pygame.MOUSEWHEEL and mouse_hovered_menu:
-                # user scrolled mouse up
-                if event.y < 0:
-                    self.game_options_menu.option.move_to_next()
-                # user scrolled mouse down
-                elif event.y > 0:
-                    self.game_options_menu.option.move_to_previous()
+
+            # only cares about THIS frame's inputs,
+            # REGARDLESS of the buttons being off/on the previous frame.
+            # (NO pygame.events USED HERE, LOOK UP)
+            if SCROLLING_UP or RIGHT_MOUSE_BUTTON:
+                self.game_options_menu.option.move_to_next()
+            elif SCROLLING_DOWN or LEFT_MOUSE_BUTTON:
+                self.game_options_menu.option.move_to_previous()
 
     def handle_game_frame(self):
         """
