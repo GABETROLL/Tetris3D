@@ -350,6 +350,12 @@ class Window:
             )
         )
 
+        MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
+        """
+        To check if user is scrolling through the following title menu options
+        or clicking "Play!"
+        """
+
         TEXT_X_POS: int = self.colored_border_pixel_width
         """
         The texts' left sides should be "glued" to the right of the left border
@@ -360,9 +366,16 @@ class Window:
         # (not considering the controls text at the bottom of the screen)
         current_text_y_pos += 3 * self.block_width_2D
 
-        for sub_title, menu in zip(
-            SUB_TITLE_STRINGS,
-            self.game_options_menu.options,
+        mouse_hovered_menu: bool = False
+        # To see if mouse is in a menu option in this frame.
+        # The mouse pos shouldn't change while in this function,
+        # so we should be able to handle the options' scrolling below.
+
+        for index, (sub_title, menu) in enumerate(
+            zip(
+                SUB_TITLE_STRINGS,
+                self.game_options_menu.options,
+            )
         ):
             # print(sub_title, menu)
             CHOSEN_OPTION_STR = str(menu.option)
@@ -379,7 +392,17 @@ class Window:
                 False,
                 YELLOW if menu is self.game_options_menu.option else WHITE
             )
-            self.window.blit(CHOSEN_OPTION_TEXT, (TEXT_X_POS, current_text_y_pos))
+            CHOSEN_OPTION_RECT = CHOSEN_OPTION_TEXT.get_rect()
+            CHOSEN_OPTION_RECT.topleft = (TEXT_X_POS, current_text_y_pos)
+            self.window.blit(CHOSEN_OPTION_TEXT, CHOSEN_OPTION_RECT.topleft)
+
+            # SCROLL THROUGH MENU MENU WITH MOUSE
+            if CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS):
+                self.game_options_menu.option_index = index
+                mouse_hovered_menu = True
+            # hovering over the options automatically highlighting them
+            # as if the user were scrolling through them with W/S
+            # would be quite nice!
 
             current_text_y_pos += self.block_width_2D
         
@@ -429,7 +452,8 @@ class Window:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
+            
+            # scroll through menu menu
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     self.game_options_menu.move_to_next()
@@ -440,14 +464,23 @@ class Window:
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     self.game_options_menu.option.move_to_previous()
 
+            # Play!
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN) \
                 or ( # left click with mouse INSIDE button
                     event.type == pygame.MOUSEBUTTONDOWN
                     and pygame.mouse.get_pressed()[0]
-                    and PLAY_RECT.collidepoint(*pygame.mouse.get_pos())
+                    and PLAY_RECT.collidepoint(*MOUSE_POS)
             ):
                 self.init_game()
                 self.frame_handler = self.handle_game_frame
+            
+            if event.type == pygame.MOUSEWHEEL and mouse_hovered_menu:
+                # user scrolled mouse up
+                if event.y < 0:
+                    self.game_options_menu.option.move_to_next()
+                # user scrolled mouse down
+                elif event.y > 0:
+                    self.game_options_menu.option.move_to_previous()
 
     def handle_game_frame(self):
         """
