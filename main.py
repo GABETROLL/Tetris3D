@@ -25,7 +25,7 @@ import game
 from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 from random import choice as random_choice
-from itertools import count
+from collections.abc import Sequence
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -35,12 +35,19 @@ YELLOW = (255, 255, 0)
 
 @dataclass
 class Menu:
-    options: object
+    options: Sequence[object]
     option_index: int = 0
+    name: str = ""
 
     @property
     def option(self):
         return self.options[self.option_index]
+    
+    @option.setter
+    def option(self, value):
+        if value not in self.options:
+            raise ValueError(f"option={value} must be inside menu={self}!")
+        self.option_index = self.options.index()
 
     def move_to_next(self):
         self.option_index += 1
@@ -510,6 +517,10 @@ class Window:
         TEXT_POS[1] += 4 * self.block_width_2D
         # we want the options to be one tile of distance from the score text
 
+        MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
+        # We need to have the mouse's position THIS FRAME,
+        # to click the menu options.
+
         OPTION_FONT = self.text_font_fit_to_screen(
             max(self.game_over_menu.options, key=lambda option: len(str(option))),
             # To make sure both menu options fit the screen's width,
@@ -519,18 +530,31 @@ class Window:
             FONT_NAME
         )
 
-        for option in self.game_over_menu.options:
+        mouse_hovered_option_index: int = None
+
+        for option_index, option_rect in enumerate(self.game_over_menu.options):
             OPTION_TEXT = OPTION_FONT.render(
-                option,
+                option_rect,
                 False,
-                YELLOW if option == self.game_over_menu.option else WHITE
+                YELLOW if option_rect == self.game_over_menu.option else WHITE
             )
+            OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
+            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = TEXT_POS
+
+            if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
+                mouse_hovered_option_index = option_index
+
             self.window.blit(OPTION_TEXT, TEXT_POS)
+
             TEXT_POS[1] += self.block_width_2D
 
         for event in pygame.event.get():
+            # user presses X button of window
+            # (or red buton in Mac)
             if event.type == pygame.QUIT:
                 self.running = False
+            
+            option_chosen: bool = False
 
             if event.type == pygame.KEYDOWN:
                 # move around menu
@@ -539,13 +563,25 @@ class Window:
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
                     self.game_over_menu.move_to_previous()
 
-                # submit menu selection
+                # submit menu selection: ENTER key OR MOUSE CLICK
                 if event.key == pygame.K_RETURN:
-                    if self.game_over_menu.option == "Quit":
-                        self.running = False
-                        # quit
-                    else:  # elif menu.option == "Back to title screen"
-                        self.frame_handler = self.handle_title_screen_frame
+                    option_chosen = True
+            
+            if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
+                # (we know if the user clicked one, and which one the clicked,
+                # if 'mouse_hovered_option_index' is not None.)
+                if mouse_hovered_option_index is not None:
+                    self.game_over_menu.option_index = mouse_hovered_option_index
+                    option_chosen = True
+
+            # HANDLE SELECTED OPTION
+            if option_chosen:
+                if self.game_over_menu.option == "Quit":
+                    self.running = False
+                    # quit
+                else:  # elif menu.option == "Back to title screen"
+                    self.frame_handler = self.handle_title_screen_frame
 
         CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
         CONTROLS_FONT = self.text_font_fit_to_screen(
