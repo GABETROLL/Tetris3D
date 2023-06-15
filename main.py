@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from random import choice as random_choice
 from collections.abc import Sequence
 from itertools import count
+from json import load as load_from_json
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -288,6 +289,84 @@ class Window:
             )
 
         # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
+    
+    def controls_screen_loop(self):
+        """
+        Displays all keyboard inputs and what they do, described in
+        'keyboard_settings.json'.
+
+        Returns when player presses ESCAPE.
+        """
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return
+
+            CONTROLS_JSON = load_from_json(open('keyboard_settings.json'))
+            assert type(CONTROLS_JSON) == dict
+
+            self.window.fill(BLACK)
+
+            self._draw_design_border()
+
+            SECTION_NAME_FONT_HEIGHT = 2 * self.block_width_2D
+            WIDTH_INSIDE_BORDER = self.WIDTH - (self.colored_border_pixel_width << 1)
+
+            SECTION_NAME_FONT = self.text_font_fit_to_screen(
+                max(CONTROLS_JSON, key=lambda section_name: len(section_name)),
+                WIDTH_INSIDE_BORDER,
+                SECTION_NAME_FONT_HEIGHT,
+                "consolas"
+            )
+
+            blit_y_pos = self.colored_border_pixel_width
+
+            SECTION_CONTROLS_FONT_HEIGHT = self.block_width_2D
+
+            for section_name, section_controls in CONTROLS_JSON.items():
+                assert type(section_controls) == dict
+
+                SECTION_NAME_TEXT = SECTION_NAME_FONT.render(section_name, False, WHITE)
+                self.window.blit(SECTION_NAME_TEXT, (self.colored_border_pixel_width, blit_y_pos))
+
+                blit_y_pos += SECTION_NAME_FONT_HEIGHT
+
+                SECTION_CONTROLS_FONT = self.text_font_fit_to_screen(
+                    max(
+                        list(section_controls.keys()) + list(section_controls.values()),
+                        key=lambda control_string: len(control_string)
+                    ),
+                    WIDTH_INSIDE_BORDER >> 1,
+                    # each control row looks like this:
+                    # action: key
+                    # We want to have them at the left...
+                    # ...and right halves of the screen.
+                    SECTION_CONTROLS_FONT_HEIGHT,
+                    "consolas"
+                )
+
+                LEFT_COLUMN_X_POS = self.colored_border_pixel_width
+                # aka the LEFT EDGE of the LEFT HALF inside the border
+                RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + (WIDTH_INSIDE_BORDER >> 1)
+                # aka the LEFT EDGE of the RIGHT HALF inside the border
+
+                for action, key in section_controls.items():
+                    ACTION_TEXT = SECTION_CONTROLS_FONT.render(action, False, WHITE)
+                    KEY_TEXT = SECTION_CONTROLS_FONT.render(f": {key}", False, WHITE)
+
+                    self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
+
+                    blit_y_pos += SECTION_CONTROLS_FONT_HEIGHT
+
+                    self.window.blit(KEY_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
+
+                    blit_y_pos += SECTION_CONTROLS_FONT_HEIGHT
+
+            pygame.display.update()
 
     def handle_title_screen_frame(self):
         """
@@ -418,8 +497,13 @@ class Window:
             SCROLLING_UP = event.type == pygame.MOUSEWHEEL and event.y < 0
             SCROLLING_DOWN = event.type == pygame.MOUSEWHEEL and event.y > 0
 
-            # scroll through sub-menus/menu options WITH KEYBOARD
             if event.type == pygame.KEYDOWN:
+                # ENTER controls screen, UNTIL user decides to exit it.
+                # BOTH WITH ESCAPE.
+                if event.key == pygame.K_ESCAPE:
+                    self.controls_screen_loop()
+
+                # scroll through sub-menus/menu options WITH KEYBOARD
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     self.game_options_menu.move_to_next()
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
@@ -563,6 +647,9 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
+        
+        if pygame.K_ESCAPE in key_down_keys:
+            self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
             self.draw_3d()
@@ -675,6 +762,9 @@ class Window:
             option_chosen: bool = False
 
             if event.type == pygame.KEYDOWN:
+                # Enter controls screen
+                if event.key == pygame.K_s or event.key == pygame.K_ESCAPE:
+                    self.controls_screen_loop()
                 # move around menu
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     self.game_over_menu.move_to_next()
@@ -735,7 +825,6 @@ class Window:
         """
         if type(self.controls) != GameControl2D:
             raise TypeError("Can't render in 2D while game mode is not 2D!")
-
         
         BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
         BLOCK_WIDTH = BOARD_WIDTH // game.game_2d.COLUMNS
