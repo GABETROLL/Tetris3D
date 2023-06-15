@@ -43,6 +43,7 @@ Easy script:
 ```
 $ pip install -r requirements.txt
 ```
+(I used the versions in the ``requirements.txt`` file)
 Or do it youeself:
 <img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>\
 https://www.pygame.org/wiki/GettingStarted\
