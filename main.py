@@ -25,6 +25,7 @@ import game
 from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
 from dataclasses import dataclass
 from random import choice as random_choice
+from collections.abc import Sequence
 from itertools import count
 
 WHITE = (255, 255, 255)
@@ -35,12 +36,19 @@ YELLOW = (255, 255, 0)
 
 @dataclass
 class Menu:
-    options: object
+    options: Sequence[object]
     option_index: int = 0
+    title: str = ""
 
     @property
     def option(self):
         return self.options[self.option_index]
+    
+    @option.setter
+    def option(self, value):
+        if value not in self.options:
+            raise ValueError(f"option={value} must be inside menu={self}!")
+        self.option_index = self.options.index()
 
     def move_to_next(self):
         self.option_index += 1
@@ -126,10 +134,13 @@ class Window:
             pygame.display.update()
         pygame.quit()
 
-    def init_game(self):
+    def start_game(self):
         """
         Initializes 'self.controls' with the appropiate
-        game level to start in.
+        game level to start in,
+
+        and assigns 'self.frame_handler' to 'self.handle_game_frame'
+        to start the game screen's loop.
         """
         FORFEIT_KEY = pygame.K_ESCAPE
 
@@ -141,6 +152,8 @@ class Window:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
         self.controls.game.score_manager.level = self.level_menu.option
+
+        self.frame_handler = self.handle_game_frame
 
     @property
     def block_width_2D(self):
@@ -281,23 +294,31 @@ class Window:
         Dislays:
         - border in 'self.border_blocks' (in __init__).
         - title centered at the top of the "hole" of the border.
-        - level, mode and music selection from the player
-        All of these, COMPLETELY INSIDE the border.
-        ---
-        Keeps track of those selections in 'self.game_options_menu',
-        and switches 'self.frame_handler' to
-        'self.handle_game_frame' if the player pressed ENTER.
+        - level, mode and music selections (menus) menu, with < and > arrows
+        - to scroll through the options in each sub-menu
 
+        All of these, COMPLETELY INSIDE the border.
+
+        "Scrolls" to different option if user clicks < or > arrows,
+        or uses WASD to move around the options and sub-menus.
+
+        assigns 'self.handle_game_frame' to 'self.frame_handler' if user clicks
+        "Play!" button or presses ENTER key.
         """
         assert self.WIDTH == self.HEIGHT
         # Make sure the screen is a square, so that all of the tiles fit.
 
-        # DRAWING FIRST, THEN HANDLING MENU INPUTS
-
+        # DRAW TITLE AND BORDER, THEN HANDLE & DRAW MENU AT THE SAME TIME:
         self._draw_design_border()
 
         WIDTH_INSIDE_BORDER: int = self.WIDTH - 2 * self.colored_border_pixel_width
 
+        TITLE_Y_POS: int = self.colored_border_pixel_width
+        """
+        to blit everything lower and lower in the window
+        """
+
+        # Drawing title:
         TITLE_STR = "Tetris 3D!"
         TITLE_FONT = self.text_font_fit_to_screen(
             TITLE_STR,
@@ -307,17 +328,47 @@ class Window:
         )
         TITLE = TITLE_FONT.render("Tetris 3D!", False, WHITE)
 
-        ALL_OPTION_STRINGS = sum(
+        self.window.blit(
+            TITLE,
+            (
+                (self.WIDTH >> 1) - (TITLE.get_width() >> 1),
+                TITLE_Y_POS
+            )
+        )
+
+        # HANDLE & DISPLAY MENU:
+
+        # All of this is just for displaying the menu,
+        # preparing fonts for tile sizes and text box dimensions
+        # present in the menu's dimensions:
+        MENU_TOP_Y_POS = TITLE_Y_POS + 3 * self.block_width_2D
+        """
+        TO: draw every text in the screen
+        right below eachother, sub-title text or chosen option text.
+
+        ALL of the texts will be rendered right below eachother,
+        and ALL OF THEM will have ONE TILE OF HEIGHT.
+        """
+        y_blit_pos = MENU_TOP_Y_POS
+        """
+        TO: draw every text in the screen
+        right below eachother, sub-title text or chosen option text.
+
+        ALL of the texts will be rendered right below eachother,
+        and ALL OF THEM will have ONE TILE OF HEIGHT.
+        """
+
+        # PREPARE FONT for menu sub-titles and chosen options, with their < > arrows
+        ALL_POSSIBLE_OPTION_STRINGS = sum(
             ([str(option) for option in menu.options] for menu in self.game_options_menu.options),
             start=[]
         )
         SUB_TITLE_STRINGS = "Starting level:", "Game mode:", "Background music:"
-
         # (except the title string)
 
         MENU_FONT = self.text_font_fit_to_screen(
             max(
-                ALL_MENU_STRINGS := ALL_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
+                ALL_MENU_STRINGS := ALL_POSSIBLE_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
                 key=lambda any_menu_str: len(any_menu_str)
             ),
             WIDTH_INSIDE_BORDER,
@@ -329,52 +380,146 @@ class Window:
         # to fit withing one tile of height, and between the borders of the screen
         # (drawn near the top of this function)
 
-        current_text_y_pos: int = self.colored_border_pixel_width
-        """
-        to blit everything lower and lower in the window
-        """
-
-        self.window.blit(
-            TITLE,
-            (
-                (self.WIDTH >> 1) - (TITLE.get_width() >> 1),
-                current_text_y_pos
-            )
-        )
-
-        TEXT_X_POS: int = self.colored_border_pixel_width
+        LEFT_INSIDE_BORDER: int = self.colored_border_pixel_width
         """
         The texts' left sides should be "glued" to the right of the left border
         (except the title, that was just blitted, just above)
         """
 
-        # drawing every text in the screen with 1 tile of space in between
-        # (not considering the controls text at the bottom of the screen)
-        current_text_y_pos += 3 * self.block_width_2D
+        MOUSE_POS = pygame.mouse.get_pos()
 
-        for sub_title, menu in zip(
-            SUB_TITLE_STRINGS,
-            self.game_options_menu.options,
+        # Font done, now HAMDLING KEYBOARD inputs,
+        # and STORING MOUSE INPUTS for later,
+        # to be handled using the same positions
+        # being used to render the menu options:
+
+        STARTED_CLICKING_THIS_FRAME: bool = False
+        """
+        Weather or not the user just pressed the mouse button THIS FRAME,
+        AND NOT THE PREVIOUS FRAME.
+        """
+        SCROLLING_UP: bool = False
+        """
+        Weather or not the user is CURRENTLY scrolling "up" the options
+        (which are sideways, but they should scroll LEFT)
+        """
+        SCROLLING_DOWN: bool = False
+        """
+        Weather or not the user is CURRENTLY scrolling "down" the options
+        (which are sideways, but they should scroll RIGHT)
+        """
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            STARTED_CLICKING_THIS_FRAME = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+
+            SCROLLING_UP = event.type == pygame.MOUSEWHEEL and event.y < 0
+            SCROLLING_DOWN = event.type == pygame.MOUSEWHEEL and event.y > 0
+
+            # scroll through sub-menus/menu options WITH KEYBOARD
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    self.game_options_menu.move_to_next()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    self.game_options_menu.move_to_previous()
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    self.game_options_menu.option.move_to_next()
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    self.game_options_menu.option.move_to_previous()
+                
+                # press ENTER to start game
+                if event.key == pygame.K_RETURN:
+                    self.start_game()
+                    # game should start IMMEDIATELY if the button is pressed,
+                    # without altering options last-frame
+                    break
+
+            # only cares about THIS frame's inputs,
+            # REGARDLESS of the buttons being off/on the previous frame.
+            # (NO pygame.events USED HERE, LOOK UP)
+            if SCROLLING_UP:
+                self.game_options_menu.option.move_to_next()
+            elif SCROLLING_DOWN:
+                self.game_options_menu.option.move_to_previous()
+
+        # RENDER MENU:
+
+        for index, (sub_title, menu) in enumerate(
+            zip(
+                SUB_TITLE_STRINGS,
+                self.game_options_menu.options,
+            )
         ):
-            # print(sub_title, menu)
-            CHOSEN_OPTION_STR = str(menu.option)
-
-            # draw sub-title
+            # render sub-title text (below previous chosen option text)
             SUB_TITLE_TEXT = MENU_FONT.render(sub_title, False, WHITE)
-            self.window.blit(SUB_TITLE_TEXT, (TEXT_X_POS, current_text_y_pos))
+            self.window.blit(SUB_TITLE_TEXT, (LEFT_INSIDE_BORDER, y_blit_pos))
 
-            current_text_y_pos += self.block_width_2D
+            y_blit_pos += self.block_width_2D
 
-            # draw chosen menu option
+            # COMPUTE POSITIONS for < > arrows and option text
+            # AND RENDER option text
+
+            OPTION_COLOR = YELLOW if menu is self.game_options_menu.option else WHITE
+            # depending on if the option is selected or not
+
+            LEFT_ARROW_RECT = pygame.Rect(LEFT_INSIDE_BORDER, y_blit_pos, self.block_width_2D, self.block_width_2D)
+
+            CHOSEN_OPTION_STR = str(menu.option)
             CHOSEN_OPTION_TEXT = MENU_FONT.render(
                 CHOSEN_OPTION_STR,
                 False,
-                YELLOW if menu is self.game_options_menu.option else WHITE
+                OPTION_COLOR
             )
-            self.window.blit(CHOSEN_OPTION_TEXT, (TEXT_X_POS, current_text_y_pos))
+            CHOSEN_OPTION_RECT = CHOSEN_OPTION_TEXT.get_rect()
+            CHOSEN_OPTION_RECT.topleft = (LEFT_ARROW_RECT.right, y_blit_pos)
 
-            current_text_y_pos += 2 * self.block_width_2D
-        
+            RIGHT_ARROW_RECT = LEFT_ARROW_RECT.copy()
+            RIGHT_ARROW_RECT.x = CHOSEN_OPTION_RECT.right
+
+            # RENDER < > arrows and BLIT option text
+            pygame.draw.polygon(self.window, OPTION_COLOR, (LEFT_ARROW_RECT.midleft, LEFT_ARROW_RECT.topright, LEFT_ARROW_RECT.bottomright))
+            self.window.blit(CHOSEN_OPTION_TEXT, CHOSEN_OPTION_RECT.topleft)
+            pygame.draw.polygon(self.window, OPTION_COLOR, (RIGHT_ARROW_RECT.bottomleft, RIGHT_ARROW_RECT.topleft, RIGHT_ARROW_RECT.midright))
+
+            if CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS):
+                self.game_options_menu.option_index = index
+                mouse_hovered_menu = True
+            # hovering over the options automatically highlighting them
+            # as if the user were scrolling through them with W/S
+            # would be quite nice!
+
+            y_blit_pos += self.block_width_2D
+
+            # HANDLE ARROW INPUTS:
+
+            # checks if user clicked IN each arrow individually
+            if STARTED_CLICKING_THIS_FRAME:
+                if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS):
+                    menu.move_to_previous()
+                elif RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
+                    menu.move_to_next()
+
+        # RENDER "Play!" BUTTON:
+
+        y_blit_pos += self.block_width_2D
+
+        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, (0, 0, 0xC0))
+        PLAY_BUTTON_POS = ((self.WIDTH >> 1) - (PLAY_BUTTON.get_width() >> 1), y_blit_pos)
+        self.window.blit(PLAY_BUTTON, PLAY_BUTTON_POS)
+
+        # HANDLE CLICK IN "Play!" BUTTON:
+        PLAY_RECT = PLAY_BUTTON.get_rect()
+        PLAY_RECT.topleft = PLAY_BUTTON_POS
+
+        if STARTED_CLICKING_THIS_FRAME and PLAY_RECT.collidepoint(*MOUSE_POS):
+            self.start_game()
+        # game should start IMMEDIATELY if the button is pressed,
+        # without altering options last-frame.
+        # Right now, that's already being achieved.
+
+        # Draw controls strings: (last thing to do here)
         CONTROLS_STRINGS = (
             "W/S: scroll through menu",
             "A/D: change option ENTER: play",
@@ -390,7 +535,7 @@ class Window:
 
         BORDER_BOTTOM: int = self.HEIGHT - self.colored_border_pixel_width
 
-        current_text_y_pos: int = BORDER_BOTTOM
+        TITLE_Y_POS: int = BORDER_BOTTOM
         """
         Now we're using it to blit the controls texts
         from the bottom-border-up
@@ -399,31 +544,11 @@ class Window:
         for control_str in reversed(CONTROLS_STRINGS):
             CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
 
-            current_text_y_pos -= CONTROL_TEXT.get_height()
+            TITLE_Y_POS -= CONTROL_TEXT.get_height()
 
             self.window.blit(
-                CONTROL_TEXT, (TEXT_X_POS, current_text_y_pos)
+                CONTROL_TEXT, (LEFT_INSIDE_BORDER, TITLE_Y_POS)
             )
-
-        # DRAWING DONE, HANDLING MENU INPUTS
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.game_options_menu.move_to_next()
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.game_options_menu.move_to_previous()
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.game_options_menu.option.move_to_next()
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.game_options_menu.option.move_to_previous()
-
-                if event.key == pygame.K_RETURN:
-                    self.init_game()
-                    self.frame_handler = self.handle_game_frame
 
     def handle_game_frame(self):
         """
@@ -510,6 +635,10 @@ class Window:
         TEXT_POS[1] += 4 * self.block_width_2D
         # we want the options to be one tile of distance from the score text
 
+        MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
+        # We need to have the mouse's position THIS FRAME,
+        # to click the menu options.
+
         OPTION_FONT = self.text_font_fit_to_screen(
             max(self.game_over_menu.options, key=lambda option: len(str(option))),
             # To make sure both menu options fit the screen's width,
@@ -519,18 +648,31 @@ class Window:
             FONT_NAME
         )
 
-        for option in self.game_over_menu.options:
+        mouse_hovered_option_index: int = None
+
+        for option_index, option_rect in enumerate(self.game_over_menu.options):
             OPTION_TEXT = OPTION_FONT.render(
-                option,
+                option_rect,
                 False,
-                YELLOW if option == self.game_over_menu.option else WHITE
+                YELLOW if option_rect == self.game_over_menu.option else WHITE
             )
+            OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
+            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = TEXT_POS
+
+            if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
+                mouse_hovered_option_index = option_index
+
             self.window.blit(OPTION_TEXT, TEXT_POS)
+
             TEXT_POS[1] += self.block_width_2D
 
         for event in pygame.event.get():
+            # user presses X button of window
+            # (or red buton in Mac)
             if event.type == pygame.QUIT:
                 self.running = False
+            
+            option_chosen: bool = False
 
             if event.type == pygame.KEYDOWN:
                 # move around menu
@@ -539,13 +681,25 @@ class Window:
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
                     self.game_over_menu.move_to_previous()
 
-                # submit menu selection
+                # submit menu selection: ENTER key OR MOUSE CLICK
                 if event.key == pygame.K_RETURN:
-                    if self.game_over_menu.option == "Quit":
-                        self.running = False
-                        # quit
-                    else:  # elif menu.option == "Back to title screen"
-                        self.frame_handler = self.handle_title_screen_frame
+                    option_chosen = True
+            
+            if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
+                # (we know if the user clicked one, and which one the clicked,
+                # if 'mouse_hovered_option_index' is not None.)
+                if mouse_hovered_option_index is not None:
+                    self.game_over_menu.option_index = mouse_hovered_option_index
+                    option_chosen = True
+
+            # HANDLE SELECTED OPTION
+            if option_chosen:
+                if self.game_over_menu.option == "Quit":
+                    self.running = False
+                    # quit
+                else:  # elif menu.option == "Back to title screen"
+                    self.frame_handler = self.handle_title_screen_frame
 
         CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
         CONTROLS_FONT = self.text_font_fit_to_screen(
