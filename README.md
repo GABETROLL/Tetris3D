@@ -33,15 +33,21 @@ On Debian-based Linux:
 ```
 $ sudo apt install git
 ```
-### Pygame
-<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>\
-https://www.pygame.org/wiki/GettingStarted\
-
 ## Installation
 ```
 $ git clone git@github.com:GABETROLL/Tetris3D.git
 $ cd Tetris3D/
 ```
+### Install Pygame and Numpy
+Easy script:
+```
+$ pip install -r requirements.txt
+```
+Or do it youeself:
+<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>\
+https://www.pygame.org/wiki/GettingStarted\
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/NumPy_logo_2020.svg/1200px-NumPy_logo_2020.svg.png" alt="Numpy logo"/>\
+https://numpy.org/
 ## Run
 ```
 $ python3.11 main.py
