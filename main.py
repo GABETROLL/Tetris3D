@@ -605,15 +605,16 @@ class Window:
 
         # Draw controls strings: (last thing to do here)
         CONTROLS_STRINGS = (
+            "Controls:",
             "W/S: scroll through menu",
-            "A/D: change option ENTER: play",
-            "Controls: "
+            "A/D: change option",
+            "ENTER: play",
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
             WIDTH_INSIDE_BORDER,
-            self.block_width_2D,
+            self.block_width_2D >> 1,
             "Consolas"
         )
 
@@ -628,11 +629,11 @@ class Window:
         for control_str in reversed(CONTROLS_STRINGS):
             CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
 
-            TITLE_Y_POS -= CONTROL_TEXT.get_height()
-
             self.window.blit(
                 CONTROL_TEXT, (LEFT_INSIDE_BORDER, TITLE_Y_POS)
             )
+
+            TITLE_Y_POS -= CONTROL_TEXT.get_height()
 
     def handle_game_frame(self):
         """
@@ -806,7 +807,7 @@ class Window:
 
         self.window.blit(CONTROLS_TEXT, TEXT_POS)
 
-        TEXT_POS[1] += CONTROLS_TITLE.get_height()
+        TEXT_POS[1] -= CONTROLS_TITLE.get_height()
 
         self.window.blit(CONTROLS_TITLE, TEXT_POS)
 
@@ -911,11 +912,13 @@ class Window:
         )
 
         CONTROLS_STRINGS = (
-            "A/D: move piece LEFT/RIGHT",
-            "S/LEFT SHIFT: SOFT-DROP",
-            "SPACEBAR: HARD-DROP",
-            "U: rotate counter-clockwise",
-            "O: rotate clockwise"
+            "A : <-",
+            "D : ->",
+            "S/LSHIFT:",
+            "SOFT-DROP",
+            "SPACEBAR:",
+            "HARD-DROP",
+            "U/O: rotate"
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
