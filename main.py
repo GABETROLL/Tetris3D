@@ -63,8 +63,11 @@ class Menu:
 
 
 class Window:
-    BORDER_WIDTH = 20
-    """in pixels"""
+    GREY_BORDER_WIDTH = 20
+    """
+    For the 2D board,
+    measured in pixels.
+    """
 
     def __init__(self, board_height: int, font: pygame.font.Font):
         # We have to make sure the board )and the next piece) can fit in the window.
@@ -834,9 +837,9 @@ class Window:
         # DRAW BOARD:
 
         # board outline
-        NEXT_PIECE_OUTLINE = pygame.Surface((BOARD_WIDTH + (Window.BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.BORDER_WIDTH << 1)))
+        NEXT_PIECE_OUTLINE = pygame.Surface((BOARD_WIDTH + (Window.GREY_BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.GREY_BORDER_WIDTH << 1)))
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
-        self.window.blit(NEXT_PIECE_OUTLINE, (BOARD_POS[0] - Window.BORDER_WIDTH, BOARD_POS[1] - Window.BORDER_WIDTH))
+        self.window.blit(NEXT_PIECE_OUTLINE, (BOARD_POS[0] - Window.GREY_BORDER_WIDTH, BOARD_POS[1] - Window.GREY_BORDER_WIDTH))
 
         # board background
         board = pygame.Surface((BOARD_WIDTH, self.BOARD_HEIGHT))
@@ -864,8 +867,8 @@ class Window:
         BOARD_RIGHT = BOARD_POS[0] + BOARD_WIDTH
 
         NEXT_PIECE_OUTLINE = pygame.Surface((
-            NEXT_PIECE_BOX_WIDTH + (Window.BORDER_WIDTH << 1),
-            NEXT_PIECE_BOX_HEIGHT + (Window.BORDER_WIDTH << 1)
+            NEXT_PIECE_BOX_WIDTH + (Window.GREY_BORDER_WIDTH << 1),
+            NEXT_PIECE_BOX_HEIGHT + (Window.GREY_BORDER_WIDTH << 1)
         ))
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
         NEXT_PIECE_OUTLINE_POS = (
@@ -887,7 +890,7 @@ class Window:
             next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
         
         NEXT_PIECE_BOX_POS = (
-            BOARD_RIGHT + Window.BORDER_WIDTH,
+            BOARD_RIGHT + Window.GREY_BORDER_WIDTH,
             BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (next_piece_box.get_height() >> 1)
         )
         
@@ -927,7 +930,7 @@ class Window:
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
-            BOARD_POS[0] - Window.BORDER_WIDTH,
+            BOARD_POS[0] - Window.GREY_BORDER_WIDTH,
             self.HEIGHT,
             "consolas"
         )
