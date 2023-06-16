@@ -23,7 +23,7 @@ class GameControl:
     """
 
     STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
-    def __init__(self, direction_keys: dict[int, str], forefeit_key: int):
+    def __init__(self, direction_keys: dict[int, str]):
         """
         'direction_keys' should be a dictionary of pygame keyboard codes
         (like 'pygame.K_a') and directions ('LEFT', 'UP', ...)
@@ -41,7 +41,6 @@ class GameControl:
         "DAS" = "delayed auto shift".
         direction_key: charge setting (same as STARTING_DAS above)
         """
-        self.forefeit_key = forefeit_key
         self.game_can_continue = True
 
     @staticmethod
@@ -87,13 +86,9 @@ class GameControl:
     def input_handler(self, key_down_keys: set[int]):
         """
         Checks for pygame key inputs and plays game accordingly.
-        Checks for the player pressing 'self.forefeit_key',
-        to end the game.
-
-        Please call in overrides.
+        (abstract method to overriden in GameControl2D and GameControl3D)
         """
-        if self.forefeit_key in key_down_keys:
-            self.game_can_continue = False
+        raise NotImplementedError
 
     def play_game_step(self, key_down_keys: set[int]) -> bool:
         """
@@ -127,11 +122,10 @@ class GameControl:
 
 
 class GameControl2D(GameControl):
-    def __init__(self, forefeit_key: int):
+    def __init__(self):
         GameControl.__init__(
             self, 
-            {pygame.K_a: LEFT, pygame.K_d: RIGHT},
-            forefeit_key
+            {pygame.K_a: LEFT, pygame.K_d: RIGHT}
         )
         self.game = Game2D()
 
@@ -140,7 +134,6 @@ class GameControl2D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
         if pygame.K_o in key_down_keys:
@@ -168,14 +161,13 @@ class GameControl2D(GameControl):
 
 
 class GameControl3D(GameControl):
-    def __init__(self, forefeit_key: int):
+    def __init__(self):
         GameControl.__init__(
             self, 
             {
                 pygame.K_a: LEFT, pygame.K_d: RIGHT,
                 pygame.K_s: FRONT, pygame.K_w: BACK
-            },
-            forefeit_key
+            }
         )
         self.game = Game3D()
 
@@ -184,7 +176,6 @@ class GameControl3D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
         if keys[pygame.K_LSHIFT] and not self.game.landed():
