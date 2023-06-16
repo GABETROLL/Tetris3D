@@ -696,15 +696,15 @@ class Window:
 
         GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, WHITE)
 
-        TEXT_POS = [
+        text_pos = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
             self.colored_border_pixel_width
         ]
         # should be "moved" vertically,
         # to make sure the texts don't overlap
 
-        self.window.blit(GAME_OVER_TEXT, TEXT_POS)
-        TEXT_POS[1] += 3 * self.block_width_2D
+        self.window.blit(GAME_OVER_TEXT, text_pos)
+        text_pos[1] += 3 * self.block_width_2D
         # "GAME OVER" should occupy 3 tiles vertically,
         # and we want the score to be directly under the "GAME OVER",
         # so the new text pos should be 3 tiles below.
@@ -713,10 +713,10 @@ class Window:
         SCORE_FONT = self.text_font_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
         SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
 
-        TEXT_POS[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
-        self.window.blit(SCORE_TEXT, TEXT_POS)
+        text_pos[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
+        self.window.blit(SCORE_TEXT, text_pos)
 
-        TEXT_POS[1] += 4 * self.block_width_2D
+        text_pos[1] += 4 * self.block_width_2D
         # we want the options to be one tile of distance from the score text
 
         MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
@@ -741,14 +741,14 @@ class Window:
                 YELLOW if option_rect == self.game_over_menu.option else WHITE
             )
             OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
-            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = TEXT_POS
+            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = text_pos
 
             if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
                 mouse_hovered_option_index = option_index
 
-            self.window.blit(OPTION_TEXT, TEXT_POS)
+            self.window.blit(OPTION_TEXT, text_pos)
 
-            TEXT_POS[1] += self.block_width_2D
+            text_pos[1] += self.block_width_2D
 
         for event in pygame.event.get():
             # user presses X button of window
@@ -788,24 +788,27 @@ class Window:
                 else:  # elif menu.option == "Back to title screen"
                     self.frame_handler = self.handle_title_screen_frame
 
-        CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
+        CONTROLS_STRINGS = (
+            "Controls:",
+            f"{'/'.join(self.key_controls_names['UP'] + self.key_controls_names['DOWN'])}: scroll through menu",
+            f"{'/'.join(self.key_controls_names['menu_submit'])}: choose option"
+        )
         CONTROLS_FONT = self.text_font_fit_to_screen(
-            CONTROLS_STR,
+            max(CONTROLS_STRINGS, key=lambda control_string: len(control_string)),
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             FONT_NAME
         )
-        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
-        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
 
         BOTTOM_INSIDE_BORDER: int = self.HEIGHT - self.colored_border_pixel_width
-        TEXT_POS = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER - CONTROLS_TEXT.get_height()]
+        text_pos = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER]
 
-        self.window.blit(CONTROLS_TEXT, TEXT_POS)
+        for control_string in reversed(CONTROLS_STRINGS):
+            CONTROL_TEXT = CONTROLS_FONT.render(control_string, False, WHITE)
 
-        TEXT_POS[1] -= CONTROLS_TITLE.get_height()
+            text_pos[1] -= CONTROL_TEXT.get_height()
 
-        self.window.blit(CONTROLS_TITLE, TEXT_POS)
+            self.window.blit(CONTROL_TEXT, text_pos)
 
     def draw_2d(self):
         """
