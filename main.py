@@ -74,6 +74,8 @@ class Window:
         self.HEIGHT = board_height
         self.WIDTH = self.HEIGHT
 
+        pygame.init()
+
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
@@ -104,6 +106,21 @@ class Window:
         (TODO: MAKE THEM TETROMINOS)
         """
         self._init_border()
+
+        self.key_controls_names: dict[str, str] = {
+            action: key_names
+            for action, key_names in load_from_json(open("keyboard_settings.json")).items()
+        }
+
+        self.key_controls: dict[str, int] = {
+            action: [pygame.key.key_code(key_name) for key_name in key_names]
+            for action, key_names in self.key_controls_names.items()
+        }
+        """
+        Dict of modes and their actions,
+        together with the list of key CODES (aka pygame.K_{key_name})
+        that perform that action.
+        """
 
         self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
@@ -143,12 +160,10 @@ class Window:
         and assigns 'self.frame_handler' to 'self.handle_game_frame'
         to start the game screen's loop.
         """
-        FORFEIT_KEY = pygame.K_ESCAPE
-
         if self.mode_menu.option == "2D":
-            self.controls = GameControl2D(FORFEIT_KEY)
+            self.controls = GameControl2D()
         elif self.mode_menu.option == "3D":
-            self.controls = GameControl3D(FORFEIT_KEY)
+            self.controls = GameControl3D()
         else:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
@@ -303,68 +318,47 @@ class Window:
                     self.running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key in self.key_controls["toggle_controls_screen"]:
                         return
 
-            CONTROLS_JSON = load_from_json(open('keyboard_settings.json'))
-            assert type(CONTROLS_JSON) == dict
+            assert type(self.key_controls) == dict
 
             self.window.fill(BLACK)
 
             self._draw_design_border()
 
-            SECTION_NAME_FONT_HEIGHT = 2 * self.block_width_2D
             WIDTH_INSIDE_BORDER = self.WIDTH - (self.colored_border_pixel_width << 1)
 
-            SECTION_NAME_FONT = self.text_font_fit_to_screen(
-                max(CONTROLS_JSON, key=lambda section_name: len(section_name)),
-                WIDTH_INSIDE_BORDER,
-                SECTION_NAME_FONT_HEIGHT,
+            CONTROLS_FONT_HEIGHT = self.block_width_2D
+            CONTROLS_FONT = self.text_font_fit_to_screen(
+                max(
+                    list(self.key_controls.keys()) + list(self.key_controls.values()),
+                    key=lambda control_string: len(control_string)
+                ),
+                WIDTH_INSIDE_BORDER >> 1,
+                # each control row looks like this:
+                # action: key
+                # We want to have them at the left...
+                # ...and right halves of the screen.
+                CONTROLS_FONT_HEIGHT,
                 "consolas"
             )
 
-            blit_y_pos = self.colored_border_pixel_width
-
-            SECTION_CONTROLS_FONT_HEIGHT = self.block_width_2D
-
-            for section_name, section_controls in CONTROLS_JSON.items():
-                assert type(section_controls) == dict
-
-                SECTION_NAME_TEXT = SECTION_NAME_FONT.render(section_name, False, WHITE)
-                self.window.blit(SECTION_NAME_TEXT, (self.colored_border_pixel_width, blit_y_pos))
-
-                blit_y_pos += SECTION_NAME_FONT_HEIGHT
-
-                SECTION_CONTROLS_FONT = self.text_font_fit_to_screen(
-                    max(
-                        list(section_controls.keys()) + list(section_controls.values()),
-                        key=lambda control_string: len(control_string)
-                    ),
-                    WIDTH_INSIDE_BORDER >> 1,
-                    # each control row looks like this:
-                    # action: key
-                    # We want to have them at the left...
-                    # ...and right halves of the screen.
-                    SECTION_CONTROLS_FONT_HEIGHT,
-                    "consolas"
-                )
-
+            for blit_y_pos, (action, key) in zip(
+                count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
+                self.key_controls.items()
+                ):
                 LEFT_COLUMN_X_POS = self.colored_border_pixel_width
                 # aka the LEFT EDGE of the LEFT HALF inside the border
                 RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + (WIDTH_INSIDE_BORDER >> 1)
                 # aka the LEFT EDGE of the RIGHT HALF inside the border
 
-                for action, key in section_controls.items():
-                    ACTION_TEXT = SECTION_CONTROLS_FONT.render(action, False, WHITE)
-                    KEY_TEXT = SECTION_CONTROLS_FONT.render(f": {key}", False, WHITE)
+                ACTION_TEXT = CONTROLS_FONT.render(action, False, WHITE)
+                KEY_TEXT = CONTROLS_FONT.render(f": {key}", False, WHITE)
 
-                    self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
+                self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
-                    blit_y_pos += SECTION_CONTROLS_FONT_HEIGHT
-
-                    self.window.blit(KEY_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
-
-                    blit_y_pos += SECTION_CONTROLS_FONT_HEIGHT
+                self.window.blit(KEY_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
 
             pygame.display.update()
 
@@ -499,22 +493,21 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 # ENTER controls screen, UNTIL user decides to exit it.
-                # BOTH WITH ESCAPE.
-                if event.key == pygame.K_ESCAPE:
+                if event.key in self.key_controls["toggle_controls_screen"]:
                     self.controls_screen_loop()
 
                 # scroll through sub-menus/menu options WITH KEYBOARD
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                if event.key in self.key_controls["DOWN"]:
                     self.game_options_menu.move_to_next()
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if event.key in self.key_controls["UP"]:
                     self.game_options_menu.move_to_previous()
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                if event.key in self.key_controls["RIGHT"]:
                     self.game_options_menu.option.move_to_next()
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                if event.key in self.key_controls["LEFT"]:
                     self.game_options_menu.option.move_to_previous()
-                
-                # press ENTER to start game
-                if event.key == pygame.K_RETURN:
+
+                # press "Play!" button" or its key
+                if event.key in self.key_controls["menu_submit"]:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
@@ -606,9 +599,9 @@ class Window:
         # Draw controls strings: (last thing to do here)
         CONTROLS_STRINGS = (
             "Controls:",
-            "W/S: scroll through menu",
-            "A/D: change option",
-            "ENTER: play",
+            f"{'/'.join(self.key_controls_names['UP'])}/{'/'.join(self.key_controls_names['DOWN'])}: move down",
+            f"{'/'.join(self.key_controls_names['LEFT'])}/{'/'.join(self.key_controls_names['RIGHT'])}: change option",
+            f"{'/'.join(self.key_controls_names['menu_submit'])}: play",
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
@@ -649,7 +642,10 @@ class Window:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
         
-        if pygame.K_ESCAPE in key_down_keys:
+        if any(
+            toggle_controls_screen_key in key_down_keys
+            for toggle_controls_screen_key in self.key_controls["toggle_controls_screen"]
+        ):
             self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
@@ -764,18 +760,18 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 # Enter controls screen
-                if event.key == pygame.K_s or event.key == pygame.K_ESCAPE:
+                if event.key in self.key_controls["toggle_controls_screen"]:
                     self.controls_screen_loop()
                 # move around menu
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                if event.key in self.key_controls["DOWN"]:
                     self.game_over_menu.move_to_next()
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if event.key in self.key_controls["UP"]:
                     self.game_over_menu.move_to_previous()
 
                 # submit menu selection: ENTER key OR MOUSE CLICK
-                if event.key == pygame.K_RETURN:
+                if event.key in self.key_controls["menu_submit"]:
                     option_chosen = True
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
                 # (we know if the user clicked one, and which one the clicked,

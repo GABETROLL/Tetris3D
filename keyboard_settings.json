@@ -1,20 +1,16 @@
 {
-    "GAME": {
-        "LEFT": ["a", "LEFT"],
-        "RIGHT": ["d", "RIGHT"],
-        "SOFT_DROP_2D": ["s"],
-        "SOFT_DROP": ["LSHIFT"],
-        "HARD_DROP": ["SPACE"],
-        "FRONT": ["s", "DOWN"],
-        "BACK": ["w", "UP"],
-        "PAUSE": "ESCAPE"
-    },
-    "MENU": {
-        "LEFT": ["a", "LEFT"],
-        "RIGHT": ["d", "RIGHT"],
-        "UP": ["w", "UP"],
-        "DOWN": ["s", "DOWN"],
-        "PLAY": ["ENTER"],
-        "SUBMIT": ["ENTER"]
-    }
+    "toggle_controls_screen": ["ESCAPE"],
+    "UP": ["w", "UP"],
+    "DOWN": ["s", "DOWN"],
+    "LEFT": ["a", "LEFT"],
+    "RIGHT": ["d", "RIGHT"],
+    "SOFT_DROP": ["left shift"],
+    "HARD_DROP": ["SPACE"],
+    "rotate_ccw_x": ["i"],
+    "rotate_cw_x": ["k"],
+    "rotate_ccw_y": ["u"],
+    "rotate_cw_y": ["o"],
+    "rotate_ccw_z": ["l"],
+    "rotate_cw_z": ["j"],
+    "menu_submit": ["ENTER"]
 }
