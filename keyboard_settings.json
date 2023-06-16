@@ -1,9 +1,9 @@
 {
     "toggle_controls_screen": ["ESCAPE"],
-    "UP": ["F", "UP"],
-    "DOWN": ["G", "DOWN"],
-    "LEFT": ["H", "LEFT"],
-    "RIGHT": ["T", "RIGHT"],
+    "UP": ["W", "UP"],
+    "DOWN": ["S", "DOWN"],
+    "LEFT": ["A", "LEFT"],
+    "RIGHT": ["D", "RIGHT"],
     "SOFT_DROP": ["left shift"],
     "HARD_DROP": ["SPACE"],
     "rotate_ccw_x": ["I"],
