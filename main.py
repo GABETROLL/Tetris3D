@@ -911,18 +911,23 @@ class Window:
         )
 
         CONTROLS_STRINGS = (
-            "A : <-",
-            "D : ->",
-            "S/LSHIFT:",
-            "SOFT-DROP",
-            "SPACEBAR:",
-            "HARD-DROP",
-            "U/O: rotate"
+            "LEFT:",
+            f"{'/'.join(self.key_controls_names['LEFT'])}",
+            "RIGHT:",
+            f"{'/'.join(self.key_controls_names['RIGHT'])}",
+            "SOFT_DROP:",
+            f"{'/'.join(self.key_controls_names['SOFT_DROP'])}",
+            "HARD-DROP:",
+            f"{'/'.join(self.key_controls_names['HARD_DROP'])}",
+            "ROTATE CCW:",
+            f"{'/'.join(self.key_controls_names['rotate_ccw_y'])}",
+            "ROTATE CW:",
+            f"{'/'.join(self.key_controls_names['rotate_cw_y'])}"
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
-            BOARD_POS[0],
+            BOARD_POS[0] - Window.BORDER_WIDTH,
             self.HEIGHT,
             "consolas"
         )
