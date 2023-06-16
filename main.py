@@ -1331,15 +1331,22 @@ class Window:
 
         CONTROLS_STRINGS = (
             "Controls:"
-            "A: LEFT",
-            "D: RIGHT",
-            "W: BACK",
-            "S: FRONT",
-            "LSHIFT: SOFT-DROP",
-            "SPACEBAR: HARD-DROP",
-            "I/K: ROTATE AROUND X",
-            "U/O: ROTATE AROUND Y",
-            "L/J: ROTATE AROUND Z"
+            f"LEFT : {'/'.join(self.key_controls_names['LEFT'])}",
+            f"RIGHT : {'/'.join(self.key_controls_names['RIGHT'])}",
+            f"BACK: {'/'.join(self.key_controls_names['UP'])}",
+            f"FRONT: {'/'.join(self.key_controls_names['DOWN'])}",
+            f"SOFT-DROP: {'/'.join(self.key_controls_names['SOFT_DROP'])}",
+            f"HARD_DROP: {'/'.join(self.key_controls_names['HARD_DROP'])}",
+        ) + sum(
+            (
+                (
+                    f"Rotate around {axis_name}:"
+                    f"CW: {'/'.join(self.key_controls_names[f'rotate_cw_{axis_name}'])}",
+                    f"CCW: {'/'.join(self.key_controls_names[f'rotate_ccw_{axis_name}'])}"
+                )
+                for axis_name in "xyz"
+            ),
+            start=()
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
@@ -1351,7 +1358,7 @@ class Window:
 
         control_text_y_pos = self.HEIGHT
 
-        for control_str in CONTROLS_STRINGS:
+        for control_str in reversed(CONTROLS_STRINGS):
             CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
 
             control_text_y_pos -= CONTROL_TEXT.get_height()
