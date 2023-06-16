@@ -1322,6 +1322,35 @@ class Window:
 
         self.window.blit(NEXT_PIECE_TEXT, NEXT_PIECE_TEXT_POS)
 
+        CONTROLS_STRINGS = (
+            "Controls:"
+            "A: LEFT",
+            "D: RIGHT",
+            "W: BACK",
+            "S: FRONT",
+            "LSHIFT: SOFT-DROP",
+            "SPACEBAR: HARD-DROP",
+            "I/K: ROTATE AROUND X",
+            "U/O: ROTATE AROUND Y",
+            "L/J: ROTATE AROUND Z"
+        )
+
+        CONTROLS_FONT = self.text_font_fit_to_screen(
+            max(CONTROLS_STRINGS, key=lambda s: len(s)),
+            (self.WIDTH - FRONT_SLICE_FRONT_WIDTH) >> 1,
+            self.block_width_2D,
+            "consolas"
+        )
+
+        control_text_y_pos = self.HEIGHT
+
+        for control_str in CONTROLS_STRINGS:
+            CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
+
+            control_text_y_pos -= CONTROL_TEXT.get_height()
+
+            self.window.blit(CONTROL_TEXT, (0, control_text_y_pos))
+
     def draw_score(self):
         """Draws score and level text at the top of the board."""
         white = WHITE
