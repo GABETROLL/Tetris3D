@@ -12,5 +12,5 @@
     "rotate_cw_y": ["o"],
     "rotate_ccw_z": ["l"],
     "rotate_cw_z": ["j"],
-    "menu_submit": ["ENTER"]
+    "menu_submit": ["RETURN"]
 }

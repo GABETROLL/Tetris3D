@@ -768,7 +768,7 @@ class Window:
                 if event.key in self.key_controls["UP"]:
                     self.game_over_menu.move_to_previous()
 
-                # submit menu selection: ENTER key OR MOUSE CLICK
+                # submit menu selection
                 if event.key in self.key_controls["menu_submit"]:
                     option_chosen = True
 
