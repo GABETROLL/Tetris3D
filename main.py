@@ -321,7 +321,7 @@ class Window:
                     if event.key in self.key_controls["toggle_controls_screen"]:
                         return
 
-            assert type(self.key_controls) == dict
+            assert type(self.key_controls_names) == dict
 
             self.window.fill(BLACK)
 
@@ -332,7 +332,7 @@ class Window:
             CONTROLS_FONT_HEIGHT = self.block_width_2D
             CONTROLS_FONT = self.text_font_fit_to_screen(
                 max(
-                    list(self.key_controls.keys()) + list(self.key_controls.values()),
+                    list(self.key_controls_names.keys()) + list(self.key_controls_names.values()),
                     key=lambda control_string: len(control_string)
                 ),
                 WIDTH_INSIDE_BORDER >> 1,
@@ -344,9 +344,9 @@ class Window:
                 "consolas"
             )
 
-            for blit_y_pos, (action, key) in zip(
+            for blit_y_pos, (action, action_keys) in zip(
                 count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
-                self.key_controls.items()
+                self.key_controls_names.items()
                 ):
                 LEFT_COLUMN_X_POS = self.colored_border_pixel_width
                 # aka the LEFT EDGE of the LEFT HALF inside the border
@@ -354,11 +354,11 @@ class Window:
                 # aka the LEFT EDGE of the RIGHT HALF inside the border
 
                 ACTION_TEXT = CONTROLS_FONT.render(action, False, WHITE)
-                KEY_TEXT = CONTROLS_FONT.render(f": {key}", False, WHITE)
+                KEYS_TEXT = CONTROLS_FONT.render(f": {' | '.join(action_keys)}", False, WHITE)
 
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
-                self.window.blit(KEY_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
+                self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
 
             pygame.display.update()
 
