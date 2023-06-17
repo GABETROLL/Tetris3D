@@ -77,8 +77,6 @@ class Window:
         self.HEIGHT = board_height
         self.WIDTH = self.HEIGHT
 
-        pygame.init()
-
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
@@ -1378,5 +1376,4 @@ class Window:
 
 
 if __name__ == "__main__":
-    pygame.init()
     Window(800, pygame.font.SysFont("consolas", 30))
