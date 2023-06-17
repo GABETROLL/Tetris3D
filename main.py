@@ -33,6 +33,7 @@ WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
+BUTTON_COLOR = (0, 0, 0xC0)
 
 
 @dataclass
@@ -305,7 +306,32 @@ class Window:
             )
 
         # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
-    
+
+    def _handle_controls_screen_button(
+            self,
+            button_rect: pygame.Rect
+        ) -> bool:
+        """
+        Renders "Controls" button in 'consolas' font,
+        with 'BUTTON_COLOR' background and 'WHITE' background,
+
+        and RETURNS weather or not being HOVERED
+        """
+        CONTROLS_STR = "Controls"
+        CONTROLS_FONT = self.text_font_fit_to_screen(
+            CONTROLS_STR,
+            button_rect.width,
+            button_rect.height,
+            "consolas"
+        )
+        pygame.draw.rect(self.window, BUTTON_COLOR, button_rect)
+        self.window.blit(
+            CONTROLS_FONT.render(CONTROLS_STR, False, WHITE),
+            (button_rect.topleft)
+        )
+
+        return button_rect.collidepoint(pygame.mouse.get_pos())
+
     def controls_screen_loop(self):
         """
         Displays all keyboard inputs and what they do, described in
@@ -314,6 +340,8 @@ class Window:
         Returns when player presses ESCAPE.
         """
         while self.running:
+            STARTED_CLICKING_THIS_FRAME: bool = False
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -321,6 +349,9 @@ class Window:
                 if event.type == pygame.KEYDOWN:
                     if event.key in self.key_controls["toggle_controls_screen"]:
                         return
+                
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    STARTED_CLICKING_THIS_FRAME = True
 
             assert type(self.key_controls_names) == dict
 
@@ -483,11 +514,14 @@ class Window:
         (which are sideways, but they should scroll RIGHT)
         """
 
+        STARTED_CLICKING_THIS_FRAME: bool = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
-            STARTED_CLICKING_THIS_FRAME = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+            
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                STARTED_CLICKING_THIS_FRAME = True
 
             SCROLLING_UP = event.type == pygame.MOUSEWHEEL and event.y < 0
             SCROLLING_DOWN = event.type == pygame.MOUSEWHEEL and event.y > 0
@@ -521,6 +555,16 @@ class Window:
                 self.game_options_menu.option.move_to_next()
             elif SCROLLING_DOWN:
                 self.game_options_menu.option.move_to_previous()
+
+        if self._handle_controls_screen_button(
+            pygame.Rect(
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                4 * self.block_width_2D,
+                1 * self.block_width_2D
+            )
+        ) and STARTED_CLICKING_THIS_FRAME:
+            self.controls_screen_loop()
 
         # RENDER MENU:
 
@@ -583,7 +627,7 @@ class Window:
 
         y_blit_pos += self.block_width_2D
 
-        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, (0, 0, 0xC0))
+        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, BUTTON_COLOR)
         PLAY_BUTTON_POS = ((self.WIDTH >> 1) - (PLAY_BUTTON.get_width() >> 1), y_blit_pos)
         self.window.blit(PLAY_BUTTON, PLAY_BUTTON_POS)
 
@@ -635,6 +679,8 @@ class Window:
         """
         key_down_keys = set()
 
+        STARTED_CLICKING_THIS_FRAME: bool = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -642,11 +688,19 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
-        
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                STARTED_CLICKING_THIS_FRAME = True
+            # neither should the controls button click
+
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
+            pygame.Rect(0, 0, 4 * self.block_width_2D, 1 * self.block_width_2D)
+        ) and STARTED_CLICKING_THIS_FRAME
+
         if any(
             toggle_controls_screen_key in key_down_keys
             for toggle_controls_screen_key in self.key_controls["toggle_controls_screen"]
-        ):
+        ) or STARTED_CLICKING_CONTROLS_BUTTON:
             self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
@@ -750,6 +804,8 @@ class Window:
             self.window.blit(OPTION_TEXT, text_pos)
 
             text_pos[1] += self.block_width_2D
+        
+        STARTED_CLICKING_THIS_FRAME: bool = False
 
         for event in pygame.event.get():
             # user presses X button of window
@@ -774,6 +830,8 @@ class Window:
                     option_chosen = True
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                STARTED_CLICKING_THIS_FRAME = True
+
                 # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
                 # (we know if the user clicked one, and which one the clicked,
                 # if 'mouse_hovered_option_index' is not None.)
@@ -788,6 +846,17 @@ class Window:
                     # quit
                 else:  # elif menu.option == "Back to title screen"
                     self.frame_handler = self.handle_title_screen_frame
+        
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
+            pygame.Rect(
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                4 * self.block_width_2D,
+                1 * self.block_width_2D)
+        ) and STARTED_CLICKING_THIS_FRAME
+
+        if STARTED_CLICKING_CONTROLS_BUTTON:
+            self.controls_screen_loop()
 
         CONTROLS_STRINGS = (
             "Controls:",
