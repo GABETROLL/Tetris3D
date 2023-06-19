@@ -2,6 +2,23 @@ import pygame
 from game.game_2d import Game2D
 from game.game_3d import Game3D, X_AXIS, Y_AXIS, Z_AXIS
 from game.move_data import *
+from json import load as load_from_json
+from collections.abc import Sequence
+
+
+pygame.init()
+
+
+CONTROLS_KEYS_NAMES: dict[str, str] = {
+                action: key_names
+            for action, key_names in load_from_json(open("keyboard_settings.json")).items()
+}
+
+
+CONTROLS_KEYS: dict[str, int] = {
+    action: tuple(pygame.key.key_code(key_name) for key_name in key_names)
+    for action, key_names in CONTROLS_KEYS_NAMES.items()
+}
 
 
 class GameControl:
@@ -23,25 +40,26 @@ class GameControl:
     """
 
     STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
-    def __init__(self, direction_keys: dict[int, str], forefeit_key: int):
+    def __init__(self, direction_keys: dict[str, Sequence[int]]):
         """
-        'direction_keys' should be a dictionary of pygame keyboard codes
-        (like 'pygame.K_a') and directions ('LEFT', 'UP', ...)
+        'direction_keys' should be a dictionary of GAME directions:
+        LEFT, RIGHT, FRONT, BACK
+        and key codes:
+        pygame.K_...
         """
         self.game = Game2D()
 
         self.frame_count = 0
 
-        self.direction_keys: dict[int, str] = direction_keys
+        self.direction_keys: dict[str, Sequence[int]] = direction_keys
         self.das = {
             direction: GameControl.STARTING_DAS.copy()
-            for direction in direction_keys.values()
+            for direction in direction_keys.keys()
         }
         """
         "DAS" = "delayed auto shift".
         direction_key: charge setting (same as STARTING_DAS above)
         """
-        self.forefeit_key = forefeit_key
         self.game_can_continue = True
 
     @staticmethod
@@ -55,8 +73,10 @@ class GameControl:
         Please call in 'self.input_handler' overrides.
         """
 
-        for direction_key, direction in self.direction_keys.items():
-            if keys[direction_key]:
+        for direction, direction_keys in self.direction_keys.items():
+
+            if any(keys[key] for key in direction_keys):
+
                 self.das[direction]["charge"] += 1
 
                 if self.das[direction]["charge"] == GameControl.SECOND_DELAY and self.das[direction]["first_das"] or\
@@ -87,13 +107,9 @@ class GameControl:
     def input_handler(self, key_down_keys: set[int]):
         """
         Checks for pygame key inputs and plays game accordingly.
-        Checks for the player pressing 'self.forefeit_key',
-        to end the game.
-
-        Please call in overrides.
+        (abstract method to overriden in GameControl2D and GameControl3D)
         """
-        if self.forefeit_key in key_down_keys:
-            self.game_can_continue = False
+        raise NotImplementedError
 
     def play_game_step(self, key_down_keys: set[int]) -> bool:
         """
@@ -127,11 +143,13 @@ class GameControl:
 
 
 class GameControl2D(GameControl):
-    def __init__(self, forefeit_key: int):
+    def __init__(self):
         GameControl.__init__(
             self, 
-            {pygame.K_a: LEFT, pygame.K_d: RIGHT},
-            forefeit_key
+            {
+                LEFT: CONTROLS_KEYS["LEFT"],
+                RIGHT: CONTROLS_KEYS["RIGHT"]
+            }
         )
         self.game = Game2D()
 
@@ -140,17 +158,23 @@ class GameControl2D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
-        if pygame.K_o in key_down_keys:
+        if key_down_keys.intersection(CONTROLS_KEYS["rotate_cw_y"]):
             self.game.try_rotate()
 
-        if pygame.K_u in key_down_keys:
+        if key_down_keys.intersection(CONTROLS_KEYS["rotate_ccw_y"]):
             self.game.try_rotate(False)
-        # Rotations shouldn't happen every frame.
+        # ANY rotation key STARTING TO BE PRESSED this frame should rotate the piece,
+        # EVEN if there's MORE THAN ONE rotation key being pressed at the same time.
+        # there should only be ONE ROTATION!!!
 
-        if (keys[pygame.K_s] or keys[pygame.K_LSHIFT]) and not self.game.landed():
+        # Rotations should ONLY happen the frist frame the key is held,
+        # to spamming the rotation every frame.
+
+        if any(
+            keys[key] for key in CONTROLS_KEYS["SOFT_DROP"] + CONTROLS_KEYS["DOWN"]
+        ) and not self.game.landed():
             self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
@@ -160,7 +184,7 @@ class GameControl2D(GameControl):
         # This makes it a lot easier to do T-spins and other things,
         # since the piece doesn't land immediatly after touching the ground.
 
-        if pygame.K_SPACE in key_down_keys:
+        if key_down_keys.intersection(CONTROLS_KEYS["HARD_DROP"]):
             self.game.try_move(HARD_DROP)
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
@@ -168,14 +192,15 @@ class GameControl2D(GameControl):
 
 
 class GameControl3D(GameControl):
-    def __init__(self, forefeit_key: int):
+    def __init__(self):
         GameControl.__init__(
             self, 
             {
-                pygame.K_a: LEFT, pygame.K_d: RIGHT,
-                pygame.K_s: FRONT, pygame.K_w: BACK
-            },
-            forefeit_key
+                LEFT: CONTROLS_KEYS["LEFT"],
+                RIGHT: CONTROLS_KEYS["RIGHT"],
+                FRONT: CONTROLS_KEYS["DOWN"],
+                BACK: CONTROLS_KEYS["UP"]
+            }
         )
         self.game = Game3D()
 
@@ -184,10 +209,9 @@ class GameControl3D(GameControl):
         Keeps track of left and right's das."""
         keys = pygame.key.get_pressed()
 
-        GameControl.input_handler(self, key_down_keys)
         GameControl.direction_input_handler(self, keys)
 
-        if keys[pygame.K_LSHIFT] and not self.game.landed():
+        if any(keys[key] for key in CONTROLS_KEYS["SOFT_DROP"]):
             self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
@@ -197,31 +221,14 @@ class GameControl3D(GameControl):
         # This makes it a lot easier to do T-spins and other things,
         # since the piece doesn't land immediatly after touching the ground.
 
-        if pygame.K_SPACE in key_down_keys:
+        if key_down_keys.intersection(CONTROLS_KEYS["HARD_DROP"]):
             self.game.try_move(HARD_DROP)
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
-
-        rotations = {
-            pygame.K_u: (Y_AXIS, False),
-            pygame.K_o: (Y_AXIS, True),
-            pygame.K_i: (X_AXIS, True),
-            pygame.K_k: (X_AXIS, False),
-            pygame.K_j: (Z_AXIS, True),
-            pygame.K_l: (Z_AXIS, False)
-        }
-        # U: rotate around the y axis counter-clockwise
-        # O: rotate around the y axis clockwise
-        # I: rotate around the x axis clockwise
-        # K: rotate around the x axis counter-clockwise
-        # J: rotate around the z axis counter-clockwise
-        # L: rotate around the z axis clockwise
-
-        # (Imagine flicking the piece from it's sides,
-        # like in 2D)
-
-        # ROTATE WITH KEYS
-        for rotation_key, (axis, clockwise) in rotations.items():
-            if rotation_key in key_down_keys:
-                self.game.try_rotate(axis, clockwise)
+        
+        for axis, axis_name in enumerate("xyz"):
+            for clockwise in (True, False):
+                ROTATION_NAME = f"rotate_{'cw' if clockwise else 'ccw'}_{axis_name}"
+                if key_down_keys.intersection(CONTROLS_KEYS[ROTATION_NAME]):
+                    self.game.try_rotate(axis, clockwise)

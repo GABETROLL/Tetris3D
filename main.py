@@ -27,11 +27,13 @@ from dataclasses import dataclass
 from random import choice as random_choice
 from collections.abc import Sequence
 from itertools import count
+from json import load as load_from_json
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
+BUTTON_COLOR = (0, 0, 0xC0)
 
 
 @dataclass
@@ -62,8 +64,11 @@ class Menu:
 
 
 class Window:
-    BORDER_WIDTH = 20
-    """in pixels"""
+    GREY_BORDER_WIDTH = 20
+    """
+    For the 2D board,
+    measured in pixels.
+    """
 
     def __init__(self, board_height: int, font: pygame.font.Font):
         # We have to make sure the board )and the next piece) can fit in the window.
@@ -104,6 +109,21 @@ class Window:
         """
         self._init_border()
 
+        self.key_controls_names: dict[str, str] = {
+            action: key_names
+            for action, key_names in load_from_json(open("keyboard_settings.json")).items()
+        }
+
+        self.key_controls: dict[str, int] = {
+            action: [pygame.key.key_code(key_name) for key_name in key_names]
+            for action, key_names in self.key_controls_names.items()
+        }
+        """
+        Dict of modes and their actions,
+        together with the list of key CODES (aka pygame.K_{key_name})
+        that perform that action.
+        """
+
         self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
         self.music_menu = Menu(("Tetris Theme", "Silence"))
@@ -142,12 +162,10 @@ class Window:
         and assigns 'self.frame_handler' to 'self.handle_game_frame'
         to start the game screen's loop.
         """
-        FORFEIT_KEY = pygame.K_ESCAPE
-
         if self.mode_menu.option == "2D":
-            self.controls = GameControl2D(FORFEIT_KEY)
+            self.controls = GameControl2D()
         elif self.mode_menu.option == "3D":
-            self.controls = GameControl3D(FORFEIT_KEY)
+            self.controls = GameControl3D()
         else:
             raise ValueError("Dimension chosen shouldn't be possible!")
 
@@ -289,6 +307,93 @@ class Window:
 
         # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
 
+    def _handle_controls_screen_button(
+            self,
+            button_rect: pygame.Rect
+        ) -> bool:
+        """
+        Renders "Controls" button in 'consolas' font,
+        with 'BUTTON_COLOR' background and 'WHITE' background,
+
+        and RETURNS weather or not being HOVERED
+        """
+        CONTROLS_STR = "Controls"
+        CONTROLS_FONT = self.text_font_fit_to_screen(
+            CONTROLS_STR,
+            button_rect.width,
+            button_rect.height,
+            "consolas"
+        )
+        pygame.draw.rect(self.window, BUTTON_COLOR, button_rect)
+        self.window.blit(
+            CONTROLS_FONT.render(CONTROLS_STR, False, WHITE),
+            (button_rect.topleft)
+        )
+
+        return button_rect.collidepoint(pygame.mouse.get_pos())
+
+    def controls_screen_loop(self):
+        """
+        Displays all keyboard inputs and what they do, described in
+        'keyboard_settings.json'.
+
+        Returns when player presses ESCAPE.
+        """
+        while self.running:
+            STARTED_CLICKING_THIS_FRAME: bool = False
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key in self.key_controls["toggle_controls_screen"]:
+                        return
+                
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    STARTED_CLICKING_THIS_FRAME = True
+
+            assert type(self.key_controls_names) == dict
+
+            self.window.fill(BLACK)
+
+            self._draw_design_border()
+
+            WIDTH_INSIDE_BORDER = self.WIDTH - (self.colored_border_pixel_width << 1)
+
+            CONTROLS_FONT_HEIGHT = self.block_width_2D
+            CONTROLS_FONT = self.text_font_fit_to_screen(
+                max(
+                    list(self.key_controls_names.keys()) + list(self.key_controls_names.values()),
+                    key=lambda control_string: len(control_string)
+                ),
+                WIDTH_INSIDE_BORDER >> 1,
+                # each control row looks like this:
+                # action: key
+                # We want to have them at the left...
+                # ...and right halves of the screen.
+                CONTROLS_FONT_HEIGHT,
+                "consolas"
+            )
+
+            for blit_y_pos, (action, action_keys) in zip(
+                count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
+                self.key_controls_names.items()
+                ):
+                LEFT_COLUMN_X_POS = self.colored_border_pixel_width
+                # aka the LEFT EDGE of the LEFT HALF inside the border
+                RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + (WIDTH_INSIDE_BORDER >> 1)
+                # aka the LEFT EDGE of the RIGHT HALF inside the border
+
+                ACTION_TEXT = CONTROLS_FONT.render(action, False, WHITE)
+                KEYS_TEXT = CONTROLS_FONT.render(f": {' | '.join(action_keys)}", False, WHITE)
+
+                self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
+
+                self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
+
+            pygame.display.update()
+
     def handle_title_screen_frame(self):
         """
         Dislays:
@@ -409,28 +514,35 @@ class Window:
         (which are sideways, but they should scroll RIGHT)
         """
 
+        STARTED_CLICKING_THIS_FRAME: bool = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
-            STARTED_CLICKING_THIS_FRAME = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+            
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                STARTED_CLICKING_THIS_FRAME = True
 
             SCROLLING_UP = event.type == pygame.MOUSEWHEEL and event.y < 0
             SCROLLING_DOWN = event.type == pygame.MOUSEWHEEL and event.y > 0
 
-            # scroll through sub-menus/menu options WITH KEYBOARD
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                # ENTER controls screen, UNTIL user decides to exit it.
+                if event.key in self.key_controls["toggle_controls_screen"]:
+                    self.controls_screen_loop()
+
+                # scroll through sub-menus/menu options WITH KEYBOARD
+                if event.key in self.key_controls["DOWN"]:
                     self.game_options_menu.move_to_next()
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if event.key in self.key_controls["UP"]:
                     self.game_options_menu.move_to_previous()
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                if event.key in self.key_controls["RIGHT"]:
                     self.game_options_menu.option.move_to_next()
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                if event.key in self.key_controls["LEFT"]:
                     self.game_options_menu.option.move_to_previous()
-                
-                # press ENTER to start game
-                if event.key == pygame.K_RETURN:
+
+                # press "Play!" button" or its key
+                if event.key in self.key_controls["menu_submit"]:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
@@ -443,6 +555,16 @@ class Window:
                 self.game_options_menu.option.move_to_next()
             elif SCROLLING_DOWN:
                 self.game_options_menu.option.move_to_previous()
+
+        if self._handle_controls_screen_button(
+            pygame.Rect(
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                4 * self.block_width_2D,
+                1 * self.block_width_2D
+            )
+        ) and STARTED_CLICKING_THIS_FRAME:
+            self.controls_screen_loop()
 
         # RENDER MENU:
 
@@ -505,7 +627,7 @@ class Window:
 
         y_blit_pos += self.block_width_2D
 
-        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, (0, 0, 0xC0))
+        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, BUTTON_COLOR)
         PLAY_BUTTON_POS = ((self.WIDTH >> 1) - (PLAY_BUTTON.get_width() >> 1), y_blit_pos)
         self.window.blit(PLAY_BUTTON, PLAY_BUTTON_POS)
 
@@ -521,15 +643,16 @@ class Window:
 
         # Draw controls strings: (last thing to do here)
         CONTROLS_STRINGS = (
-            "W/S: scroll through menu",
-            "A/D: change option ENTER: play",
-            "Controls: "
+            "Controls:",
+            f"{'/'.join(self.key_controls_names['UP'])}/{'/'.join(self.key_controls_names['DOWN'])}: move down",
+            f"{'/'.join(self.key_controls_names['LEFT'])}/{'/'.join(self.key_controls_names['RIGHT'])}: change option",
+            f"{'/'.join(self.key_controls_names['menu_submit'])}: play",
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
             WIDTH_INSIDE_BORDER,
-            self.block_width_2D,
+            self.block_width_2D >> 1,
             "Consolas"
         )
 
@@ -544,17 +667,19 @@ class Window:
         for control_str in reversed(CONTROLS_STRINGS):
             CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
 
-            TITLE_Y_POS -= CONTROL_TEXT.get_height()
-
             self.window.blit(
                 CONTROL_TEXT, (LEFT_INSIDE_BORDER, TITLE_Y_POS)
             )
+
+            TITLE_Y_POS -= CONTROL_TEXT.get_height()
 
     def handle_game_frame(self):
         """
         Controls Tetris game.
         """
         key_down_keys = set()
+
+        STARTED_CLICKING_THIS_FRAME: bool = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -563,6 +688,20 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 key_down_keys.add(event.key)
             # Certain keys can't spam an instruction every frame.
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                STARTED_CLICKING_THIS_FRAME = True
+            # neither should the controls button click
+
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
+            pygame.Rect(0, 0, 4 * self.block_width_2D, 1 * self.block_width_2D)
+        ) and STARTED_CLICKING_THIS_FRAME
+
+        if any(
+            toggle_controls_screen_key in key_down_keys
+            for toggle_controls_screen_key in self.key_controls["toggle_controls_screen"]
+        ) or STARTED_CLICKING_CONTROLS_BUTTON:
+            self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
             self.draw_3d()
@@ -612,15 +751,15 @@ class Window:
 
         GAME_OVER_TEXT = GAME_OVER_FONT.render(GAME_OVER_STR, False, WHITE)
 
-        TEXT_POS = [
+        text_pos = [
             (self.WIDTH >> 1) - (GAME_OVER_TEXT.get_width() >> 1),
             self.colored_border_pixel_width
         ]
         # should be "moved" vertically,
         # to make sure the texts don't overlap
 
-        self.window.blit(GAME_OVER_TEXT, TEXT_POS)
-        TEXT_POS[1] += 3 * self.block_width_2D
+        self.window.blit(GAME_OVER_TEXT, text_pos)
+        text_pos[1] += 3 * self.block_width_2D
         # "GAME OVER" should occupy 3 tiles vertically,
         # and we want the score to be directly under the "GAME OVER",
         # so the new text pos should be 3 tiles below.
@@ -629,10 +768,10 @@ class Window:
         SCORE_FONT = self.text_font_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
         SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
 
-        TEXT_POS[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
-        self.window.blit(SCORE_TEXT, TEXT_POS)
+        text_pos[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
+        self.window.blit(SCORE_TEXT, text_pos)
 
-        TEXT_POS[1] += 4 * self.block_width_2D
+        text_pos[1] += 4 * self.block_width_2D
         # we want the options to be one tile of distance from the score text
 
         MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
@@ -657,14 +796,16 @@ class Window:
                 YELLOW if option_rect == self.game_over_menu.option else WHITE
             )
             OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
-            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = TEXT_POS
+            OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = text_pos
 
             if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
                 mouse_hovered_option_index = option_index
 
-            self.window.blit(OPTION_TEXT, TEXT_POS)
+            self.window.blit(OPTION_TEXT, text_pos)
 
-            TEXT_POS[1] += self.block_width_2D
+            text_pos[1] += self.block_width_2D
+        
+        STARTED_CLICKING_THIS_FRAME: bool = False
 
         for event in pygame.event.get():
             # user presses X button of window
@@ -675,17 +816,22 @@ class Window:
             option_chosen: bool = False
 
             if event.type == pygame.KEYDOWN:
+                # Enter controls screen
+                if event.key in self.key_controls["toggle_controls_screen"]:
+                    self.controls_screen_loop()
                 # move around menu
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                if event.key in self.key_controls["DOWN"]:
                     self.game_over_menu.move_to_next()
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if event.key in self.key_controls["UP"]:
                     self.game_over_menu.move_to_previous()
 
-                # submit menu selection: ENTER key OR MOUSE CLICK
-                if event.key == pygame.K_RETURN:
+                # submit menu selection
+                if event.key in self.key_controls["menu_submit"]:
                     option_chosen = True
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                STARTED_CLICKING_THIS_FRAME = True
+
                 # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
                 # (we know if the user clicked one, and which one the clicked,
                 # if 'mouse_hovered_option_index' is not None.)
@@ -700,25 +846,39 @@ class Window:
                     # quit
                 else:  # elif menu.option == "Back to title screen"
                     self.frame_handler = self.handle_title_screen_frame
+        
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
+            pygame.Rect(
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
+                4 * self.block_width_2D,
+                1 * self.block_width_2D)
+        ) and STARTED_CLICKING_THIS_FRAME
 
-        CONTROLS_STR = "W/S: scroll through menu ENTER: choose option"
+        if STARTED_CLICKING_CONTROLS_BUTTON:
+            self.controls_screen_loop()
+
+        CONTROLS_STRINGS = (
+            "Controls:",
+            f"{'/'.join(self.key_controls_names['UP'] + self.key_controls_names['DOWN'])}: scroll through menu",
+            f"{'/'.join(self.key_controls_names['menu_submit'])}: choose option"
+        )
         CONTROLS_FONT = self.text_font_fit_to_screen(
-            CONTROLS_STR,
+            max(CONTROLS_STRINGS, key=lambda control_string: len(control_string)),
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             FONT_NAME
         )
-        CONTROLS_TITLE = CONTROLS_FONT.render("Controls: ", False, WHITE)
-        CONTROLS_TEXT = CONTROLS_FONT.render(CONTROLS_STR, False, WHITE)
 
         BOTTOM_INSIDE_BORDER: int = self.HEIGHT - self.colored_border_pixel_width
-        TEXT_POS = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER - CONTROLS_TEXT.get_height()]
+        text_pos = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER]
 
-        self.window.blit(CONTROLS_TEXT, TEXT_POS)
+        for control_string in reversed(CONTROLS_STRINGS):
+            CONTROL_TEXT = CONTROLS_FONT.render(control_string, False, WHITE)
 
-        TEXT_POS[1] += CONTROLS_TITLE.get_height()
+            text_pos[1] -= CONTROL_TEXT.get_height()
 
-        self.window.blit(CONTROLS_TITLE, TEXT_POS)
+            self.window.blit(CONTROL_TEXT, text_pos)
 
     def draw_2d(self):
         """
@@ -735,7 +895,6 @@ class Window:
         """
         if type(self.controls) != GameControl2D:
             raise TypeError("Can't render in 2D while game mode is not 2D!")
-
         
         BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
         BLOCK_WIDTH = BOARD_WIDTH // game.game_2d.COLUMNS
@@ -745,9 +904,9 @@ class Window:
         # DRAW BOARD:
 
         # board outline
-        NEXT_PIECE_OUTLINE = pygame.Surface((BOARD_WIDTH + (Window.BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.BORDER_WIDTH << 1)))
+        NEXT_PIECE_OUTLINE = pygame.Surface((BOARD_WIDTH + (Window.GREY_BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.GREY_BORDER_WIDTH << 1)))
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
-        self.window.blit(NEXT_PIECE_OUTLINE, (BOARD_POS[0] - Window.BORDER_WIDTH, BOARD_POS[1] - Window.BORDER_WIDTH))
+        self.window.blit(NEXT_PIECE_OUTLINE, (BOARD_POS[0] - Window.GREY_BORDER_WIDTH, BOARD_POS[1] - Window.GREY_BORDER_WIDTH))
 
         # board background
         board = pygame.Surface((BOARD_WIDTH, self.BOARD_HEIGHT))
@@ -775,8 +934,8 @@ class Window:
         BOARD_RIGHT = BOARD_POS[0] + BOARD_WIDTH
 
         NEXT_PIECE_OUTLINE = pygame.Surface((
-            NEXT_PIECE_BOX_WIDTH + (Window.BORDER_WIDTH << 1),
-            NEXT_PIECE_BOX_HEIGHT + (Window.BORDER_WIDTH << 1)
+            NEXT_PIECE_BOX_WIDTH + (Window.GREY_BORDER_WIDTH << 1),
+            NEXT_PIECE_BOX_HEIGHT + (Window.GREY_BORDER_WIDTH << 1)
         ))
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
         NEXT_PIECE_OUTLINE_POS = (
@@ -798,7 +957,7 @@ class Window:
             next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
         
         NEXT_PIECE_BOX_POS = (
-            BOARD_RIGHT + Window.BORDER_WIDTH,
+            BOARD_RIGHT + Window.GREY_BORDER_WIDTH,
             BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (next_piece_box.get_height() >> 1)
         )
         
@@ -822,16 +981,23 @@ class Window:
         )
 
         CONTROLS_STRINGS = (
-            "A/D: move piece LEFT/RIGHT",
-            "S/LEFT SHIFT: SOFT-DROP",
-            "SPACEBAR: HARD-DROP",
-            "U: rotate counter-clockwise",
-            "O: rotate clockwise"
+            "LEFT:",
+            f"{'/'.join(self.key_controls_names['LEFT'])}",
+            "RIGHT:",
+            f"{'/'.join(self.key_controls_names['RIGHT'])}",
+            "SOFT_DROP:",
+            f"{'/'.join(self.key_controls_names['SOFT_DROP'])}",
+            "HARD-DROP:",
+            f"{'/'.join(self.key_controls_names['HARD_DROP'])}",
+            "ROTATE CCW:",
+            f"{'/'.join(self.key_controls_names['rotate_ccw_y'])}",
+            "ROTATE CW:",
+            f"{'/'.join(self.key_controls_names['rotate_cw_y'])}"
         )
 
         CONTROLS_FONT = self.text_font_fit_to_screen(
             max(CONTROLS_STRINGS, key=lambda s: len(s)),
-            BOARD_POS[0],
+            BOARD_POS[0] - Window.GREY_BORDER_WIDTH,
             self.HEIGHT,
             "consolas"
         )
@@ -1230,6 +1396,42 @@ class Window:
 
         self.window.blit(NEXT_PIECE_TEXT, NEXT_PIECE_TEXT_POS)
 
+        CONTROLS_STRINGS = (
+            "Controls:"
+            f"LEFT : {'/'.join(self.key_controls_names['LEFT'])}",
+            f"RIGHT : {'/'.join(self.key_controls_names['RIGHT'])}",
+            f"BACK: {'/'.join(self.key_controls_names['UP'])}",
+            f"FRONT: {'/'.join(self.key_controls_names['DOWN'])}",
+            f"SOFT-DROP: {'/'.join(self.key_controls_names['SOFT_DROP'])}",
+            f"HARD_DROP: {'/'.join(self.key_controls_names['HARD_DROP'])}",
+        ) + sum(
+            (
+                (
+                    f"Rotate around {axis_name}:"
+                    f"CW: {'/'.join(self.key_controls_names[f'rotate_cw_{axis_name}'])}",
+                    f"CCW: {'/'.join(self.key_controls_names[f'rotate_ccw_{axis_name}'])}"
+                )
+                for axis_name in "xyz"
+            ),
+            start=()
+        )
+
+        CONTROLS_FONT = self.text_font_fit_to_screen(
+            max(CONTROLS_STRINGS, key=lambda s: len(s)),
+            (self.WIDTH - FRONT_SLICE_FRONT_WIDTH) >> 1,
+            self.block_width_2D,
+            "consolas"
+        )
+
+        control_text_y_pos = self.HEIGHT
+
+        for control_str in reversed(CONTROLS_STRINGS):
+            CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
+
+            control_text_y_pos -= CONTROL_TEXT.get_height()
+
+            self.window.blit(CONTROL_TEXT, (0, control_text_y_pos))
+
     def draw_score(self):
         """Draws score and level text at the top of the board."""
         white = WHITE
@@ -1243,5 +1445,4 @@ class Window:
 
 
 if __name__ == "__main__":
-    pygame.init()
     Window(800, pygame.font.SysFont("consolas", 30))

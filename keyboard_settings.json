@@ -1,0 +1,16 @@
+{
+    "toggle_controls_screen": ["ESCAPE"],
+    "UP": ["W", "UP"],
+    "DOWN": ["S", "DOWN"],
+    "LEFT": ["A", "LEFT"],
+    "RIGHT": ["D", "RIGHT"],
+    "SOFT_DROP": ["left shift"],
+    "HARD_DROP": ["SPACE"],
+    "rotate_ccw_x": ["I"],
+    "rotate_cw_x": ["K"],
+    "rotate_ccw_y": ["U"],
+    "rotate_cw_y": ["O"],
+    "rotate_ccw_z": ["L"],
+    "rotate_cw_z": ["J"],
+    "menu_submit": ["RETURN"]
+}
