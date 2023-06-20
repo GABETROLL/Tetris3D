@@ -160,10 +160,10 @@ class Piece3D:
 
         if axis not in AXII:
             raise ValueError(f"Rotation axis 'axis' can only be 'X_AXIS, 'Y_AXIS' or 'Z_AXIS'.\nGot: {axis}")
-        
+
         rotation_axii.remove(axis)
 
-        if axis == Z_AXIS:
+        if axis == Z_AXIS or axis == X_AXIS:
             clockwise = not clockwise
         # numpy matrix rotation is flipped in the Y axis, according to our description
         # of the piece
