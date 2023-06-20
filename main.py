@@ -339,8 +339,12 @@ class Window:
 
         Returns when player presses ESCAPE.
         """
+        KEY_CONTROLS_NAMES_KEYS: Sequence[str] = self.key_controls_names.keys()
+        KEY_CONTROLS_NAMES_VALUES: Sequence[int] = self.key_controls_names.values()
+
         while self.running:
             STARTED_CLICKING_THIS_FRAME: bool = False
+            MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -376,17 +380,24 @@ class Window:
                 "consolas"
             )
 
-            for blit_y_pos, (action, action_keys) in zip(
+            for blit_y_pos, action, action_keys in zip(
                 count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
-                self.key_controls_names.items()
-                ):
+                KEY_CONTROLS_NAMES_KEYS,
+                KEY_CONTROLS_NAMES_VALUES
+            ):
+                TEXT_COLOR = WHITE
+
+                if self.colored_border_pixel_width < MOUSE_POS[0] < self.WIDTH - self.colored_border_pixel_width \
+                        and blit_y_pos < MOUSE_POS[1] < blit_y_pos + CONTROLS_FONT_HEIGHT:
+                    TEXT_COLOR = YELLOW
+
                 LEFT_COLUMN_X_POS = self.colored_border_pixel_width
                 # aka the LEFT EDGE of the LEFT HALF inside the border
                 RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + (WIDTH_INSIDE_BORDER >> 1)
                 # aka the LEFT EDGE of the RIGHT HALF inside the border
 
-                ACTION_TEXT = CONTROLS_FONT.render(action, False, WHITE)
-                KEYS_TEXT = CONTROLS_FONT.render(f": {' | '.join(action_keys)}", False, WHITE)
+                ACTION_TEXT = CONTROLS_FONT.render(action, False, TEXT_COLOR)
+                KEYS_TEXT = CONTROLS_FONT.render(f": {' | '.join(action_keys)}", False, TEXT_COLOR)
 
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
