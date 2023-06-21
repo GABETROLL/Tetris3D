@@ -1,12 +1,24 @@
+:root {
+    --banner_width: 1344px;
+    /* Please make this be the banner's width! */
+}
+
 body {
     background-color: #333;
     color: white;
+    justify-content: center;
+}
+header {
+    width: auto;
 }
 main {
-    display: flex;
-    flex-direction: column;
+    width: var(--banner_width);
+    justify-content: center;
 }
-#intro div {
+main section {
+    width: auto;
+}
+#intro {
     text-align: center;
 }
 #features div {
