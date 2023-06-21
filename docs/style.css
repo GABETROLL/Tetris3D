@@ -6,14 +6,13 @@
 body {
     background-color: #333;
     color: white;
-    justify-content: center;
 }
 header {
     width: auto;
 }
 main {
     width: var(--banner_width);
-    justify-content: center;
+    margin: auto;
 }
 main section {
     width: auto;
@@ -21,7 +20,8 @@ main section {
 #intro {
     text-align: center;
 }
-#features div {
+.feature-box {
     display: flex;
+    flex-direction: row;
     justify-content: space-around;
 }
