@@ -22,12 +22,13 @@ God bless you, enjoy!
 """
 import pygame
 import game
-from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS
+from game_control import GameControl, GameControl2D, GameControl3D, Z_AXIS, \
+    controls_keys, CONTROL_KEYS_FILE
 from dataclasses import dataclass
 from random import choice as random_choice
 from collections.abc import Sequence
 from itertools import count
-from json import load as load_from_json
+from json import dump as dump_as_json
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -108,21 +109,6 @@ class Window:
         (TODO: MAKE THEM TETROMINOS)
         """
         self._init_border()
-
-        self.key_controls_names: dict[str, str] = {
-            action: key_names
-            for action, key_names in load_from_json(open("keyboard_settings.json")).items()
-        }
-
-        self.key_controls: dict[str, int] = {
-            action: [pygame.key.key_code(key_name) for key_name in key_names]
-            for action, key_names in self.key_controls_names.items()
-        }
-        """
-        Dict of modes and their actions,
-        together with the list of key CODES (aka pygame.K_{key_name})
-        that perform that action.
-        """
 
         self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
@@ -332,15 +318,34 @@ class Window:
 
         return button_rect.collidepoint(pygame.mouse.get_pos())
 
+    @property
+    def key_controls_names(self) -> dict:
+        """
+        Returns the 'controls_keys' dict, but with the key's names.
+        """
+        return {
+            action: [pygame.key.name(key) for key in keys]
+            for action, keys in controls_keys.items()
+        }
+
     def controls_screen_loop(self):
         """
         Displays all keyboard inputs and what they do, described in
-        'keyboard_settings.json'.
+        'CONTROL_KEYS_FILE'.
 
-        Returns when player presses ESCAPE.
+        If the user clicks on a control, it's selected, and it displays
+        "Press any key...". When the user presses a key that isn't
+        'controls_keys["toggle_controls_screen"]', the new key is set as the
+        action's key, in 'controls_keys'.
+
+        When the player presses 'controls_keys["toggle_controls_screen"]'
+        while there isn't a selected control, this method THE CONTROLS
+        ('controls_keys') in 'controls_keys_FILE',
+        and exits the loop, and returns None.
+        "
         """
-        KEY_CONTROLS_NAMES_KEYS: Sequence[str] = self.key_controls_names.keys()
-        KEY_CONTROLS_NAMES_VALUES: Sequence[int] = self.key_controls_names.values()
+
+        CLICKED_ACTION: str = None
 
         while self.running:
             STARTED_CLICKING_THIS_FRAME: bool = False
@@ -351,12 +356,19 @@ class Window:
                     self.running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key in self.key_controls["toggle_controls_screen"]:
+                    if event.key in controls_keys["toggle_controls_screen"]:
                         return
-                
+
+                    if CLICKED_ACTION is not None:
+                        if event.key not in controls_keys["toggle_controls_screen"]:
+                            controls_keys[CLICKED_ACTION] = [event.key]
+
+                        CLICKED_ACTION = None
+
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     STARTED_CLICKING_THIS_FRAME = True
 
+            assert type(controls_keys) == dict
             assert type(self.key_controls_names) == dict
 
             self.window.fill(BLACK)
@@ -380,15 +392,20 @@ class Window:
                 "consolas"
             )
 
-            for blit_y_pos, action, action_keys in zip(
+            for blit_y_pos, (action, action_keys) in zip(
                 count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
-                KEY_CONTROLS_NAMES_KEYS,
-                KEY_CONTROLS_NAMES_VALUES
+                controls_keys.items()
             ):
                 TEXT_COLOR = WHITE
 
                 if self.colored_border_pixel_width < MOUSE_POS[0] < self.WIDTH - self.colored_border_pixel_width \
                         and blit_y_pos < MOUSE_POS[1] < blit_y_pos + CONTROLS_FONT_HEIGHT:
+                    TEXT_COLOR = YELLOW
+
+                    if STARTED_CLICKING_THIS_FRAME:
+                        CLICKED_ACTION = action
+
+                if action == CLICKED_ACTION:
                     TEXT_COLOR = YELLOW
 
                 LEFT_COLUMN_X_POS = self.colored_border_pixel_width
@@ -397,13 +414,23 @@ class Window:
                 # aka the LEFT EDGE of the RIGHT HALF inside the border
 
                 ACTION_TEXT = CONTROLS_FONT.render(action, False, TEXT_COLOR)
-                KEYS_TEXT = CONTROLS_FONT.render(f": {' | '.join(action_keys)}", False, TEXT_COLOR)
+
+                ACTION_KEYS_NAMES = (pygame.key.name(key) for key in action_keys)
+                ACTION_KEYS_STR = f": {' | '.join(ACTION_KEYS_NAMES)}"
+
+                KEYS_TEXT = CONTROLS_FONT.render(
+                    "Press any key..." if action == CLICKED_ACTION else ACTION_KEYS_STR,
+                    False,
+                    TEXT_COLOR
+                )
 
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
                 self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
 
             pygame.display.update()
+
+        dump_as_json(open(CONTROL_KEYS_FILE), self.key_controls_names)
 
     def handle_title_screen_frame(self):
         """
@@ -539,21 +566,21 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 # ENTER controls screen, UNTIL user decides to exit it.
-                if event.key in self.key_controls["toggle_controls_screen"]:
+                if event.key in controls_keys["toggle_controls_screen"]:
                     self.controls_screen_loop()
 
                 # scroll through sub-menus/menu options WITH KEYBOARD
-                if event.key in self.key_controls["DOWN"]:
+                if event.key in controls_keys["DOWN"]:
                     self.game_options_menu.move_to_next()
-                if event.key in self.key_controls["UP"]:
+                if event.key in controls_keys["UP"]:
                     self.game_options_menu.move_to_previous()
-                if event.key in self.key_controls["RIGHT"]:
+                if event.key in controls_keys["RIGHT"]:
                     self.game_options_menu.option.move_to_next()
-                if event.key in self.key_controls["LEFT"]:
+                if event.key in controls_keys["LEFT"]:
                     self.game_options_menu.option.move_to_previous()
 
                 # press "Play!" button" or its key
-                if event.key in self.key_controls["menu_submit"]:
+                if event.key in controls_keys["menu_submit"]:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
@@ -710,7 +737,7 @@ class Window:
 
         if any(
             toggle_controls_screen_key in key_down_keys
-            for toggle_controls_screen_key in self.key_controls["toggle_controls_screen"]
+            for toggle_controls_screen_key in controls_keys["toggle_controls_screen"]
         ) or STARTED_CLICKING_CONTROLS_BUTTON:
             self.controls_screen_loop()
 
@@ -828,16 +855,16 @@ class Window:
 
             if event.type == pygame.KEYDOWN:
                 # Enter controls screen
-                if event.key in self.key_controls["toggle_controls_screen"]:
+                if event.key in controls_keys["toggle_controls_screen"]:
                     self.controls_screen_loop()
                 # move around menu
-                if event.key in self.key_controls["DOWN"]:
+                if event.key in controls_keys["DOWN"]:
                     self.game_over_menu.move_to_next()
-                if event.key in self.key_controls["UP"]:
+                if event.key in controls_keys["UP"]:
                     self.game_over_menu.move_to_previous()
 
                 # submit menu selection
-                if event.key in self.key_controls["menu_submit"]:
+                if event.key in controls_keys["menu_submit"]:
                     option_chosen = True
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:

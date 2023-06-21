@@ -8,17 +8,19 @@ from collections.abc import Sequence
 
 pygame.init()
 
+CONTROL_KEYS_FILE = "keyboard_settings.json"
 
-CONTROLS_KEYS_NAMES: dict[str, str] = {
-                action: key_names
-            for action, key_names in load_from_json(open("keyboard_settings.json")).items()
+controls_keys: dict[str, str] = {
+                action: [pygame.key.key_code(key_name) for key_name in key_names]
+            for action, key_names in load_from_json(open(CONTROL_KEYS_FILE)).items()
 }
+"""
+Dict of modes and their actions,
+together with the list of key CODES (aka pygame.K_{key_name})
+that perform that action.
 
-
-CONTROLS_KEYS: dict[str, int] = {
-    action: tuple(pygame.key.key_code(key_name) for key_name in key_names)
-    for action, key_names in CONTROLS_KEYS_NAMES.items()
-}
+SHOULD BE EDITED IN 'main.py', AS AN INTERNAL GLOBAL VARIABLE.
+"""
 
 
 class GameControl:
@@ -147,8 +149,8 @@ class GameControl2D(GameControl):
         GameControl.__init__(
             self, 
             {
-                LEFT: CONTROLS_KEYS["LEFT"],
-                RIGHT: CONTROLS_KEYS["RIGHT"]
+                LEFT: controls_keys["LEFT"],
+                RIGHT: controls_keys["RIGHT"]
             }
         )
         self.game = Game2D()
@@ -160,10 +162,10 @@ class GameControl2D(GameControl):
 
         GameControl.direction_input_handler(self, keys)
 
-        if key_down_keys.intersection(CONTROLS_KEYS["rotate_cw_y"]):
+        if key_down_keys.intersection(controls_keys["rotate_cw_y"]):
             self.game.try_rotate()
 
-        if key_down_keys.intersection(CONTROLS_KEYS["rotate_ccw_y"]):
+        if key_down_keys.intersection(controls_keys["rotate_ccw_y"]):
             self.game.try_rotate(False)
         # ANY rotation key STARTING TO BE PRESSED this frame should rotate the piece,
         # EVEN if there's MORE THAN ONE rotation key being pressed at the same time.
@@ -173,7 +175,7 @@ class GameControl2D(GameControl):
         # to spamming the rotation every frame.
 
         if any(
-            keys[key] for key in CONTROLS_KEYS["SOFT_DROP"] + CONTROLS_KEYS["DOWN"]
+            keys[key] for key in controls_keys["SOFT_DROP"] + controls_keys["DOWN"]
         ) and not self.game.landed():
             self.game.try_move(SOFT_DROP)
 
@@ -184,7 +186,7 @@ class GameControl2D(GameControl):
         # This makes it a lot easier to do T-spins and other things,
         # since the piece doesn't land immediatly after touching the ground.
 
-        if key_down_keys.intersection(CONTROLS_KEYS["HARD_DROP"]):
+        if key_down_keys.intersection(controls_keys["HARD_DROP"]):
             self.game.try_move(HARD_DROP)
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
@@ -196,10 +198,10 @@ class GameControl3D(GameControl):
         GameControl.__init__(
             self, 
             {
-                LEFT: CONTROLS_KEYS["LEFT"],
-                RIGHT: CONTROLS_KEYS["RIGHT"],
-                FRONT: CONTROLS_KEYS["DOWN"],
-                BACK: CONTROLS_KEYS["UP"]
+                LEFT: controls_keys["LEFT"],
+                RIGHT: controls_keys["RIGHT"],
+                FRONT: controls_keys["DOWN"],
+                BACK: controls_keys["UP"]
             }
         )
         self.game = Game3D()
@@ -211,7 +213,7 @@ class GameControl3D(GameControl):
 
         GameControl.direction_input_handler(self, keys)
 
-        if any(keys[key] for key in CONTROLS_KEYS["SOFT_DROP"]):
+        if any(keys[key] for key in controls_keys["SOFT_DROP"]):
             self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
@@ -221,7 +223,7 @@ class GameControl3D(GameControl):
         # This makes it a lot easier to do T-spins and other things,
         # since the piece doesn't land immediatly after touching the ground.
 
-        if key_down_keys.intersection(CONTROLS_KEYS["HARD_DROP"]):
+        if key_down_keys.intersection(controls_keys["HARD_DROP"]):
             self.game.try_move(HARD_DROP)
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
@@ -230,5 +232,5 @@ class GameControl3D(GameControl):
         for axis, axis_name in enumerate("xyz"):
             for clockwise in (True, False):
                 ROTATION_NAME = f"rotate_{'cw' if clockwise else 'ccw'}_{axis_name}"
-                if key_down_keys.intersection(CONTROLS_KEYS[ROTATION_NAME]):
+                if key_down_keys.intersection(controls_keys[ROTATION_NAME]):
                     self.game.try_rotate(axis, clockwise)
