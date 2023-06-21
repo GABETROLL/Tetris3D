@@ -1,10 +1,11 @@
 :root {
     --banner_width: 1344px;
     /* Please make this be the banner's width! */
+    --solid-border-color: black;
 }
 
 body {
-    background-color: #333;
+    background-color: black;
     color: white;
 }
 header {
@@ -13,18 +14,20 @@ header {
 main {
     width: var(--banner_width);
     margin: auto;
+    background-color:  #333;
 }
 main section {
     width: auto;
 }
 h1 {
-    font-size: 4em;
+    font-size: 5em;
 }
 h2 {
     font-size: 3em;
 }
 h3 {
-    font-size: 2em;
+    font-size: 3em;
+    color: #FFFF00;
 }
 #intro {
     text-align: center;
@@ -34,6 +37,9 @@ h3 {
     flex-direction: row;
     justify-content: space-around;
 }
-.feature-box img {
-    width: 33%;
+.feature-visualization, .feature-text-box {
+    width: 40%;
+}
+.feature-box p {
+    font-size: 20px;
 }
