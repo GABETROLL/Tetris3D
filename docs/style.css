@@ -43,3 +43,7 @@ h3 {
 .feature-box p {
     font-size: 20px;
 }
+
+#about p {
+    font-size: 175%;
+}
