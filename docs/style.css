@@ -17,6 +17,15 @@ main {
 main section {
     width: auto;
 }
+h1 {
+    font-size: 4em;
+}
+h2 {
+    font-size: 3em;
+}
+h3 {
+    font-size: 2em;
+}
 #intro {
     text-align: center;
 }
@@ -24,4 +33,7 @@ main section {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+}
+.feature-box img {
+    width: 33%;
 }
