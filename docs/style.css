@@ -19,18 +19,26 @@ main {
 main section {
     width: auto;
 }
+
 h1 {
     font-size: 5em;
 }
-h2 {
-    font-size: 3em;
-}
-h3 {
-    font-size: 3em;
-    color: #FFFF00;
-}
 #intro {
     text-align: center;
+}
+#description {
+    font-size: 150%;
+}
+#github-logo {
+    width: 15%;
+}
+
+#section-title {
+    font-size: 3em;
+}
+#feature-title {
+    font-size: 3em;
+    color: #FFFF00;
 }
 .feature-box {
     display: flex;
