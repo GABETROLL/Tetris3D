@@ -597,6 +597,9 @@ class Window:
                 self.game_options_menu.option.move_to_next()
             elif SCROLLING_DOWN:
                 self.game_options_menu.option.move_to_previous()
+            
+            if SCROLLING_UP or SCROLLING_DOWN:
+                sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
         if self._handle_controls_screen_button(
             pygame.Rect(
@@ -647,12 +650,19 @@ class Window:
             self.window.blit(CHOSEN_OPTION_TEXT, CHOSEN_OPTION_RECT.topleft)
             pygame.draw.polygon(self.window, OPTION_COLOR, (RIGHT_ARROW_RECT.bottomleft, RIGHT_ARROW_RECT.topleft, RIGHT_ARROW_RECT.midright))
 
-            if CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS):
-                self.game_options_menu.option_index = index
-                mouse_hovered_menu = True
-            # hovering over the options automatically highlighting them
-            # as if the user were scrolling through them with W/S
+            # Hovering over the options and their arrows, automatically highlighting them,
+            # as if the user were scrolling through them with W/S,
             # would be quite nice!
+            if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS) \
+                    or CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS) \
+                    or RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
+                if self.game_options_menu.option_index != index:
+                    # ...BUT WE ONLY NEED to PLAY THE SCROLLING SFX and change the menu option
+                    # IF we currenty don't have this option,
+                    # the option with index 'index', as selected.
+                    self.game_options_menu.option_index = index
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
             y_blit_pos += self.block_width_2D
 
@@ -662,8 +672,12 @@ class Window:
             if STARTED_CLICKING_THIS_FRAME:
                 if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS):
                     menu.move_to_previous()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 elif RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
                     menu.move_to_next()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
         # RENDER "Play!" BUTTON:
 
