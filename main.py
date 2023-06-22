@@ -29,6 +29,7 @@ from random import choice as random_choice
 from collections.abc import Sequence
 from itertools import count
 from json import dump as dump_as_json
+import sound
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -405,6 +406,8 @@ class Window:
                     if STARTED_CLICKING_THIS_FRAME:
                         CLICKED_ACTION = action
 
+                        sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+
                 if action == CLICKED_ACTION:
                     TEXT_COLOR = YELLOW
 
@@ -584,6 +587,7 @@ class Window:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
+                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
                     break
 
             # only cares about THIS frame's inputs,
@@ -675,6 +679,7 @@ class Window:
 
         if STARTED_CLICKING_THIS_FRAME and PLAY_RECT.collidepoint(*MOUSE_POS):
             self.start_game()
+            sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
         # game should start IMMEDIATELY if the button is pressed,
         # without altering options last-frame.
         # Right now, that's already being achieved.
@@ -866,6 +871,7 @@ class Window:
                 # submit menu selection
                 if event.key in controls_keys["menu_submit"]:
                     option_chosen = True
+                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 STARTED_CLICKING_THIS_FRAME = True
@@ -876,6 +882,7 @@ class Window:
                 if mouse_hovered_option_index is not None:
                     self.game_over_menu.option_index = mouse_hovered_option_index
                     option_chosen = True
+                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
 
             # HANDLE SELECTED OPTION
             if option_chosen:
