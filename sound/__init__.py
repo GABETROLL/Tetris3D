@@ -1,4 +1,5 @@
 from pygame import mixer
 
-MENU_SUBMIT = LINE_CLEAR = mixer.Sound("sound/hit.mp3")
+SUBMITED_IN_MENU = mixer.Sound("sound/submited_in_menu.mp3")
+CLEARED_BLOCKS = mixer.Sound("sound/blocks_cleared.mp3")
 SFX_CHANNEL = mixer.Channel(0)

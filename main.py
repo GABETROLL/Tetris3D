@@ -406,7 +406,7 @@ class Window:
                     if STARTED_CLICKING_THIS_FRAME:
                         CLICKED_ACTION = action
 
-                        sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+                        sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
                 if action == CLICKED_ACTION:
                     TEXT_COLOR = YELLOW
@@ -587,7 +587,7 @@ class Window:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
-                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
                     break
 
             # only cares about THIS frame's inputs,
@@ -679,7 +679,7 @@ class Window:
 
         if STARTED_CLICKING_THIS_FRAME and PLAY_RECT.collidepoint(*MOUSE_POS):
             self.start_game()
-            sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+            sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
         # game should start IMMEDIATELY if the button is pressed,
         # without altering options last-frame.
         # Right now, that's already being achieved.
@@ -755,7 +755,7 @@ class Window:
         GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
 
         if self.controls.game.amount_of_levels_cleared:
-            sound.SFX_CHANNEL.play(sound.LINE_CLEAR)
+            sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
             self.controls.game.amount_of_levels_cleared = 0
 
         if not GAME_CONTINUES:
@@ -876,7 +876,7 @@ class Window:
                 # submit menu selection
                 if event.key in controls_keys["menu_submit"]:
                     option_chosen = True
-                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 STARTED_CLICKING_THIS_FRAME = True
@@ -887,7 +887,7 @@ class Window:
                 if mouse_hovered_option_index is not None:
                     self.game_over_menu.option_index = mouse_hovered_option_index
                     option_chosen = True
-                    sound.SFX_CHANNEL.play(sound.MENU_SUBMIT)
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
             # HANDLE SELECTED OPTION
             if option_chosen:
