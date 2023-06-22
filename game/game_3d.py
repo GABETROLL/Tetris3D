@@ -233,6 +233,15 @@ class Game3D:
 
         self.board = {}
         # {3D_pos: color}
+
+        self.amount_of_levels_cleared: int = 0
+        """
+        Amount of levels (lines/floors, IN THIS CASE, FLOORS) the player cleared when the last piece
+        landed
+
+        Set by 'self.clear_floors', which is called RIGHT AFTER a piece lands,
+        in the same game step/frame.
+        """
     
     def _init_random_piece(self) -> None:
         """
@@ -435,7 +444,8 @@ class Game3D:
 
                 landing_floor -= 1
 
-        self.score_manager.score(len(deleted_floors))
+        self.amount_of_levels_cleared = len(deleted_floors)
+        self.score_manager.score(self.amount_of_levels_cleared)
 
     def play(self) -> bool:
         """

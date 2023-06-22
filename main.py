@@ -753,6 +753,11 @@ class Window:
         self.draw_score()
 
         GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+
+        if self.controls.game.amount_of_levels_cleared:
+            sound.SFX_CHANNEL.play(sound.LINE_CLEAR)
+            self.controls.game.amount_of_levels_cleared = 0
+
         if not GAME_CONTINUES:
             self.frame_handler = self.handle_game_over_screen_frame
 
