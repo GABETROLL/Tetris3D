@@ -860,8 +860,29 @@ class Window:
             OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
             OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = text_pos
 
+            # We want to automatically SCROLL TO the option the mouse
+            # is hovering over, if it is hovering one,
+            # and play the scrolling SFX if it is.
             if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
+
                 mouse_hovered_option_index = option_index
+                # If the mouse clicked in this frame, we want to
+                # submit that option, which will be done later,
+                # but we need to keep track of it, here.
+
+                # We also don't want it to ONLY activate when the mouse
+                # JUST has arrived at this option, since that would
+                # make the first available option un-clickable
+                # unless the player starts scrolling through them first!
+
+                if self.game_over_menu.option_index != option_index:
+                    # ...But we don't want to re-choose the option
+                    # if we're already there, so that the sound effect
+                    # doesn't play every frame.
+
+                    self.game_over_menu.option_index = option_index
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
             self.window.blit(OPTION_TEXT, text_pos)
 
