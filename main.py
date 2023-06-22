@@ -766,7 +766,12 @@ class Window:
             self.draw_2d()
         self.draw_score()
 
-        GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+        SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+
+        print(SUCCESSFUL_ACTIONS)
+
+        if SUCCESSFUL_ACTIONS.moving_in_das_direction:
+            sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
         if self.controls.game.amount_of_levels_cleared:
             sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
