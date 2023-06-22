@@ -293,9 +293,14 @@ class Game2D:
         # Uses mod operator to loop through piece rotations,
         # absolutes value in case they rotated counter-clockwise
 
-    def try_rotate(self, clockwise=True):
-        """Rotates 'self.piece'. If the piece overlaps the outside of the board
-        or a square in the board, the rotation is cancelled."""
+    def try_rotate(self, clockwise=True) -> bool:
+        """
+        Rotates 'self.piece'. If the piece overlaps the outside of the board
+        or a square in the board, the rotation is cancelled.
+
+        Returns True if rotation succeeded, and False if the rotation
+        needed to be cancelled.
+        """
         self.rotate(clockwise)
 
         if any(
@@ -305,6 +310,9 @@ class Game2D:
             for pos in self.piece.square_positions()
         ):
             self.rotate(not clockwise)
+
+            return False
+        return True
 
     def landed(self):
         """
