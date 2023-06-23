@@ -768,18 +768,25 @@ class Window:
 
         SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
 
-        if SUCCESSFUL_ACTIONS.moving_in_das_direction:
-            sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
-        
-        if SUCCESSFUL_ACTIONS.rotating:
-            sound.SFX_CHANNEL.play(sound.ROTATING_PIECE)
-        
-        if SUCCESSFUL_ACTIONS.hard_dropping:
-            sound.SFX_CHANNEL.play(sound.HARD_DROPPING_PIECE)
+        SOUND_CURRENTLY_PLAYING = sound.SFX_CHANNEL.get_sound()
 
-        if self.controls.game.amount_of_levels_cleared:
-            sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
-            self.controls.game.amount_of_levels_cleared = 0
+        if SOUND_CURRENTLY_PLAYING is not sound.GAME_OVER:
+            if SOUND_CURRENTLY_PLAYING is not sound.CLEARED_BLOCKS:
+                if SOUND_CURRENTLY_PLAYING is not sound.HARD_DROPPING_PIECE:
+                    if SOUND_CURRENTLY_PLAYING is not sound.ROTATING_PIECE:
+
+                        if SUCCESSFUL_ACTIONS.moving_in_das_direction:
+                            sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+            
+                    if SUCCESSFUL_ACTIONS.rotating:
+                        sound.SFX_CHANNEL.play(sound.ROTATING_PIECE)
+            
+                if SUCCESSFUL_ACTIONS.hard_dropping:
+                    sound.SFX_CHANNEL.play(sound.HARD_DROPPING_PIECE)
+
+            if self.controls.game.amount_of_levels_cleared:
+                sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
+                self.controls.game.amount_of_levels_cleared = 0
 
         if not GAME_CONTINUES:
             self.frame_handler = self.handle_game_over_screen_frame
