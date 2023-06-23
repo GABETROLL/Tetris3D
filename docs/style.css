@@ -49,6 +49,7 @@ h1 {
 }
 #intro {
     text-align: center;
+    background-color: black;
 }
 #description {
     font-size: 150%;
@@ -57,13 +58,18 @@ h1 {
     width: 5%;
 }
 
+.shiny-yellow-title {
+    color: #FFFF00;
+    background-color: black;
+}
+
 .section-title {
     font-size: 4em;
     text-align: center;
+    
 }
 .feature-title {
     font-size: 3em;
-    color: #FFFF00;
 }
 .feature-box {
     display: flex;
@@ -84,8 +90,7 @@ h1 {
 }
 
 #about-credits {
-    width: max-content;
-    margin: auto;
+    width: auto;
     text-align: center;
 }
 
@@ -95,10 +100,13 @@ h1 {
 
 #photo-and-profiles-box {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
 }
 #made-by-photo {
-    width: 20%;
+    width: 17%;
+}
+#profile-links {
+    text-align: left;
 }
 .profile-link {
     font-size: 175%;
