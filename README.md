@@ -1,4 +1,7 @@
+<img src="docs/banner.png" alt="Tetromino pieces as a banner">
+
 # Tetris3D!
+
 ## Requirements
 ### Python
 <img src="https://www.python.org/static/img/python-logo.png" alt="Python logo"/>\
