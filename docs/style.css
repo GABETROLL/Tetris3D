@@ -83,12 +83,19 @@ h1 {
     font-size: 150%;
 }
 
+#about-credits {
+    width: max-content;
+    margin: auto;
+    text-align: center;
+}
+
 #made-by-h3 {
     font-size: 200%;
 }
 
 #photo-and-profiles-box {
     display: flex;
+    justify-content: space-between;
 }
 #made-by-photo {
     width: 20%;
