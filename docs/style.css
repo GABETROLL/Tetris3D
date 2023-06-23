@@ -1,5 +1,6 @@
 :root {
     --banner_width: 1344px;
+    --banner_height: 128px;
     /* Please make this be the banner's width! */
     --solid-border-color: black;
 }
@@ -10,6 +11,17 @@ body {
 }
 header {
     width: auto;
+}
+nav {
+    width: auto;
+    height: calc(--banner_height / 2);
+    background-color: #333;
+}
+nav a {
+    font-size: 150%;
+    color: #FFFF00;
+    margin-right: 5%;
+    line-height: 100%;
 }
 main {
     width: var(--banner_width);
@@ -30,7 +42,7 @@ h1 {
     font-size: 150%;
 }
 #github-logo {
-    width: 15%;
+    width: 5%;
 }
 
 .section-title {
@@ -47,6 +59,8 @@ h1 {
 }
 .feature-visualization, .feature-text-box {
     width: 40%;
+    border-width: 10px;
+    border-color: #FFFF00;
 }
 .feature-box p {
     font-size: 175%;
