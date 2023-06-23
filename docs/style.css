@@ -9,6 +9,15 @@ body {
     background-color: black;
     color: white;
 }
+
+.shiny-yellow-link {
+    color: white;
+    text-decoration: none;
+}
+.shiny-yellow-link:hover {
+    color: #FFFF00;
+}
+
 header {
     width: auto;
 }
@@ -20,15 +29,10 @@ nav {
     justify-content: space-between;
 }
 nav a {
+    font-size: 200%;
     height: fit-content;
     margin-top: auto;
     margin-bottom: auto;
-    font-size: 200%;
-    color: white;
-    text-decoration: none;
-}
-nav a:hover {
-    color: #FFFF00;
 }
 
 main {
@@ -49,7 +53,7 @@ h1 {
 #description {
     font-size: 150%;
 }
-#github-logo {
+.github-logo {
     width: 5%;
 }
 
@@ -76,5 +80,19 @@ h1 {
 }
 
 #about p {
+    font-size: 150%;
+}
+
+#made-by-h3 {
+    font-size: 200%;
+}
+
+#photo-and-profiles-box {
+    display: flex;
+}
+#made-by-photo {
+    width: 20%;
+}
+.profile-link {
     font-size: 175%;
 }
