@@ -13,16 +13,24 @@ header {
     width: auto;
 }
 nav {
-    width: auto;
-    height: calc(--banner_height / 2);
-    background-color: #333;
+    width: var(--banner_width);
+    height: var(--banner_height);
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
 }
 nav a {
-    font-size: 150%;
-    color: #FFFF00;
-    margin-right: 5%;
-    line-height: 100%;
+    height: fit-content;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 200%;
+    color: white;
+    text-decoration: none;
 }
+nav a:hover {
+    color: #FFFF00;
+}
+
 main {
     width: var(--banner_width);
     margin: auto;
@@ -47,6 +55,7 @@ h1 {
 
 .section-title {
     font-size: 4em;
+    text-align: center;
 }
 .feature-title {
     font-size: 3em;
