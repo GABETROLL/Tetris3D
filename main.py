@@ -770,6 +770,12 @@ class Window:
 
         if SUCCESSFUL_ACTIONS.moving_in_das_direction:
             sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+        
+        if SUCCESSFUL_ACTIONS.rotating:
+            sound.SFX_CHANNEL.play(sound.ROTATING_PIECE)
+        
+        if SUCCESSFUL_ACTIONS.hard_dropping:
+            sound.SFX_CHANNEL.play(sound.HARD_DROPPING_PIECE)
 
         if self.controls.game.amount_of_levels_cleared:
             sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
