@@ -768,8 +768,6 @@ class Window:
 
         SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
 
-        print(SUCCESSFUL_ACTIONS)
-
         if SUCCESSFUL_ACTIONS.moving_in_das_direction:
             sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
@@ -779,6 +777,8 @@ class Window:
 
         if not GAME_CONTINUES:
             self.frame_handler = self.handle_game_over_screen_frame
+
+            sound.SFX_CHANNEL.play(sound.GAME_OVER)
 
     def handle_game_over_screen_frame(self):
         """
