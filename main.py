@@ -575,12 +575,16 @@ class Window:
                 # scroll through sub-menus/menu options WITH KEYBOARD
                 if event.key in controls_keys["DOWN"]:
                     self.game_options_menu.move_to_next()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["UP"]:
                     self.game_options_menu.move_to_previous()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["RIGHT"]:
                     self.game_options_menu.option.move_to_next()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["LEFT"]:
                     self.game_options_menu.option.move_to_previous()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
                 # press "Play!" button" or its key
                 if event.key in controls_keys["menu_submit"]:
@@ -923,8 +927,13 @@ class Window:
                 # move around menu
                 if event.key in controls_keys["DOWN"]:
                     self.game_over_menu.move_to_next()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+
                 if event.key in controls_keys["UP"]:
                     self.game_over_menu.move_to_previous()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
                 # submit menu selection
                 if event.key in controls_keys["menu_submit"]:
