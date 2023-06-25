@@ -357,14 +357,15 @@ class Window:
                     self.running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key in controls_keys["toggle_controls_screen"]:
-                        return
 
                     if CLICKED_ACTION is not None:
                         if event.key not in controls_keys["toggle_controls_screen"]:
                             controls_keys[CLICKED_ACTION] = [event.key]
 
                         CLICKED_ACTION = None
+
+                    elif event.key in controls_keys["toggle_controls_screen"]:
+                        return
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     STARTED_CLICKING_THIS_FRAME = True
