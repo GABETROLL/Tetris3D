@@ -208,6 +208,15 @@ class Game2D:
         self.board = {}
         # {pos: color}
 
+        self.amount_of_levels_cleared: int = 0
+        """
+        Amount of levels (lines/floors, IN THIS CASE, LINES) the player cleared when the last piece
+        landed
+
+        Set by 'self.clear_lines', which is called RIGHT AFTER a piece lands,
+        in the same game step/frame.
+        """
+
     def init_random_piece(self):
         self.piece = self.next_piece
         self.next_piece = Piece2D(random.choice(self.pieces))
@@ -331,7 +340,15 @@ class Game2D:
             self.clear_lines(self.piece)
             self.init_random_piece()
 
-    def clear_lines(self, previous_piece: Piece2D):
+    def clear_lines(self, previous_piece: Piece2D) -> int:
+        """
+        Finds every row in 'previous_piece', ASSUMING THAT
+        'previous_piece' IS THE PIECE THAT JUST LANDED,
+        and clears all of the lines it completes.
+
+        Stores the amount of lines the player just cleared
+        in 'self.amount_of_lines_cleared'.
+        """
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
         deleted_rows = set()
@@ -368,8 +385,9 @@ class Game2D:
 
                 landing_row -= 1
             gunk_row -= 1
-
-        self.score_manager.score(len(deleted_rows))
+        
+        self.amount_of_levels_cleared = len(deleted_rows)
+        self.score_manager.score(self.amount_of_levels_cleared)
 
     def play(self):
         """

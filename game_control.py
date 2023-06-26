@@ -11,7 +11,7 @@ pygame.init()
 
 CONTROL_KEYS_FILE = "keyboard_settings.json"
 
-controls_keys: dict[str, str] = {
+controls_keys: dict[str, list[int]] = {
                 action: [pygame.key.key_code(key_name) for key_name in key_names]
             for action, key_names in load_from_json(open(CONTROL_KEYS_FILE)).items()
 }
@@ -128,7 +128,7 @@ class GameControl:
 
         for direction, direction_keys in self.direction_keys.items():
 
-            direction_moved: bool = True
+            direction_moved: bool = False
 
             if any(keys[key] for key in direction_keys):
 
@@ -176,7 +176,7 @@ class GameControl:
         """
         raise NotImplementedError
 
-    def play_game_step(self, key_down_keys: set[int]) -> bool:
+    def play_game_step(self, key_down_keys: set[int]) -> tuple[SuccessfulActions, bool]:
         """
         Counts the amount of frames before playing next game step
         in 'self.frame_count'
@@ -187,23 +187,24 @@ class GameControl:
         fall rate.
         (Look at 'fall_rate' for more info)
 
-        Returns True if the game should keep going, and False
-        if the player "topped-out", and the game is over.
+        Returns the successfull actions performed with keyboard inputs,
+        and weather or not the game can keep going.
 
         If the counter is still counting, this method's
         result is always True.
         """
         self.frame_count += 1
-        self.input_handler(key_down_keys)
+        
+        succeessful_actions: SuccessfulActions = self.input_handler(key_down_keys)
 
         if not self.game_can_continue:
-            return False
+            return succeessful_actions, False
 
         if self.frame_count == self.fall_rate(self.game.score_manager.level):
             self.game_can_continue = self.game.play()
             self.frame_count = 0
 
-        return self.game_can_continue
+        return succeessful_actions, self.game_can_continue
     # Counting frames.
 
 
@@ -269,6 +270,8 @@ class GameControl2D(GameControl):
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
+        
+        return result
 
 
 class GameControl3D(GameControl):

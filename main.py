@@ -29,6 +29,7 @@ from random import choice as random_choice
 from collections.abc import Sequence
 from itertools import count
 from json import dump as dump_as_json
+import sound
 
 WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
@@ -338,6 +339,11 @@ class Window:
         'controls_keys["toggle_controls_screen"]', the new key is set as the
         action's key, in 'controls_keys'.
 
+        If the user clicks on a control that's already selected,
+        OR if the player has a selected control and they press
+        'controls_keys["toggle_controls_screen"]',
+        the control gets un-selected.
+
         When the player presses 'controls_keys["toggle_controls_screen"]'
         while there isn't a selected control, this method THE CONTROLS
         ('controls_keys') in 'controls_keys_FILE',
@@ -345,25 +351,61 @@ class Window:
         "
         """
 
+        PREVIOUSLY_HOVERED_ACTION: str = None
+        """
+        Action hovered by mouse in the previous frame.
+        None if no action was being hovered at the time.
+        """
         CLICKED_ACTION: str = None
+        """
+        Action selected by clicking.
 
-        while self.running:
+        None if no action is currently selected,
+        either because player hasn't clicked one yet, or because
+        the player un-selected it.
+
+        TO UN-SELECT AN ACTION, PLAYER MUST SELECT ANOTHER ACTION,
+        OR CLICK ON THE CURRENTly SELECTED ACTION AGAIN, OR
+        PRESS THE TOGGLE-CONTROLS-SCREEN KEY.
+
+        Not necessarily the same as the hovered action!
+        The player can click on this action, then move their mouse
+        away, without un-clicking this action!
+        """
+
+        running_controls_screen_loop: bool = True
+
+        while self.running and running_controls_screen_loop:
+
             STARTED_CLICKING_THIS_FRAME: bool = False
             MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    # terminate ENTIRE program
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key in controls_keys["toggle_controls_screen"]:
-                        return
 
                     if CLICKED_ACTION is not None:
+
+                        # USER SET CONTROL KEY!!!
                         if event.key not in controls_keys["toggle_controls_screen"]:
                             controls_keys[CLICKED_ACTION] = [event.key]
 
+                            sound.SFX_CHANNEL.play(sound.CHANGED_CONTROL_KEY)
+
                         CLICKED_ACTION = None
+
+                    elif event.key in controls_keys["toggle_controls_screen"]:
+
+                        sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
+                        running_controls_screen_loop = False
+                        # Terminate CONTROLS SCREEN LOOP,
+                        # dump the new keys into the .json file,
+                        # and return from this function,
+                        # into the "outer" loop, in 'self.__init__'.
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     STARTED_CLICKING_THIS_FRAME = True
@@ -392,6 +434,8 @@ class Window:
                 "consolas"
             )
 
+            CURRENTLY_HOVERED_ACTION: str = None
+
             for blit_y_pos, (action, action_keys) in zip(
                 count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
                 controls_keys.items()
@@ -402,8 +446,21 @@ class Window:
                         and blit_y_pos < MOUSE_POS[1] < blit_y_pos + CONTROLS_FONT_HEIGHT:
                     TEXT_COLOR = YELLOW
 
+                    if PREVIOUSLY_HOVERED_ACTION != action:
+                        sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+
                     if STARTED_CLICKING_THIS_FRAME:
-                        CLICKED_ACTION = action
+
+                        if CLICKED_ACTION == action:
+                            CLICKED_ACTION = None
+                        # un-select action by clicking on it again!!!
+                        else:
+                            CLICKED_ACTION = action
+                        # select action by clicking on it
+
+                        sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
+                    CURRENTLY_HOVERED_ACTION = action
 
                 if action == CLICKED_ACTION:
                     TEXT_COLOR = YELLOW
@@ -427,10 +484,12 @@ class Window:
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
                 self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
+            
+            PREVIOUSLY_HOVERED_ACTION = CURRENTLY_HOVERED_ACTION
 
             pygame.display.update()
 
-        dump_as_json(open(CONTROL_KEYS_FILE), self.key_controls_names)
+        dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
 
     def handle_title_screen_frame(self):
         """
@@ -567,23 +626,31 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 # ENTER controls screen, UNTIL user decides to exit it.
                 if event.key in controls_keys["toggle_controls_screen"]:
+
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
                     self.controls_screen_loop()
 
                 # scroll through sub-menus/menu options WITH KEYBOARD
                 if event.key in controls_keys["DOWN"]:
                     self.game_options_menu.move_to_next()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["UP"]:
                     self.game_options_menu.move_to_previous()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["RIGHT"]:
                     self.game_options_menu.option.move_to_next()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 if event.key in controls_keys["LEFT"]:
                     self.game_options_menu.option.move_to_previous()
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
                 # press "Play!" button" or its key
                 if event.key in controls_keys["menu_submit"]:
                     self.start_game()
                     # game should start IMMEDIATELY if the button is pressed,
                     # without altering options last-frame
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
                     break
 
             # only cares about THIS frame's inputs,
@@ -593,6 +660,9 @@ class Window:
                 self.game_options_menu.option.move_to_next()
             elif SCROLLING_DOWN:
                 self.game_options_menu.option.move_to_previous()
+            
+            if SCROLLING_UP or SCROLLING_DOWN:
+                sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
         if self._handle_controls_screen_button(
             pygame.Rect(
@@ -643,12 +713,19 @@ class Window:
             self.window.blit(CHOSEN_OPTION_TEXT, CHOSEN_OPTION_RECT.topleft)
             pygame.draw.polygon(self.window, OPTION_COLOR, (RIGHT_ARROW_RECT.bottomleft, RIGHT_ARROW_RECT.topleft, RIGHT_ARROW_RECT.midright))
 
-            if CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS):
-                self.game_options_menu.option_index = index
-                mouse_hovered_menu = True
-            # hovering over the options automatically highlighting them
-            # as if the user were scrolling through them with W/S
+            # Hovering over the options and their arrows, automatically highlighting them,
+            # as if the user were scrolling through them with W/S,
             # would be quite nice!
+            if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS) \
+                    or CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS) \
+                    or RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
+                if self.game_options_menu.option_index != index:
+                    # ...BUT WE ONLY NEED to PLAY THE SCROLLING SFX and change the menu option
+                    # IF we currenty don't have this option,
+                    # the option with index 'index', as selected.
+                    self.game_options_menu.option_index = index
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
             y_blit_pos += self.block_width_2D
 
@@ -658,8 +735,12 @@ class Window:
             if STARTED_CLICKING_THIS_FRAME:
                 if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS):
                     menu.move_to_previous()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
                 elif RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
                     menu.move_to_next()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
         # RENDER "Play!" BUTTON:
 
@@ -675,6 +756,7 @@ class Window:
 
         if STARTED_CLICKING_THIS_FRAME and PLAY_RECT.collidepoint(*MOUSE_POS):
             self.start_game()
+            sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
         # game should start IMMEDIATELY if the button is pressed,
         # without altering options last-frame.
         # Right now, that's already being achieved.
@@ -739,6 +821,8 @@ class Window:
             toggle_controls_screen_key in key_down_keys
             for toggle_controls_screen_key in controls_keys["toggle_controls_screen"]
         ) or STARTED_CLICKING_CONTROLS_BUTTON:
+
+            sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
             self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
@@ -747,9 +831,32 @@ class Window:
             self.draw_2d()
         self.draw_score()
 
-        GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+        SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+
+        SOUND_CURRENTLY_PLAYING = sound.SFX_CHANNEL.get_sound()
+
+        if SOUND_CURRENTLY_PLAYING is not sound.GAME_OVER:
+            if SOUND_CURRENTLY_PLAYING is not sound.CLEARED_BLOCKS:
+                if SOUND_CURRENTLY_PLAYING is not sound.HARD_DROPPING_PIECE:
+                    if SOUND_CURRENTLY_PLAYING is not sound.ROTATING_PIECE:
+
+                        if SUCCESSFUL_ACTIONS.moving_in_das_direction:
+                            sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+            
+                    if SUCCESSFUL_ACTIONS.rotating:
+                        sound.SFX_CHANNEL.play(sound.ROTATING_PIECE)
+            
+                if SUCCESSFUL_ACTIONS.hard_dropping:
+                    sound.SFX_CHANNEL.play(sound.HARD_DROPPING_PIECE)
+
+            if self.controls.game.amount_of_levels_cleared:
+                sound.SFX_CHANNEL.play(sound.CLEARED_BLOCKS)
+                self.controls.game.amount_of_levels_cleared = 0
+
         if not GAME_CONTINUES:
             self.frame_handler = self.handle_game_over_screen_frame
+
+            sound.SFX_CHANNEL.play(sound.GAME_OVER)
 
     def handle_game_over_screen_frame(self):
         """
@@ -836,8 +943,29 @@ class Window:
             OPTION_TEXT_RECT: pygame.Rect = OPTION_TEXT.get_rect()
             OPTION_TEXT_RECT.x, OPTION_TEXT_RECT.y = text_pos
 
+            # We want to automatically SCROLL TO the option the mouse
+            # is hovering over, if it is hovering one,
+            # and play the scrolling SFX if it is.
             if OPTION_TEXT_RECT.collidepoint(*MOUSE_POS):
+
                 mouse_hovered_option_index = option_index
+                # If the mouse clicked in this frame, we want to
+                # submit that option, which will be done later,
+                # but we need to keep track of it, here.
+
+                # We also don't want it to ONLY activate when the mouse
+                # JUST has arrived at this option, since that would
+                # make the first available option un-clickable
+                # unless the player starts scrolling through them first!
+
+                if self.game_over_menu.option_index != option_index:
+                    # ...But we don't want to re-choose the option
+                    # if we're already there, so that the sound effect
+                    # doesn't play every frame.
+
+                    self.game_over_menu.option_index = option_index
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
             self.window.blit(OPTION_TEXT, text_pos)
 
@@ -856,16 +984,25 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 # Enter controls screen
                 if event.key in controls_keys["toggle_controls_screen"]:
+
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
                     self.controls_screen_loop()
                 # move around menu
                 if event.key in controls_keys["DOWN"]:
                     self.game_over_menu.move_to_next()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+
                 if event.key in controls_keys["UP"]:
                     self.game_over_menu.move_to_previous()
+
+                    sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
                 # submit menu selection
                 if event.key in controls_keys["menu_submit"]:
                     option_chosen = True
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 STARTED_CLICKING_THIS_FRAME = True
@@ -876,6 +1013,7 @@ class Window:
                 if mouse_hovered_option_index is not None:
                     self.game_over_menu.option_index = mouse_hovered_option_index
                     option_chosen = True
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
             # HANDLE SELECTED OPTION
             if option_chosen:
