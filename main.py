@@ -384,8 +384,12 @@ class Window:
                 if event.type == pygame.KEYDOWN:
 
                     if CLICKED_ACTION is not None:
+
+                        # USER SET CONTROL KEY!!!
                         if event.key not in controls_keys["toggle_controls_screen"]:
                             controls_keys[CLICKED_ACTION] = [event.key]
+
+                            sound.SFX_CHANNEL.play(sound.CHANGED_CONTROL_KEY)
 
                         CLICKED_ACTION = None
 
