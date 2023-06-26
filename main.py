@@ -394,6 +394,8 @@ class Window:
                         CLICKED_ACTION = None
 
                     elif event.key in controls_keys["toggle_controls_screen"]:
+
+                        sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
                         return
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -615,6 +617,9 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 # ENTER controls screen, UNTIL user decides to exit it.
                 if event.key in controls_keys["toggle_controls_screen"]:
+
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
                     self.controls_screen_loop()
 
                 # scroll through sub-menus/menu options WITH KEYBOARD
@@ -807,6 +812,8 @@ class Window:
             toggle_controls_screen_key in key_down_keys
             for toggle_controls_screen_key in controls_keys["toggle_controls_screen"]
         ) or STARTED_CLICKING_CONTROLS_BUTTON:
+
+            sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
             self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
@@ -968,6 +975,9 @@ class Window:
             if event.type == pygame.KEYDOWN:
                 # Enter controls screen
                 if event.key in controls_keys["toggle_controls_screen"]:
+
+                    sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
                     self.controls_screen_loop()
                 # move around menu
                 if event.key in controls_keys["DOWN"]:
