@@ -339,6 +339,11 @@ class Window:
         'controls_keys["toggle_controls_screen"]', the new key is set as the
         action's key, in 'controls_keys'.
 
+        If the user clicks on a control that's already selected,
+        OR if the player has a selected control and they press
+        'controls_keys["toggle_controls_screen"]',
+        the control gets un-selected.
+
         When the player presses 'controls_keys["toggle_controls_screen"]'
         while there isn't a selected control, this method THE CONTROLS
         ('controls_keys') in 'controls_keys_FILE',
@@ -346,7 +351,27 @@ class Window:
         "
         """
 
+        PREVIOUSLY_HOVERED_ACTION: str = None
+        """
+        Action hovered by mouse in the previous frame.
+        None if no action was being hovered at the time.
+        """
         CLICKED_ACTION: str = None
+        """
+        Action selected by clicking.
+
+        None if no action is currently selected,
+        either because player hasn't clicked one yet, or because
+        the player un-selected it.
+
+        TO UN-SELECT AN ACTION, PLAYER MUST SELECT ANOTHER ACTION,
+        OR CLICK ON THE CURRENTly SELECTED ACTION AGAIN, OR
+        PRESS THE TOGGLE-CONTROLS-SCREEN KEY.
+
+        Not necessarily the same as the hovered action!
+        The player can click on this action, then move their mouse
+        away, without un-clicking this action!
+        """
 
         while self.running:
             STARTED_CLICKING_THIS_FRAME: bool = False
@@ -394,6 +419,8 @@ class Window:
                 "consolas"
             )
 
+            CURRENTLY_HOVERED_ACTION: str = None
+
             for blit_y_pos, (action, action_keys) in zip(
                 count(self.colored_border_pixel_width, CONTROLS_FONT_HEIGHT),
                 controls_keys.items()
@@ -404,10 +431,21 @@ class Window:
                         and blit_y_pos < MOUSE_POS[1] < blit_y_pos + CONTROLS_FONT_HEIGHT:
                     TEXT_COLOR = YELLOW
 
+                    if PREVIOUSLY_HOVERED_ACTION != action:
+                        sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+
                     if STARTED_CLICKING_THIS_FRAME:
-                        CLICKED_ACTION = action
+
+                        if CLICKED_ACTION == action:
+                            CLICKED_ACTION = None
+                        # un-select action by clicking on it again!!!
+                        else:
+                            CLICKED_ACTION = action
+                        # select action by clicking on it
 
                         sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
+
+                    CURRENTLY_HOVERED_ACTION = action
 
                 if action == CLICKED_ACTION:
                     TEXT_COLOR = YELLOW
@@ -431,6 +469,8 @@ class Window:
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
                 self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
+            
+            PREVIOUSLY_HOVERED_ACTION = CURRENTLY_HOVERED_ACTION
 
             pygame.display.update()
 
