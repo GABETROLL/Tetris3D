@@ -373,13 +373,17 @@ class Window:
         away, without un-clicking this action!
         """
 
-        while self.running:
+        running_controls_screen_loop: bool = True
+
+        while self.running and running_controls_screen_loop:
+
             STARTED_CLICKING_THIS_FRAME: bool = False
             MOUSE_POS: tuple[int, int] = pygame.mouse.get_pos()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    # terminate ENTIRE program
                 
                 if event.type == pygame.KEYDOWN:
 
@@ -396,7 +400,12 @@ class Window:
                     elif event.key in controls_keys["toggle_controls_screen"]:
 
                         sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
-                        return
+
+                        running_controls_screen_loop = False
+                        # Terminate CONTROLS SCREEN LOOP,
+                        # dump the new keys into the .json file,
+                        # and return from this function,
+                        # into the "outer" loop, in 'self.__init__'.
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     STARTED_CLICKING_THIS_FRAME = True
@@ -480,7 +489,7 @@ class Window:
 
             pygame.display.update()
 
-        dump_as_json(open(CONTROL_KEYS_FILE), self.key_controls_names)
+        dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
 
     def handle_title_screen_frame(self):
         """

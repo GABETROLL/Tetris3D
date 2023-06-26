@@ -1,16 +1,1 @@
-{
-    "toggle_controls_screen": ["ESCAPE"],
-    "UP": ["W", "UP"],
-    "DOWN": ["S", "DOWN"],
-    "LEFT": ["A", "LEFT"],
-    "RIGHT": ["D", "RIGHT"],
-    "SOFT_DROP": ["left shift"],
-    "HARD_DROP": ["SPACE"],
-    "rotate_ccw_x": ["I"],
-    "rotate_cw_x": ["K"],
-    "rotate_ccw_y": ["U"],
-    "rotate_cw_y": ["O"],
-    "rotate_ccw_z": ["L"],
-    "rotate_cw_z": ["J"],
-    "menu_submit": ["RETURN"]
-}
+{"toggle_controls_screen": ["escape"], "UP": ["w", "up"], "DOWN": ["s", "down"], "LEFT": ["a", "left"], "RIGHT": ["d", "right"], "SOFT_DROP": ["left shift"], "HARD_DROP": ["space"], "rotate_ccw_x": ["i"], "rotate_cw_x": ["k"], "rotate_ccw_y": ["u"], "rotate_cw_y": ["o"], "rotate_ccw_z": ["l"], "rotate_cw_z": ["j"], "menu_submit": ["return"]}
