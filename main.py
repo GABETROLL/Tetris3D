@@ -1238,8 +1238,8 @@ class Window:
         without needing to repeat much code.
         """
         # add board blocks to 'slices'
-        for block_pos_in_game, block_color in self.controls.game.board.items():
-            slices[block_pos_in_game[1]][block_pos_in_game] = block_color
+        for block_pos_in_game, block_front_color in self.controls.game.board.items():
+            slices[block_pos_in_game[1]][block_pos_in_game] = block_front_color
         # add piece blocks 'slices'
         for block_pos_in_game in self.controls.game.piece.block_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
@@ -1427,17 +1427,18 @@ class Window:
             # (the lower face doesn't need to be drawn,
             # SINCE THE SLICES ARE ALIGNED AT THE TOP, VERTICALLY,
             # and therefore won't be visible to the player)
-
             BRIGHTNESS_DISTANCE = DISTANCE_TO_FRONT_SLICE_FRONT >> 2
-            BRIGHTNESS_FACTOR = BRIGHTNESS_DISTANCE ** 2 / (distance_to_slice_front - DISTANCE_TO_FRONT_SLICE_FRONT + BRIGHTNESS_DISTANCE) ** 2
+
+            FRONT_BRIGHTNESS_FACTOR = BRIGHTNESS_DISTANCE ** 2 / (distance_to_slice_front - DISTANCE_TO_FRONT_SLICE_FRONT + BRIGHTNESS_DISTANCE) ** 2
+            SIDES_BRIGHTNESS_FACTOR = FRONT_BRIGHTNESS_FACTOR * 0.75
 
             for block_pos_in_game, block_color in slice.items():
 
-                block_color = tuple(
-                    rgb_brightness * BRIGHTNESS_FACTOR
+                block_sides_color = tuple(
+                    rgb_brightness * SIDES_BRIGHTNESS_FACTOR
                     for rgb_brightness in block_color
                 )
-                # block color is meant to simulate how much light should get to the camera,
+                # Meant to simulate how much light should get to the camera,
                 # from the block at a given distance:
                 # just as how a square with side-lengths S that's N units away from a camera
                 # appears to have sides of length S / N, the amount of light recieved from a
@@ -1483,7 +1484,7 @@ class Window:
                 # DRAW TOP SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
-                    block_color,
+                    block_sides_color,
                     (
                         TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
                         TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS
@@ -1492,7 +1493,7 @@ class Window:
                 # DRAW LEFT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
-                    block_color,
+                    block_sides_color,
                     (
                        TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS,
                        BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_BACK_BLOCK_CORNER_POS 
@@ -1501,20 +1502,20 @@ class Window:
                 # DRAW RIGHT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
-                    block_color,
+                    block_sides_color,
                     (
                         TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
                         BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS, BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS
                     )
                 )
 
-            for block_pos_in_game, block_color in slice.items():
+            for block_pos_in_game, block_front_color in slice.items():
 
-                block_color = tuple(
-                    rgb_brightness * BRIGHTNESS_FACTOR
-                    for rgb_brightness in block_color
+                block_front_color = tuple(
+                    rgb_brightness * FRONT_BRIGHTNESS_FACTOR
+                    for rgb_brightness in block_front_color
                 )
-                # block color is meant to simulate how much light should get to the camera,
+                # Meant to simulate how much light should get to the camera,
                 # from the block at a given distance:
                 # just as how a square with side-lengths S that's N units away from a camera
                 # appears to have sides of length S / N, the amount of light recieved from a
@@ -1541,7 +1542,7 @@ class Window:
                 # DRAW FRONT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
-                    block_color,
+                    block_front_color,
                     (
                         TOP_LEFT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
                         BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS
