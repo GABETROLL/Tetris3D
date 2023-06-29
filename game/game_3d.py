@@ -229,6 +229,13 @@ class Game3D:
         self.piece = Piece3D(*random.choice(PIECES_3D))
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
 
+        self.piece.rotate(Z_AXIS, True)
+        self.piece.rotate(Y_AXIS, True)
+        self.next_piece.rotate(Z_AXIS, True)
+        self.next_piece.rotate(Y_AXIS, True)
+        # To make pieces "face the player",
+        # perhaps in a more familiar way.
+
         self.score_manager = Score()
 
         self.board = {}
@@ -253,6 +260,11 @@ class Game3D:
         """
         self.piece = self.next_piece
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
+
+        self.next_piece.rotate(Z_AXIS, True)
+        self.next_piece.rotate(Y_AXIS, True)
+        # To make pieces "face the player",
+        # perhaps in a more familiar way.
     
     def _move_piece_down(self) -> None:
         """
