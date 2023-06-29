@@ -14,7 +14,7 @@ This file also has a Menu class, a very simple class containing
 menu options, a choice pointer index and an option property to recieve it.
 
 'Window' has 'handle_game_over_frame' and 'handle_title_screen_frame', which
-use the Menu objects with the game mode/level/music options
+use the Menu objects with the game mode/level options
 (kept in 'Window ''self', as well) which render/control the game over and
 title screens.
 
@@ -113,8 +113,7 @@ class Window:
 
         self.level_menu = Menu(range(41))
         self.mode_menu = Menu(("2D", "3D"))
-        self.music_menu = Menu(("Tetris Theme", "Silence"))
-        self.game_options_menu = Menu((self.level_menu, self.mode_menu, self.music_menu))
+        self.game_options_menu = Menu((self.level_menu, self.mode_menu))
         # game options information
 
         self.controls: GameControl = None
@@ -496,7 +495,7 @@ class Window:
         Dislays:
         - border in 'self.border_blocks' (in __init__).
         - title centered at the top of the "hole" of the border.
-        - level, mode and music selections (menus) menu, with < and > arrows
+        - level and mode selections (menus) menu, with < and > arrows
         - to scroll through the options in each sub-menu
 
         All of these, COMPLETELY INSIDE the border.
@@ -565,7 +564,7 @@ class Window:
             ([str(option) for option in menu.options] for menu in self.game_options_menu.options),
             start=[]
         )
-        SUB_TITLE_STRINGS = "Starting level:", "Game mode:", "Background music:"
+        SUB_TITLE_STRINGS = "Starting level:", "Game mode:"
         # (except the title string)
 
         MENU_FONT = self.text_font_fit_to_screen(
