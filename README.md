@@ -5,7 +5,8 @@
 ## Requirements
 ### Python
 <img src="https://www.python.org/static/img/python-logo.png" alt="Python logo"/>\
-https://www.python.org/\
+https://www.python.org/
+
 (This project was developed in version 3.11)\
 Install on Debian/Debian-based Linux:
 ```
@@ -47,10 +48,15 @@ Easy script:
 $ pip install -r requirements.txt
 ```
 (I used the versions in the ``requirements.txt`` file)
+
 Or do it youeself:
-<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>\
-https://www.pygame.org/wiki/GettingStarted\
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/NumPy_logo_2020.svg/1200px-NumPy_logo_2020.svg.png" alt="Numpy logo"/>\
+
+<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>
+
+https://www.pygame.org/wiki/GettingStarted
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/NumPy_logo_2020.svg/1200px-NumPy_logo_2020.svg.png" alt="Numpy logo"/>
+
 https://numpy.org/
 ## Run
 ```
