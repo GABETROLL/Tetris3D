@@ -4,7 +4,7 @@
 
 ## Requirements
 ### Python
-<img src="https://www.python.org/static/img/python-logo.png" alt="Python logo"/>\
+<img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo"/>\
 https://www.python.org/
 
 (This project was developed in version 3.11)\
@@ -26,13 +26,20 @@ Windows:
 $ python -m pip --version
 ```
 ### PIP
-<img src="https://pypi.org/static/images/logo-small.2a411bc6.svg" alt="PIP logo"/>\
-https://pip.pypa.io/en/stable/installation/\
--or-\
+<img src="https://pypi.org/static/images/logo-small.2a411bc6.svg" alt="PIP logo"/>
+
+https://pip.pypa.io/en/stable/installation/
+
+-or-
+
 https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line
 ### Git
-<img src="https://git-scm.com/images/logo@2x.png" alt="Git logo"/>\
-https://git-scm.com/downloads\
+<img src="https://git-scm.com/images/logos/downloads/Git-Logo-2Color.svg" alt="Git logo"/>
+
+Git Logo by Jason Long 
+
+https://git-scm.com/downloads
+
 On Debian-based Linux:
 ```
 $ sudo apt install git
@@ -43,7 +50,7 @@ $ git clone git@github.com:GABETROLL/Tetris3D.git
 $ cd Tetris3D/
 ```
 ### Install Pygame and Numpy
-Easy script:
+#### Easy script:
 ```
 $ pip install -r requirements.txt
 ```
@@ -51,11 +58,13 @@ $ pip install -r requirements.txt
 
 Or do it youeself:
 
-<img src="https://www.pygame.org/images/logo_lofi.png" alt="Pygame logo"/>
+<img src="https://www.pygame.org/docs/_static/pygame_logo.svg" alt="Pygame logo"/>
+
+(logo by TheCorruptor and Mega_JC)
 
 https://www.pygame.org/wiki/GettingStarted
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/NumPy_logo_2020.svg/1200px-NumPy_logo_2020.svg.png" alt="Numpy logo"/>
+<img src="https://github.com/numpy/numpy/blob/main/branding/logo/primary/numpylogo.svg?raw=true" alt="Numpy logo"/>
 
 https://numpy.org/
 ## Run
