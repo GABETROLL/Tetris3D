@@ -3,9 +3,7 @@
 # Tetris3D!
 
 ## Requirements
-### Python
-<img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo"/>\
-https://www.python.org/
+<a href="https://www.python.org/"><img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo" width=25%/><a/>
 
 (This project was developed in version 3.11)\
 Install on Debian/Debian-based Linux:
@@ -34,11 +32,9 @@ https://pip.pypa.io/en/stable/installation/
 
 https://packaging.python.org/en/latest/tutorials/installing-packages/#ensure-you-can-run-pip-from-the-command-line
 ### Git
-<img src="https://git-scm.com/images/logos/downloads/Git-Logo-2Color.svg" alt="Git logo"/>
+<a href="https://git-scm.com/downloads"><img src="https://git-scm.com/images/logos/downloads/Git-Logo-2Color.svg" alt="Git logo" width=25%/><a/>
 
-Git Logo by Jason Long 
-
-https://git-scm.com/downloads
+Git Logo by Jason Long
 
 On Debian-based Linux:
 ```
@@ -58,15 +54,12 @@ $ pip install -r requirements.txt
 
 Or do it youeself:
 
-<img src="https://www.pygame.org/docs/_static/pygame_logo.svg" alt="Pygame logo"/>
+<a href="https://www.pygame.org/wiki/GettingStarted"><img src="https://www.pygame.org/docs/_static/pygame_logo.svg" alt="Pygame logo" width=25%/><a/>
 
 (logo by TheCorruptor and Mega_JC)
 
-https://www.pygame.org/wiki/GettingStarted
+<a href="https://numpy.org/"><img src="https://github.com/numpy/numpy/blob/main/branding/logo/primary/numpylogo.svg?raw=true" alt="Numpy logo" width=25%/><a/>
 
-<img src="https://github.com/numpy/numpy/blob/main/branding/logo/primary/numpylogo.svg?raw=true" alt="Numpy logo"/>
-
-https://numpy.org/
 ## Run
 ```
 $ python3.11 main.py
