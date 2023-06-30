@@ -811,9 +811,12 @@ class Window:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 STARTED_CLICKING_THIS_FRAME = True
             # neither should the controls button click
+        
+        CONTROLS_BUTTON_HEIGHT: int = self.block_width_2D
+        CONTROLS_BUTTON_Y_POS: int = self.HEIGHT - CONTROLS_BUTTON_HEIGHT
 
         STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
-            pygame.Rect(0, 0, 4 * self.block_width_2D, 1 * self.block_width_2D)
+            pygame.Rect(0, CONTROLS_BUTTON_Y_POS, 4 * self.block_width_2D, CONTROLS_BUTTON_HEIGHT)
         ) and STARTED_CLICKING_THIS_FRAME
 
         if any(
@@ -825,9 +828,9 @@ class Window:
             self.controls_screen_loop()
 
         if self.mode_menu.option == "3D":
-            self.draw_3d()
+            self.draw_3d(CONTROLS_BUTTON_Y_POS)
         else:
-            self.draw_2d()
+            self.draw_2d(CONTROLS_BUTTON_Y_POS)
         self.draw_score()
 
         SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
@@ -1055,7 +1058,7 @@ class Window:
 
             self.window.blit(CONTROL_TEXT, text_pos)
 
-    def draw_2d(self):
+    def draw_2d(self, controls_button_y_pos: int):
         """
         Draws the 'self.game_control.game' board, piece
         and next piece, IF THE GAME MODE IS 2D
@@ -1067,6 +1070,13 @@ class Window:
         The piece is drawn in the correct position INSIDE
         the board.
         The next piece is drawn in a little box beside the board
+
+        Also draws the controls for the 2D game
+        (found in 'self.controls', which MUST be a 'GameControl2D' instance,
+        otherwise this method raises a TypeError),
+        at the very left of the screen,
+        RIGHT ABOVE the CONTROLS SCREEN BUTTON, ASSUMING THAT 'controls_button_y_pos'
+        IS THE BUTTONS' TOP SIDES's Y-POS.
         """
         if type(self.controls) != GameControl2D:
             raise TypeError("Can't render in 2D while game mode is not 2D!")
@@ -1177,7 +1187,7 @@ class Window:
             "consolas"
         )
 
-        blit_pos = [0, self.HEIGHT]
+        blit_pos = [0, controls_button_y_pos]
 
         for controls_string in reversed(CONTROLS_STRINGS):
             CONTROLS_TEXT = CONTROLS_FONT.render(
@@ -1191,7 +1201,7 @@ class Window:
                 blit_pos
             )
 
-    def draw_3d(self):
+    def draw_3d(self, controls_button_y_pos: int):
         """
         Draws the 'self.game_control.game' board, piece
         and next piece, AFTER drawing a grid backgound
@@ -1222,6 +1232,10 @@ class Window:
         The next piece is drawn as if it were in the board, beside the board,
         at a certain amount of blocks away from it.
         (For now I've chosen 1 block of distance)
+
+        Also draws the controls for the 3D game, at the very left of the screen,
+        RIGHT ABOVE the CONTROLS SCREEN BUTTON, ASSUMING THAT 'controls_button_y_pos'
+        IS THE BUTTONS' TOP SIDES's Y-POS.
         """
 
         if self.mode_menu.option != "3D":
@@ -1599,7 +1613,7 @@ class Window:
             "consolas"
         )
 
-        control_text_y_pos = self.HEIGHT
+        control_text_y_pos = controls_button_y_pos
 
         for control_str in reversed(CONTROLS_STRINGS):
             CONTROL_TEXT = CONTROLS_FONT.render(control_str, False, WHITE)
