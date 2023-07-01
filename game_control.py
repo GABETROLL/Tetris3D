@@ -160,6 +160,7 @@ class GameControl:
 
                     if direction_moved:
                         self.das[direction].first_move = True
+                    # To buffer the direction in tucks
 
                     if DIRECTION_CHARGE >= GameControl.FIRST_DELAY:   
                         self.das[direction].charge = GameControl.FIRST_DELAY + 1
