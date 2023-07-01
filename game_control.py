@@ -40,6 +40,15 @@ class SuccessfulActions:
     rotating: bool
 
 
+@dataclass
+class DASSettings:
+    first_move: bool = False
+    charge: int = 0
+
+    def copy(self):
+        return DASSettings(self.first_move, self.charge)
+
+
 class GameControl:
     """
     Handles piece falling framerate and keyboard inputs.
@@ -58,8 +67,6 @@ class GameControl:
     in order to prevent the piece from going too fast
     """
 
-    STARTING_DAS = {"previous_frame": False, "first_das": False, "charge": 0}
-
     def __init__(self, direction_keys: dict[str, Sequence[int]]):
         """
         'direction_keys' should be a dictionary of GAME directions:
@@ -73,7 +80,7 @@ class GameControl:
 
         self.direction_keys: dict[str, Sequence[int]] = direction_keys
         self.das = {
-            direction: GameControl.STARTING_DAS.copy()
+            direction: DASSettings()
             for direction in direction_keys.keys()
         }
         """
@@ -89,8 +96,16 @@ class GameControl:
     def direction_input_handler(self, keys) -> bool:
         """
         Calls 'self.game.try_move' with the directions corresponding
-        to the pressed keys, assuming that 'keys' has the player's
-        keyboard's currently pressed keys.
+        to the pressed keys,
+        
+        ASSUMING THAT:
+        - 'keys' has all of the player's
+            keyboard's keys' KEY CODES as "DICTIONARY" keys,
+            and weather or not they'r currently being pressed
+            as values.
+        - 'key_down_keys' is a sequence of KEY CODES
+            of all the keys that STARTED BEING PRESSED
+            by the player THIS FRAME.
 
         BUT only if the player has already been holding that key down
         for a certain amount of frames. The first time the player holds
@@ -132,29 +147,33 @@ class GameControl:
 
             if any(keys[key] for key in direction_keys):
 
-                self.das[direction]["charge"] += 1
+                DIRECTION_CHARGE = self.das[direction].charge
 
-                if self.das[direction]["charge"] == GameControl.SECOND_DELAY and self.das[direction]["first_das"] or\
-                        self.das[direction]["charge"] == GameControl.FIRST_DELAY:
+                self.das[direction].charge += 1
+
+                if not self.das[direction].first_move \
+                        or DIRECTION_CHARGE == 0 \
+                        or DIRECTION_CHARGE == GameControl.FIRST_DELAY \
+                        or DIRECTION_CHARGE == GameControl.FIRST_DELAY + GameControl.SECOND_DELAY:
+
                     direction_moved = self.game.try_move(direction)
 
-                    self.das[direction]["charge"] = 0
-                    self.das[direction]["first_das"] = True
+                    if direction_moved:
+                        self.das[direction].first_move = True
 
-                elif not self.das[direction]["previous_frame"]:
-                    direction_moved = self.game.try_move(direction)
-
-                    self.das[direction]["charge"] = 0
-                    self.das[direction]["previous_frame"] = True
+                    if DIRECTION_CHARGE >= GameControl.FIRST_DELAY:   
+                        self.das[direction].charge = GameControl.FIRST_DELAY + 1
 
             else:
-                if self.das[direction]["charge"] > 0:
-                    self.das[direction]["charge"] -= 1
-                self.das[direction]["first_das"] = False
-                self.das[direction]["previous_frame"] = False
-            
+                if self.das[direction].charge > 0:
+                    self.das[direction].charge -= 1
+                
+                self.das[direction].first_move = False
+
             if direction_moved:
                 moved = True
+
+        # print(self.das)
 
         return moved
 
