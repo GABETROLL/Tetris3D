@@ -147,46 +147,27 @@ The goal is to get as much points as possible, before the pieces stack too high.
 
 When the 'next piece' tries to spawn at the top of the board as the new current piece, but any block in the board blocks it, the game ends.
 
-## Controls
-### Move piece
-| Key | Direction In 2D | Direction in 3D |
-| --- | --------------- | --------------- |
-| W   |                 | BACK            |
-| A          | LEFT | LEFT |
-| S          | DOWN/SOFT-DROP | FRONT |
-| D          | RIGHT | RIGHT |
-| LEFT_SHIFT | DOWN/SOFT-DROP | DOWN/SOFT-DROP |
-| SPACEBAR   | HARD-DROP | HARD-DROP |
+## Keyboard Controls
+The keyboard controls' settings can be found in ``keyboard_settings.json``.
+### Controls's Definitions
+In 2D, the "LEFT" and "RIGHT" keys move the piece left and right,
+"DOWN" and "SOFT_DROP" soft-drop the piece,
+and "HARD_DROP" hard-drops it
+<img src="images/2D_moves.png" alt="LEFT and RIGHT move like their names, SOFT_DROP moves one block down and HARD_DROP moves ALL THE WAY down">
 
-<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_moves.png?raw=true" alt="key-direction pair illustration with 2D board screenshot and arrows" width=40%>
-<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_moves.png?raw=true" alt="key-direction pair illustration with 3D board screenshot and arrows" width=40%>
+<img src="images/3D_moves.png" alt="LEFT and RIGHT move left and right, UP moves back, DOWN moves front, SOFT_DROP moves one block down, and HARD_DROP moves ALL THE WAY down">
+In 3D, UP and DOWN move the piece back and front,
+and "SOFT_DROP" and "HARD_DROP" work exactly as their names.
 
-### Rotate Piece
-| key | axis | clockwise | 2D | 3D |
-| --- | ---- | --------- | -- | -- |
-| U   | Y    | False     | :heavy_check_mark: | :heavy_check_mark: |
-| O   | Y    | True      | :heavy_check_mark: | :heavy_check_mark: |
-| I   | X    | False     |  | :heavy_check_mark: |
-| K   | X    | True      |  | :heavy_check_mark: |
-| J   | Z    | True      |  | :heavy_check_mark: |
-| L   | Z    | False     |  | :heavy_check_mark: |
---------------------------------------------------
-<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_rotation.png?raw=true" alt="O-piece in 2D mode with arrows in both 2D rotation directions" width=40%>
-<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_rotation.png?raw=true" alt="T-piece in 3D mode with arrows in all rotation axii, mapped to their keys" width=40%>
+### Edit The Keyboard Controls
 
-The 3D controls are just the 2D controls, with 2 more axii of rotation, relative to the player's "POV".
-Just imagine being able to stick you finger "into the screen" and push the piece in that direction, using the U, I, O, J, K, L keys, as if the keys were in front of the piece.
-### Moving in menu screens
-Move between (inner) menus:
-```
-W/UP
-S/DOWN
-```
-Change menu option:
-```
-A/LEFT  : go to previous option
-D/RIGHT : go to next option
-```
+<img src="images/controls_screen.png" alt="List of control names (like LEFT, RIGHT, menu_submit, ...) and their keys">
+Click on the "Controls" button anywhere but the controls' screen. That button will take you to the controls screen, where you can see the list of all of the in-game actions, and their keys.
+
+To edit a control, click the control ROW (to tell if your mouse is on top of it, just make sure it turns yellow) and press the key to do that function.
+
+This should not only change the controls in the current gameplay, but should save the settings to the 'keyboard_settings.json', IF YOU EXIT THE CONTROLS SCREEN AND RETURN TO THE GAME.
+
 ## Code Documentation
 ### File Structure & Definitions
 ```
