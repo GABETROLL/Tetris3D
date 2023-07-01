@@ -391,6 +391,7 @@ class Window:
                         # USER SET CONTROL KEY!!!
                         if event.key not in controls_keys["toggle_controls_screen"]:
                             controls_keys[CLICKED_ACTION] = [event.key]
+                            # Save the key LOCALLY, IN THE CURRENT SESSION!
 
                             sound.SFX_CHANNEL.play(sound.CHANGED_CONTROL_KEY)
 

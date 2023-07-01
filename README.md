@@ -166,7 +166,10 @@ Click on the "Controls" button anywhere but the controls' screen. That button wi
 
 To edit a control, click the control ROW (to tell if your mouse is on top of it, just make sure it turns yellow) and press the key to do that function.
 
-This should not only change the controls in the current gameplay, but should save the settings to the 'keyboard_settings.json', IF YOU EXIT THE CONTROLS SCREEN AND RETURN TO THE GAME.
+This should not only change the controls in the current gameplay, but should save the settings to the 'keyboard_settings.json' as well, IF THE PLAYER DOESN'T KILL THE PROCESS, USE Ctrl+C IN THE TERMINAL, OR HAVE THE PROGRAM CRASH UNPEXPECTEDLY.
+
+## Feedback
+ALL FEEBACK IS WELCOME. Please tell me all of the issues, bugs, ideas, changes, etc.. you have with my project, and don't change anything without my permission! If you know how to set up permissions in GitHub, please let me know as well! Thank you, and God bless you!
 
 ## Code Documentation
 ### File Structure & Definitions
