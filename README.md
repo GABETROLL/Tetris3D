@@ -150,18 +150,34 @@ When the 'next piece' tries to spawn at the top of the board as the new current 
 ## Keyboard Controls
 The keyboard controls' settings can be found in ``keyboard_settings.json``.
 ### Controls's Definitions
+In ``keyboard_settings.json``, the keys are the following:
+The "LEFT", "RIGHT", "UP" and "DOWN" keys are meant to represent a D-pad in the player's (your) keyboard;
+
+"menu_submit" is the control for "Play!";
+
+the "rotate_cw_x", "rotate_cw_y" and "rotate_cw_z" keys are for rotating clockwise AROUND x, y and z;
+
+the "rotate_ccw_x", "rotate_ccw_y" and "rotate_ccw_z" keys are for rotating counter-clockwise AROUND x, y and z;
+
+"toggle_controls_screen" toggles the controls screen;
+
+and the "HARD_DROP" and "SOFT_DROP" keys do what's explained above, in the [##Rules](##Rules) section.
+
 In 2D, the "LEFT" and "RIGHT" keys move the piece left and right,
 "DOWN" and "SOFT_DROP" soft-drop the piece,
 and "HARD_DROP" hard-drops it
-<img src="images/2D_moves.png" alt="LEFT and RIGHT move like their names, SOFT_DROP moves one block down and HARD_DROP moves ALL THE WAY down">
 
-<img src="images/3D_moves.png" alt="LEFT and RIGHT move left and right, UP moves back, DOWN moves front, SOFT_DROP moves one block down, and HARD_DROP moves ALL THE WAY down">
+<img src="images/2D_moves.png" alt="Game screenshot, with arrows drawn on it to show the different directions/moves to do on the piece, and their key definitions" width=40%>
+
 In 3D, UP and DOWN move the piece back and front,
 and "SOFT_DROP" and "HARD_DROP" work exactly as their names.
 
+<img src="images/3D_moves.png" alt="LEFT and RIGHT move left and right, UP moves back, DOWN moves front, SOFT_DROP moves one block down, and HARD_DROP moves ALL THE WAY down" width=40%>
+
 ### Edit The Keyboard Controls
 
-<img src="images/controls_screen.png" alt="List of control names (like LEFT, RIGHT, menu_submit, ...) and their keys">
+<img src="images/controls_screen.png" alt="Controls screen, that contains: list of control names (like LEFT, RIGHT, menu_submit, ...) and their keys" width=40%>
+
 Click on the "Controls" button anywhere but the controls' screen. That button will take you to the controls screen, where you can see the list of all of the in-game actions, and their keys.
 
 To edit a control, click the control ROW (to tell if your mouse is on top of it, just make sure it turns yellow) and press the key to do that function.
