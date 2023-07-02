@@ -186,7 +186,7 @@ class GameControl:
             if direction_moved:
                 moved = True
 
-        print(self.das, moved)
+        # print(self.das, moved)
 
         return moved
 
