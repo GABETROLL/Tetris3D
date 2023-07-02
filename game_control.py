@@ -42,11 +42,11 @@ class SuccessfulActions:
 
 @dataclass
 class DASSettings:
-    first_move: bool = False
+    first_move_pending: bool = False
     charge: int = 0
 
     def copy(self):
-        return DASSettings(self.first_move, self.charge)
+        return DASSettings(self.first_move_pending, self.charge)
 
 
 class GameControl:
@@ -149,32 +149,44 @@ class GameControl:
 
                 DIRECTION_CHARGE = self.das[direction].charge
 
-                self.das[direction].charge += 1
-
-                if not self.das[direction].first_move \
-                        or DIRECTION_CHARGE == 0 \
-                        or DIRECTION_CHARGE == GameControl.FIRST_DELAY \
-                        or DIRECTION_CHARGE == GameControl.FIRST_DELAY + GameControl.SECOND_DELAY:
-
+                if self.das[direction].charge == 0:
                     direction_moved = self.game.try_move(direction)
+                    self.das[direction].first_move_pending = not direction_moved
+
+                    self.das[direction].charge += 1
+                elif self.das[direction].charge == GameControl.FIRST_DELAY:
+                    direction_moved = self.game.try_move(direction)
+                    self.das[direction].first_move_pending = False
 
                     if direction_moved:
-                        self.das[direction].first_move = True
-                    # To buffer the direction in tucks
-
-                    if DIRECTION_CHARGE >= GameControl.FIRST_DELAY:   
-                        self.das[direction].charge = GameControl.FIRST_DELAY + 1
-
-            else:
-                if self.das[direction].charge > 0:
-                    self.das[direction].charge -= 1
+                        self.das[direction].charge += 1
                 
-                self.das[direction].first_move = False
+                elif self.das[direction].charge == GameControl.FIRST_DELAY + GameControl.SECOND_DELAY:
+                    direction_moved = self.game.try_move(direction)
+                    self.das[direction].first_move_pending = False
+
+                    self.das[direction].charge = GameControl.FIRST_DELAY
+
+                    if direction_moved:
+                        self.das[direction].charge += 1
+
+                elif self.das[direction].first_move_pending:
+                    direction_moved = self.game.try_move(direction)
+                    self.das[direction].first_move_pending = not direction_moved
+
+                    if 0 < GameControl.FIRST_DELAY - self.das[direction].charge <= GameControl.SECOND_DELAY:
+                        self.das[direction].charge = GameControl.FIRST_DELAY + 1
+                        self.das[direction].first_move_pending = False
+                else:
+                    self.das[direction].charge += 1
+            else:
+                self.das[direction].charge = 0
+                self.das[direction].first_move_pending = False
 
             if direction_moved:
                 moved = True
 
-        # print(self.das)
+        print(self.das, moved)
 
         return moved
 
