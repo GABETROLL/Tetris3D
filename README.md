@@ -65,6 +65,11 @@ Or do it youeself:
 $ python3.11 main.py
 ```
 ## Rules
+The purpose of this project was not to copy modern Tetris, but to make a Tetris game that I enjoy the most.
+This game is not "up to standard" with the Modern Tetris point system, level speed system, and Super Rotation System.
+Instead, I made this game more like what I wish Tetris was like.
+This game has its own simpler rotation system, and my preferences for level speeds and points.
+
 There are 2 ame types: 2D and 3D.
 The game starts off with:
 - a board
