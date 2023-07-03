@@ -35,7 +35,8 @@ WHITE = (255, 255, 255)
 BRIGHT_GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
-BUTTON_COLOR = (0, 0, 0xC0)
+BUTTON_COLOR = (32, 32, 32)
+HOVERED_BUTTON_COLOR = (64, 64, 64)
 
 
 @dataclass
@@ -293,30 +294,47 @@ class Window:
 
         # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
 
-    def _handle_controls_screen_button(
+    def _handle_button(
             self,
-            button_rect: pygame.Rect
+            button_rect: pygame.Rect,
+            text_str: str
         ) -> bool:
         """
-        Renders "Controls" button in 'consolas' font,
-        with 'BUTTON_COLOR' background and 'WHITE' background,
+        Renders button with 'text' as its text,
+        with 'consolas' font and with 'WHITE' color;
 
-        and RETURNS weather or not being HOVERED
+        and draws its background color as 'HOVERED_BUTTON_COLOR'
+        if being hovered, 'BUTTON_COLOR' if not.
+
+        RETURNS: weather or not being HOVERED
         """
-        CONTROLS_STR = "Controls"
-        CONTROLS_FONT = self.text_font_fit_to_screen(
-            CONTROLS_STR,
+
+        TEXT_FONT = self.text_font_fit_to_screen(
+            text_str,
             button_rect.width,
             button_rect.height,
             "consolas"
         )
-        pygame.draw.rect(self.window, BUTTON_COLOR, button_rect)
-        self.window.blit(
-            CONTROLS_FONT.render(CONTROLS_STR, False, WHITE),
-            (button_rect.topleft)
+
+        HOVERED: bool = button_rect.collidepoint(pygame.mouse.get_pos())
+
+        pygame.draw.rect(
+            self.window,
+            HOVERED_BUTTON_COLOR if HOVERED else BUTTON_COLOR,
+            button_rect
         )
 
-        return button_rect.collidepoint(pygame.mouse.get_pos())
+        TEXT: pygame.Surface = TEXT_FONT.render(text_str, False, WHITE)
+
+        self.window.blit(
+            TEXT,
+            (
+                button_rect.centerx - (TEXT.get_width() >> 1),
+                button_rect.centery - (TEXT.get_height() >> 1)
+            )
+        )
+
+        return HOVERED
 
     @property
     def key_controls_names(self) -> dict:
@@ -669,13 +687,14 @@ class Window:
             if SCROLLING_UP or SCROLLING_DOWN:
                 sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
-        if self._handle_controls_screen_button(
+        if self._handle_button(
             pygame.Rect(
                 (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
                 (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
                 4 * self.block_width_2D,
                 1 * self.block_width_2D
-            )
+            ),
+            "Controls"
         ) and STARTED_CLICKING_THIS_FRAME:
             self.controls_screen_loop()
 
@@ -751,15 +770,17 @@ class Window:
 
         y_blit_pos += self.block_width_2D
 
-        PLAY_BUTTON = MENU_FONT.render("Play!", False, WHITE, BUTTON_COLOR)
-        PLAY_BUTTON_POS = ((self.WIDTH >> 1) - (PLAY_BUTTON.get_width() >> 1), y_blit_pos)
-        self.window.blit(PLAY_BUTTON, PLAY_BUTTON_POS)
+        PLAY_RECT = pygame.Rect(
+            0, 0, 3 * self.block_width_2D, int(1.5 * self.block_width_2D)
+        )
 
-        # HANDLE CLICK IN "Play!" BUTTON:
-        PLAY_RECT = PLAY_BUTTON.get_rect()
-        PLAY_RECT.topleft = PLAY_BUTTON_POS
+        PLAY_RECT.x = (self.WIDTH >> 1) - (PLAY_RECT.width >> 1)
+        PLAY_RECT.y = y_blit_pos
 
-        if STARTED_CLICKING_THIS_FRAME and PLAY_RECT.collidepoint(*MOUSE_POS):
+        if self._handle_button(
+            PLAY_RECT,
+            "Play!"
+        ) and STARTED_CLICKING_THIS_FRAME:
             self.start_game()
             sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
         # game should start IMMEDIATELY if the button is pressed,
@@ -821,8 +842,9 @@ class Window:
         CONTROLS_BUTTON_HEIGHT: int = self.block_width_2D
         CONTROLS_BUTTON_Y_POS: int = self.HEIGHT - CONTROLS_BUTTON_HEIGHT
 
-        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
-            pygame.Rect(0, CONTROLS_BUTTON_Y_POS, 4 * self.block_width_2D, CONTROLS_BUTTON_HEIGHT)
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_button(
+            pygame.Rect(0, CONTROLS_BUTTON_Y_POS, 4 * self.block_width_2D, CONTROLS_BUTTON_HEIGHT),
+            "Controls"
         ) and STARTED_CLICKING_THIS_FRAME
 
         if any(
@@ -1031,12 +1053,13 @@ class Window:
                 else:  # elif menu.option == "Back to title screen"
                     self.frame_handler = self.handle_title_screen_frame
         
-        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_controls_screen_button(
+        STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_button(
             pygame.Rect(
                 (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
                 (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
                 4 * self.block_width_2D,
-                1 * self.block_width_2D)
+                1 * self.block_width_2D),
+            "Controls"
         ) and STARTED_CLICKING_THIS_FRAME
 
         if STARTED_CLICKING_CONTROLS_BUTTON:
