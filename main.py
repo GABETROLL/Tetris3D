@@ -391,7 +391,11 @@ class Window:
                         # USER SET CONTROL KEY!!!
                         if event.key not in controls_keys["toggle_controls_screen"]:
                             controls_keys[CLICKED_ACTION] = [event.key]
-                            # Save the key LOCALLY, IN THE CURRENT SESSION!
+                            # Save the key LOCALLY, IN THE CURRENT SESSION
+
+                            dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
+                            # Save ALL of the key settings, IN THE JSON FILE,
+                            # WHEN ANY KEY IS MODIFIED.
 
                             sound.SFX_CHANNEL.play(sound.CHANGED_CONTROL_KEY)
 
@@ -488,8 +492,9 @@ class Window:
             PREVIOUSLY_HOVERED_ACTION = CURRENTLY_HOVERED_ACTION
 
             pygame.display.update()
-
+        
         dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
+        # SAVE ONCE MORE AT THE END OF THE LOOP FOR SAFETY
 
     def handle_title_screen_frame(self):
         """
