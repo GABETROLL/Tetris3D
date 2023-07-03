@@ -27,7 +27,6 @@ class TestCustomControls(unittest.TestCase):
         }
 
         self.assertEqual(EXPECTED_CONTROLS_KEYS, game_control.controls_keys)
-        
 
 
 class TestSoftDrop(unittest.TestCase):
@@ -95,7 +94,7 @@ class TestDirectionInputs(unittest.TestCase):
                 else:
                     self.assertFalse(FRAME_SUCCESSFUL, msg=str(frame))
 
-    def test_buffered_tuck_before_second_delay(self):
+    def test_buffered_tuck_before_first_delay_minus_second_delay(self):
         """
         THIS TEST DEPENDS ON 'TestSoftDrop' TO SUCCEED TO HAVE ITS RESULTS
         BE VALID.
@@ -199,4 +198,145 @@ class TestDirectionInputs(unittest.TestCase):
                 instance_2D.das[LEFT],
                 game_control.DASSettings(False, frames_waiting_for_tuck + 1),
                 msg=f"{frames_waiting_for_tuck=}"
+            )
+        
+        def test_buffered_tuck_after_first_delay_minus_second_delay_before_second_delay(self):
+            """
+            Tests that if the player presses LEFT while
+            GameControl.FIRST_DELAY - GameControl.SECOND_DELAY <= LEFT's DAS charge < GameControl.FIRST_DELAY,
+            the DAS charge jumps to 'GameControl.SECOND_DELAY'.
+
+            This is so that the piece doesn't reach GameControl.FIRST_DELAY,
+            and move AGAIN, less than 'GameControl.SECOND_DELAY' frames after,
+            making the piece move slightly faster than anticipated.
+
+            THIS TEST DEPENDS ON THE TEST BELOW IT TO BE VALID.
+            """
+            # Set-up GAME for tuck test
+            instance_2D = game_control.GameControl2D()
+            instance_2D.game.piece = Piece2D(I)
+            # Make sure that the I piece works I expect it to for this test
+            # This position should be the same each time I create a new 'instance_2d',
+            # which I must to reset the DAS, so that the test doesn't get falsified.
+            self.assertEqual(
+                I[0],
+                [
+                    "    ",
+                    "####",
+                    "    ",
+                    "    "
+                ]
+            )
+
+            X_POS_LEFT_OF_I: int = min(
+                (
+                    square_pos[game_control.X_AXIS] - 1
+                    for square_pos in instance_2D.game.piece.square_positions()
+                )
+            )
+            """
+            The x_pos of the blocks that will form a wall left of the I piece,
+            to test the tuck buffering
+            """
+            self.assertIsInstance(X_POS_LEFT_OF_I, int)
+
+            # Finished setting up GAME for tuck test
+
+            TEST_START_FRAME: int = game_control.GameControl.FIRST_DELAY - game_control.GameControl.SECOND_DELAY
+
+            for more_frames_waiting_for_tuck in range(game_control.GameControl.FIRST_DELAY - TEST_START_FRAME):
+                # PRETEND THAT THE PLAYER HAS ALREADY BEEN HOLDING THE PIECE FOR THOSE FRAMES
+                # (If the test BELOW passes, then this is fine to do)
+                instance_2D.das[LEFT] = game_control.DASSettings(True, TEST_START_FRAME)
+                
+                for frame_waiting_for_tuck in range(more_frames_waiting_for_tuck):
+                    self.assertFalse(
+                        instance_2D.direction_input_handler((LEFT, )),
+                        msg=f"{more_frames_waiting_for_tuck=} {frame_waiting_for_tuck=}"
+                    )
+
+                    self.assertEqual(
+                        instance_2D.das[LEFT],
+                        game_control.DASSettings(True, TEST_START_FRAME + more_frames_waiting_for_tuck),
+                        msg=f"{more_frames_waiting_for_tuck=} {frame_waiting_for_tuck=}"
+                    )
+                
+                instance_2D.game.piece.pos[game_control.Y_AXIS] += 1
+
+                self.assertTrue(
+                    instance_2D.direction_input_handler((LEFT, )),
+                    msg=f"{more_frames_waiting_for_tuck=}"
+                )
+
+                self.assertEqual(
+                    instance_2D.das[LEFT], game_control.DASSettings(False, game_control.GameControl.FIRST_DELAY)
+                )
+
+        def test_buffered_tuck_at_first_delay(self):
+            """
+            Tests that if the player presses LEFT while the DAS charge is
+            at GameControl.FIRST_DELAY and the move fails,
+            LEFT's das' charge remains at GameControl.FIRST_DELAY.
+            """
+            # Set-up game for tuck test
+            instance_2D = game_control.GameControl2D()
+            instance_2D.game.piece = Piece2D(I)
+            # Make sure that the I piece works I expect it to for this test
+            # This position should be the same each time I create a new 'instance_2d',
+            # which I must to reset the DAS, so that the test doesn't get falsified.
+            self.assertEqual(
+                I[0],
+                [
+                    "    ",
+                    "####",
+                    "    ",
+                    "    "
+                ]
+            )
+
+            X_POS_LEFT_OF_I: int = min(
+                (
+                    square_pos[game_control.X_AXIS] - 1
+                    for square_pos in instance_2D.game.piece.square_positions()
+                )
+            )
+            """
+            The x_pos of the blocks that will form a wall left of the I piece,
+            to test the tuck buffering
+            """
+            self.assertIsInstance(X_POS_LEFT_OF_I, int)
+
+            # Finished setting up for tuck test
+
+            for frame_waiting_for_tuck in range(game_control.GameControl.FIRST_DELAY):
+
+                # The I piece shouldn't move LEFT if there's a block there
+                self.assertFalse(
+                    instance_2D.direction_input_handler((LEFT, )),
+                    msg=f"{frame_waiting_for_tuck=}"
+                )
+
+                self.assertEqual(
+                    instance_2D.das[LEFT], game_control.DASSettings(True, frame_waiting_for_tuck + 1)
+                )
+            
+            # The I piece should still not be able to move,
+            # but LEFT's DAS charge should remain at 'GameControl.FIRST_DELAY'.
+            self.assertFalse(
+                instance_2D.direction_input_handler((LEFT, )),
+                msg=f"{frame_waiting_for_tuck=}"
+            )
+
+            self.assertEqual(
+                instance_2D.das[LEFT], game_control.DASSettings(True, game_control.GameControl.FIRST_DELAY)
+            )
+
+            # The I piece shouldn't move LEFT if there's a block there
+            self.assertFalse(
+                instance_2D.direction_input_handler((LEFT, )),
+                msg=f"{frame_waiting_for_tuck=}"
+            )
+
+            self.assertEqual(
+                instance_2D.das[LEFT], game_control.DASSettings(True, game_control.GameControl.FIRST_DELAY)
             )
