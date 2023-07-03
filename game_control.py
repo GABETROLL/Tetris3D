@@ -67,21 +67,22 @@ class GameControl:
     in order to prevent the piece from going too fast
     """
 
-    def __init__(self, direction_keys: dict[str, Sequence[int]]):
+    def __init__(self, directions: Sequence[str]):
         """
-        'direction_keys' should be a dictionary of GAME directions:
+        'directions' SHOULD be an iterale of IN-GAME DIRECTIONS:
         LEFT, RIGHT, FRONT, BACK
-        and key codes:
-        pygame.K_...
+
+        THIS METHOD DOES NOT VALIDATE THEM,
+        THE GameControl2D and GameControl3D CHILDREN OF THIS CLASS
+        MUST.
         """
         self.game = Game2D()
 
         self.frame_count = 0
 
-        self.direction_keys: dict[str, Sequence[int]] = direction_keys
         self.das = {
             direction: DASSettings()
-            for direction in direction_keys.keys()
+            for direction in directions
         }
         """
         "DAS" = "delayed auto shift".
@@ -93,29 +94,25 @@ class GameControl:
     def fall_rate(level):
         return int(49 / 1.1 ** level) + 1
     
-    def direction_input_handler(self, keys) -> bool:
+    def direction_input_handler(self, pressed_directions: set[str]) -> bool:
         """
         Calls 'self.game.try_move' with the directions corresponding
-        to the pressed keys,
-        
-        ASSUMING THAT:
-        - 'keys' has all of the player's
-            keyboard's keys' KEY CODES as "DICTIONARY" keys,
-            and weather or not they'r currently being pressed
-            as values.
-        - 'key_down_keys' is a sequence of KEY CODES
-            of all the keys that STARTED BEING PRESSED
-            by the player THIS FRAME.
+        to the pressed direction keys,
 
-        BUT only if the player has already been holding that key down
+        ASSUMING THAT:
+        - 'pressed_directions' has all of the VALID DIRECTIONS
+        (LEFT, RIGHT BACK, FRONT) that the player is currently
+        holding down in their keyboard.
+
+        BUT only if the player has already been holding those direction key(s) down
         for a certain amount of frames. The first time the player holds
-        a key down on a cold start, the first frame, its
-        "self.game.try_move(<key's direction>)" will be called.
+        a direction down on a cold start, the first frame, its
+        "self.game.try_move(<direction>)" will be called.
         then, this object will count up to 'GameControl.FIRST_DELAY'
         before the piece actually gets moved again.
 
         This is to prevent the player from accidentally moving the piece
-        more than one block, when the player is quickly tapping the key.
+        more than one block, when the player is quickly tapping the direction key(s).
 
         After that press, the player will have to keep waiting
         'GameControl.SECOND_DELAY' frames before the next direction press.
@@ -126,8 +123,9 @@ class GameControl:
         This should work well, IF THE FIRST DELAY IS BIGGER THAN THE SECOND DELAY,
         AND IF THEIR SPEEDS ARE REASONABLE.
 
-        Plays 'self.game' with direction keys found in 'keys',
+        Plays 'self.game' with 'directions',
         by calling 'self.game.try_move(<direction>)',
+        ASSUMING THE PLAYER IS HOLDING DOWN THOSE DIRECTIONS IN THEIR KEYBOARD,
         IF THE DIRECTION IS READY TO BE PRESSED, BASED ON THE AMOUNT OF FRAMES
         IT'S BEEN HELD DOWN, LIKE MENTIONED JUST ABOVE HERE.
 
@@ -141,13 +139,14 @@ class GameControl:
 
         moved: bool = False
 
-        for direction, direction_keys in self.direction_keys.items():
+        for direction in self.das.keys():
+            # dictionary keys, 'direction' SHOULD be 'str'.
+
+            assert isinstance(direction, str)
 
             direction_moved: bool = False
 
-            if any(keys[key] for key in direction_keys):
-
-                DIRECTION_CHARGE = self.das[direction].charge
+            if direction in pressed_directions:
 
                 if self.das[direction].charge == 0:
                     direction_moved = self.game.try_move(direction)
@@ -242,13 +241,7 @@ class GameControl:
 
 class GameControl2D(GameControl):
     def __init__(self):
-        GameControl.__init__(
-            self, 
-            {
-                LEFT: controls_keys["LEFT"],
-                RIGHT: controls_keys["RIGHT"]
-            }
-        )
+        GameControl.__init__(self, (LEFT, RIGHT))
         self.game = Game2D()
 
     def input_handler(self, key_down_keys: set[int]) -> SuccessfulActions:
@@ -271,7 +264,20 @@ class GameControl2D(GameControl):
 
         result = SuccessfulActions(False, False, False, False)
 
-        result.moving_in_das_direction = GameControl.direction_input_handler(self, keys)
+        pressed_directions: set[str] = set()
+
+        if any(keys[key] for key in controls_keys["LEFT"]):
+            pressed_directions.add(LEFT)
+        if any(keys[key] for key in controls_keys["RIGHT"]):
+            pressed_directions.add(RIGHT)
+        
+        if LEFT in pressed_directions and RIGHT in pressed_directions:
+            pressed_directions = set()
+
+        result.moving_in_das_direction = GameControl.direction_input_handler(self, pressed_directions)
+
+        if pressed_directions == set():
+            assert result.moving_in_das_direction == False
 
         if key_down_keys.intersection(controls_keys["rotate_cw_y"]):
             result.rotating = self.game.try_rotate()
