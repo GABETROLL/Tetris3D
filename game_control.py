@@ -176,6 +176,8 @@ class GameControl:
                     if 0 < GameControl.FIRST_DELAY - self.das[direction].charge <= GameControl.SECOND_DELAY:
                         self.das[direction].charge = GameControl.FIRST_DELAY + 1
                         self.das[direction].first_move_pending = False
+                    else:
+                        self.das[direction].charge += 1
                 else:
                     self.das[direction].charge += 1
             else:
@@ -272,7 +274,8 @@ class GameControl2D(GameControl):
             pressed_directions.add(RIGHT)
         
         if LEFT in pressed_directions and RIGHT in pressed_directions:
-            pressed_directions = set()
+            pressed_directions.remove(LEFT)
+            pressed_directions.remove(RIGHT)
 
         result.moving_in_das_direction = GameControl.direction_input_handler(self, pressed_directions)
 
@@ -314,15 +317,7 @@ class GameControl2D(GameControl):
 
 class GameControl3D(GameControl):
     def __init__(self):
-        GameControl.__init__(
-            self, 
-            {
-                LEFT: controls_keys["LEFT"],
-                RIGHT: controls_keys["RIGHT"],
-                FRONT: controls_keys["DOWN"],
-                BACK: controls_keys["UP"]
-            }
-        )
+        GameControl.__init__(self, (LEFT, RIGHT, FRONT, BACK))
         self.game = Game3D()
 
     def input_handler(self, key_down_keys: set[int]):
@@ -344,7 +339,27 @@ class GameControl3D(GameControl):
         keys = pygame.key.get_pressed()
         result = SuccessfulActions(False, False, False, False)
 
-        result.moving_in_das_direction = GameControl.direction_input_handler(self, keys)
+        pressed_directions: set[str] = set()
+
+        if any(keys[key] for key in controls_keys["LEFT"]):
+            pressed_directions.add(LEFT)
+        if any(keys[key] for key in controls_keys["RIGHT"]):
+            pressed_directions.add(RIGHT)
+        
+        if LEFT in pressed_directions and RIGHT in pressed_directions:
+            pressed_directions.remove(LEFT)
+            pressed_directions.remove(RIGHT)
+        
+        if any(keys[key] for key in controls_keys["UP"]):
+            pressed_directions.add(BACK)
+        if any(keys[key] for key in controls_keys["DOWN"]):
+            pressed_directions.add(FRONT)
+        
+        if BACK in pressed_directions and FRONT in pressed_directions:
+            pressed_directions.remove(BACK)
+            pressed_directions.remove(FRONT)
+
+        result.moving_in_das_direction = GameControl.direction_input_handler(self, pressed_directions)
 
         if any(keys[key] for key in controls_keys["SOFT_DROP"]):
             result.moving_one_block_down = self.game.try_move(SOFT_DROP)
