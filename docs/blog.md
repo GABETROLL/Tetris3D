@@ -4,7 +4,7 @@ Hello! I'm Gabriel Fernandez, the developer for this project.
 
 # Timeline
 
-This project started as just another personal project in July 9, 2021, that I worked on for a little while in 2021 and 2022, but then became my Portfolio Project for Holberton. After that, my timeline looks like this:
+This project started as a personal project in July 9, 2021, that I worked on for a little while in 2021 and 2022, then became my Portfolio Project for Holberton. This is the timeline for the project during my time at Holberton:
 
 - April 30 - May 5: Clean-up code and fix errors
 - May 14: Add title screen
@@ -22,10 +22,10 @@ This project started as just another personal project in July 9, 2021, that I wo
 - June 29 - now: Polish game
 
 ## Who is this project for?
-This project is for the programmers, math nerds or Tetris players who'd like to try one of their favorite games with more dimensions, to re-experience the math in the game in a new way, and to learn something new.
+This project is for the programmers, math enthusiasts or Tetris players who'd like to try one of their favorite games with more dimensions, to re-experience the math in the game in a new way, and to learn something new.
 
 ## Story for Inspiration for my Project
-When I was 13, in 2018, I discovered Tetris.Since that time, I also have loved watching computer science / math / logical videos, specially the ones that talk about higher dimensions. (3Blue1Brown, Mathologer, and recently: CodeParade)
+When I was 13, in 2018, I discovered Tetris. Since that time, I also have loved watching computer science / math / logical videos, specially the ones that talk about higher dimensions. (3Blue1Brown, Mathologer, and recently: CodeParade)
 
 I first started playing Tetris on mobile at tetris.com, and found out that this seemingly simple game was actually pretty tough! I spent hours trying to get better, and I realized since my very first session that I was addicted.
 
@@ -37,7 +37,7 @@ After that, other things caught my eye, and I lost touch with the game.
 
 In summer, 2021, I saw a YouTube video of a person that was coding 16 games in C++, currently coding Tetris. I decided to give it a go in Python and Pygame, the only two technologies I was familiar with at that point, and developed a small 2D game recreation with no ending, no title screen, no next piece view, and pretty much nothing else, a little while in July, 2021, and a little while again in May, 2022.
 
-Now, it was 2023, I'm studying at Holberton, and because I was considering many ideas for what should be my Portfolio Project, my heart leand on Tetris. I had remembered coding it months prior, and I thought it would be cool to try it again. Then, as I was discussing this idea with my C19 classmates, my math nerd desires kicked in, and I had another idea: Make a 3D Tetris game, in a rectangular prism board and make the game clear floors instead of lines!
+Now, it was 2023, I'm studying at Holberton, and because I was considering many ideas for what should be my Portfolio Project, my heart leaned on Tetris. With the help of my experience in Holberton and my previous experience, I went with Tetris. Then, as I was discussing this idea with my C19 classmates, my mathematical desires kicked in, and I had another idea: Make a 3D Tetris game, in a rectangular prism board and make the game clear floors instead of lines!
 
 I thought about it for a while, imagining dfferent ways to extend the game into higher dimensions, but eventually settled for my original idea, which I spent the next 2-3 months programming!
 
@@ -84,23 +84,23 @@ I went online and tried to search for solutions, but all solutions seemed to poi
 
 So, I took extreme measures: I went and created a new folder in my home directory called ``AAAAAAAAAAAAAA``, and copied all of my project's files, which according to GitHub were from the ``intact_3d`` branch, into the ``AAAAAAAAAAAAAA`` directory. Then, I did the forbidden ``rm -rf Tetris3D/`` move, and commited all of the file's deletions. My project was now empty, standing between life and death. I then manually added all of the files back and commited them.
 
-And that FINALLY allowed me to go eat in peace!
+This finally merged the ``documented`` and ``3d`` branches with ``master``, with the 3D graphics and documentation.
 
 ## What I've Learned
-Styling all of the game's GUI elements from scratch, without using any Pygame CSS package was a lot more draining than just finding a good Python package. I ended up having more lines of code for the game menus and text centering than the actual game itself! Estimating, about 10 times.
+Styling all of the game's GUI elements from scratch, without using any Pygame CSS package was a lot more time-consuming than just finding a good Python package. I ended up having more lines of code for the game menus and text centering than the actual game itself! Estimating, about 10 times.
 
-I may humble myself to try different libraries and try to learn new, easier things, instead of coding everything from scratch, with the things that I'm familiar. I was scared to try a 3D graphics library for that same reason, and because I was worried setting it up would be a pain.
-
-I learned that I'm stronger than I think. Together with JESUS CHRIST, my Lord and Savior, who gives me strength, I was able to conquer so much more in 3 months of coding school than I'd probably ever be able to in the 2 - 3 years before entering it... I never gave up, and although I took very generous amounts of breaks, and definitely got frustrated, stressed and hasty, I still have persevered into the last week of the first 9 months of the Holberton program!
-
-And I've learned that the worst descicion I could make is to not believe Christ has given me the power to do what I'm supposed to do! Believing that I can't so things the right way is what, most of the time, causes me to fall short.
-
-I'm definitely going to use the time managing skills I had to learn to get through this project. Before, I was too stuborn to use agendas/alarms and other stuff for my ADHD, but now, I see their value for my mental health, and my projects, and I KNOW I've gotten more responsible and better at managing things over time. I hope I can continue to make progress making things simple, fast and easy and not complicated and difficult in the future, and help those around me to do the same! I'm learning how to manage my time, and that's great! Thanks, Holberton! Thank you, Jesus!
+For the future, I will use libraries and try to learn and apply, different things, instead of coding everything from scratch, with the things that I'm familiar. I did not use a 3D graphics library for that same reason.
 
 As I've played more and more Modern Tetris throughout these last few weeks, I've definitely grown attached to it, and would love to extend the game to have those specs, and for the player to be able to customize them. I used to think that classic Tetris was hard and interesting, and that modern Tetris was made for babies, but after seeing a video debating that point, along with the many tricks online, I realized that:
 - classic Tetris is like a marathon: you need endurance, perseverance, focus and skill
 - modern Tetris is like chess: there's thousands of openers, moves and tricks with their unique names, lots of more ways to score points than classic Tetris, and speed is absolutely necessary!
 They're both equally interesting, challenging and fun!
+
+I learned that I'm stronger than I think. Together with JESUS CHRIST, my Lord and Savior, who gives me strength, I was able to conquer so much more in 3 months of coding school than I'd probably ever be able to in the 2 - 3 years before entering it... I never gave up, I still have persevered into the last week of the first 9 months of the Holberton program!
+
+And I've learned that the worst decision I could make is to not believe Christ has given me the power to do what I'm supposed to do! Believing that I can't so things the right way is what, most of the time, causes me to fall short.
+
+I used the time managing skills I had to learn to get through this project. I hope I can continue to make progress making things simple, fast and easy and not complicated and difficult in the future, and help those around me to do the same! I'm learning how to manage my time, and that's great! Thanks, Holberton! Thank you, Jesus!
 
 # Me and My Profiles
 - Tetris3D's GitHub page: https://github.com/GABETROLL/Tetris3D
