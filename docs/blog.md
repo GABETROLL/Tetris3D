@@ -89,7 +89,7 @@ This finally merged the ``documented`` and ``3d`` branches with ``master``, with
 ## What I've Learned
 Styling all of the game's GUI elements from scratch, without using any Pygame CSS package was a lot more time-consuming than just finding a good Python package. I ended up having more lines of code for the game menus and text centering than the actual game itself! Estimating, about 10 times.
 
-For the future, I will use libraries and try to learn and apply, different things, instead of coding everything from scratch, with the things that I'm familiar. I did not use a 3D graphics library for that same reason.
+This also happened with the 3D graphics.
 
 As I've played more and more Modern Tetris throughout these last few weeks, I've definitely grown attached to it, and would love to extend the game to have those specs, and for the player to be able to customize them. I used to think that classic Tetris was hard and interesting, and that modern Tetris was made for babies, but after seeing a video debating that point, along with the many tricks online, I realized that:
 - classic Tetris is like a marathon: you need endurance, perseverance, focus and skill
@@ -100,8 +100,9 @@ I learned that I'm stronger than I think. Together with JESUS CHRIST, my Lord an
 
 And I've learned that the worst decision I could make is to not believe Christ has given me the power to do what I'm supposed to do! Believing that I can't so things the right way is what, most of the time, causes me to fall short.
 
-I used the time managing skills I had to learn to get through this project. I hope I can continue to make progress making things simple, fast and easy and not complicated and difficult in the future, and help those around me to do the same! I'm learning how to manage my time, and that's great! Thanks, Holberton! Thank you, Jesus!
+Trello and time managing. We're required to use Trello boards to keep track of our tasks, and that gave me practice at managing my time, which allows me to focus better when it's time to work.
 
+Thank you, Holberton! And most importantly, thank you, Jesus Christ!
 # Me and My Profiles
 - Tetris3D's GitHub page: https://github.com/GABETROLL/Tetris3D
 - Tetris3D's landing page: https://gabetroll.github.io/Tetris3D/
