@@ -1,5 +1,13 @@
 """
-The axii/indexes in the board and pieces are described like this:
+Module with all of the 3D game's objects:
+
+3D piece's data (<numpy cube matrix>, <color>)
+the Piece3D class, meant to hold the pieces' data, rotate the piece and move the piece,
+and the Game3D class, which contains the 3D game's score, the 3D game's board,
+the 3D game's current and next pieces, and the amount of lines cleared the previous
+"game step" (Look in 'Game3D.__init__').
+
+The AXII INDEXES IN 'Game3D' and 'Piece3D' ARE DEFINED AS:
 0: x: left->right
 1: y: front->back
 2: z: top->bottom

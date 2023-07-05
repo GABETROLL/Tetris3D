@@ -1,3 +1,10 @@
+"""
+Module with all of the 2D piece's data (blocks, starting position, color),
+the Piece2D class, meant to hold the pieces' data, rotate the piece and move the piece,
+and the Game2D class, which contains the 2D game's score, the 2D game's board,
+the 2D game's current and next pieces, and the amount of lines cleared the previous
+"game step" (Look in 'Game2D.__init__').
+"""
 import random
 from game.score import Score
 
@@ -133,12 +140,23 @@ COLUMNS = 10
 
 
 class Piece2D:
-    """piece player can currently control. (piece data, pos)
-    Must be one of these:
+    """
+    2D piece class with all of its rotation configurations,
+    position in the board (at the top left of the piece's matrix)
+    and its color.
 
-    I, J, L, O, S, T or Z.
+    The rotation configurations must be matrices of list[str],
+    made with # characters representing blocks, and " " characters
+    representing space.
     """
     def __init__(self, piece: tuple):
+        """
+        'piece' should be I, J, L, O, S, T or Z.
+
+        The rotation configurations must be matrices of list[str],
+        made with # characters representing blocks, and " " characters
+        representing space.
+        """
         piece = list(piece)
         self.pos = list(piece.pop(-2))
         self.color = piece.pop(-1)
@@ -147,6 +165,9 @@ class Piece2D:
 
     @property
     def piece(self):
+        """
+        The current rotation configuration of 'self'.
+        """
         return self.all_rotations[self.rotation]
 
     @property    

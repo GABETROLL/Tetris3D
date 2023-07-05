@@ -9,7 +9,14 @@ class Score:
     transitioned: bool = False
 
     def score(self, cleared_lines: int):
-        """Adds points for each line cleared and goes up levels."""
+        """
+        Updates 'self's fields if the based on the amount of lines cleared,
+        in 'cleared_lines'.
+
+        Updates 'points' based on the amount of lines,
+        Adds 'cleared_lines' to 'lines',
+        and transitions the level like in NES Tetris.
+        """
         score_per_line = 0, 40, 100, 300, 1200
 
         self.points += (self.level + 1) * score_per_line[cleared_lines]

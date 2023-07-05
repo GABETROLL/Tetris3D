@@ -1,3 +1,9 @@
+"""
+Module that manages the customizable keyboard controls,
+using 'keyboard_settings.json' in this project's root directory,
+and the corresponding key mappings for the 2D and 3D games.
+"""
+
 import pygame
 from game.game_2d import Game2D
 from game.game_3d import Game3D, X_AXIS, Y_AXIS, Z_AXIS
@@ -33,6 +39,9 @@ class SuccessfulActions:
     For example:
     Game2D.try_move
     Game3D.try_rotate
+
+    This is used for game sounds, like the rotation sound
+    and hard-drop sounds in the 'Tetris3D/sound' directory.
     """
     moving_in_das_direction: bool
     hard_dropping: bool
