@@ -351,21 +351,20 @@ class Window:
         Displays all keyboard inputs and what they do, described in
         'CONTROL_KEYS_FILE'.
 
-        If the user clicks on a control, it's selected, and it displays
-        "Press any key...". When the user presses a key that isn't
-        'controls_keys["toggle_controls_screen"]', the new key is set as the
-        action's key, in 'controls_keys'.
+        When this method is running,
+        the user can click a control, causing it to display "Press any key...".
+        The user can then press a key in their keyboard to set the new control setting,
+        or press the 'controls_keys["toggle_controls_screen"]' to un-select it,
+        or click on another control to select that one instead.
 
-        If the user clicks on a control that's already selected,
-        OR if the player has a selected control and they press
-        'controls_keys["toggle_controls_screen"]',
-        the control gets un-selected.
+        They can also press the 'controls_keys["toggle_controls_screen"]' to exit
+        this screen, and go back to the main loop if they don't have
+        a selected control.
 
-        When the player presses 'controls_keys["toggle_controls_screen"]'
-        while there isn't a selected control, this method THE CONTROLS
-        ('controls_keys') in 'controls_keys_FILE',
-        and exits the loop, and returns None.
-        "
+        This method has its own window loop and pygame event loop,
+        which controls the entire screen,
+        so that when the player exits the controls screen,
+        the program goes back to the previous screen.
         """
 
         PREVIOUSLY_HOVERED_ACTION: str = None
@@ -378,16 +377,8 @@ class Window:
         Action selected by clicking.
 
         None if no action is currently selected,
-        either because player hasn't clicked one yet, or because
-        the player un-selected it.
-
-        TO UN-SELECT AN ACTION, PLAYER MUST SELECT ANOTHER ACTION,
-        OR CLICK ON THE CURRENTly SELECTED ACTION AGAIN, OR
-        PRESS THE TOGGLE-CONTROLS-SCREEN KEY.
-
-        Not necessarily the same as the hovered action!
-        The player can click on this action, then move their mouse
-        away, without un-clicking this action!
+        or the str NAME of the action, found in one of the keys in
+        'game_control.controls_keys'.
         """
 
         running_controls_screen_loop: bool = True
@@ -890,18 +881,20 @@ class Window:
 
     def handle_game_over_screen_frame(self):
         """
-        Draws asthetic border in 'self.border_blocks',
-        "GAME OVER" on the screen,
-        along with two options:
-        one to go back to the title screen,
-        and one to exit the script.
+        Draws border by calling 'self._draw_design_border'.
+
+        Displays menu with options to go back to title screen
+        or quit,
+
+        and handles the player's choice by checking it the player has clicked
+        on one of the options, or pressed one of the keys in
+        'controls_keys["menu_submit"]', in their keyboard.
+
+        The player can also scroll through the options with
+        'controls_keys["UP"]' and 'controls_keys["DOWN"]'.
 
         These options are stored in 'self.game_over_menu',
-        to handle every frame.
-
-        To scroll:
-        w/UP or s/DOWN
-        To select: ENTER
+        to be remembered the next frame.
         """
         self._draw_design_border()
 
@@ -1096,8 +1089,8 @@ class Window:
         will be raised.
 
         The board is drawn in the middle of the screen.
-        The piece is drawn in the correct position INSIDE
-        the board.
+        The board's blocks and the current piece's blocks are drawn
+        as squares (or almost squares, since math is done to check the blocks' size) in the board.
         The next piece is drawn in a little box beside the board
 
         Also draws the controls for the 2D game
