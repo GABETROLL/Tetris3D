@@ -1,7 +1,7 @@
 <img src="docs/banner.png" alt="Tetromino pieces as a banner">
 
 # Tetris3D!
-Tetris3D is a Python, Pygame and Numpy script of a semi-classic style Tetris game, with 2D and 3D game modes
+Tetris3D is a Python, Pygame and Numpy script of 2D and 3D Tetris games. Its style is similar to NES Tetris, mixed with modernity. It first started as a personal project of Tetris in just 2D, then became my Portfolio Project for Holberton.
 
 <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_game.png?raw=true" alt="2D game mode screenshot" width=40%>
 <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_game.png?raw=true" alt="3D game mode screenshot" width=40%>
