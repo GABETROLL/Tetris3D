@@ -3,8 +3,8 @@
 # Tetris3D!
 Tetris3D is a Python, Pygame and Numpy script of a semi-classic style Tetris game, with 2D and 3D game modes
 
-<img src="2D_game.png" alt="2D game mode screenshot" width=40%>
-<img src="3D_game.png" alt="3D game mode screenshot" width=40%>
+<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_game.png?raw=true" alt="2D game mode screenshot" width=40%>
+<img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_game.png?raw=true" alt="3D game mode screenshot" width=40%>
 
 ## Requirements
 <a href="https://www.python.org/"><img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo" width=25%></a>
