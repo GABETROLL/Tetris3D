@@ -313,8 +313,52 @@ class Game2D:
 
         # Uses mod operator to loop through piece rotations,
         # absolutes value in case they rotated counter-clockwise
+    
+    def SRS_rotation_checks(self, rotation: int, clockwise: bool):
+        result: list[list[int]] = [
+            [0, 0],
+            [1, 0],
+            [1, -1],
+            [0, 2],
+            [1, 2]
+        ]
 
-    def try_rotate(self, clockwise=True) -> bool:
+        # Y GETS FLIPPED
+        if rotation % 2 == 1:
+            for check_index in range(len(result)):
+                result[check_index][1] *= -1
+        # X GETS FLIPPED
+        if (not clockwise and rotation > 1) or (clockwise and rotation in (0, 3)):
+            for check_index in range(len(result)):
+                result[check_index][0] *= -1
+
+        return result
+
+    def try_rotate_SRS(self, clockwise: bool = True):
+        OLD_PIECE_POS: tuple[int, int] = tuple(self.piece.pos)
+        OLD_PIECE_ROTATION: int = self.piece.rotation
+
+        self.rotate(clockwise)
+
+        for check in self.SRS_rotation_checks(OLD_PIECE_ROTATION, clockwise):
+
+            self.piece.pos[0] += check[0]
+            self.piece.pos[1] += check[1]
+
+            if not any(
+                pos in self.board
+                or pos[0] not in range(COLUMNS)
+                or pos[1] not in range(ROWS)
+                for pos in self.piece.square_positions()
+            ):
+                return True
+
+            self.piece.pos = list(OLD_PIECE_POS)
+
+        self.rotate(not clockwise)
+        return False
+
+    def try_rotate_raw(self, clockwise=True) -> bool:
         """
         Rotates 'self.piece'. If the piece overlaps the outside of the board
         or a square in the board, the rotation is cancelled.
@@ -334,6 +378,10 @@ class Game2D:
 
             return False
         return True
+
+    @property
+    def try_rotate(self):
+        return self.try_rotate_SRS
 
     def landed(self):
         """
