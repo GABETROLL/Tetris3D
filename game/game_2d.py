@@ -7,6 +7,7 @@ the 2D game's current and next pieces, and the amount of lines cleared the previ
 """
 import random
 from game.score import Score
+from game.SRS_checks import SRS_CHECKS
 
 START_POS = [3, 0]
 
@@ -313,26 +314,6 @@ class Game2D:
 
         # Uses mod operator to loop through piece rotations,
         # absolutes value in case they rotated counter-clockwise
-    
-    def SRS_rotation_checks(self, rotation: int, clockwise: bool):
-        result: list[list[int]] = [
-            [0, 0],
-            [1, 0],
-            [1, -1],
-            [0, 2],
-            [1, 2]
-        ]
-
-        # Y GETS FLIPPED
-        if rotation % 2 == 1:
-            for check_index in range(len(result)):
-                result[check_index][1] *= -1
-        # X GETS FLIPPED
-        if (not clockwise and rotation > 1) or (clockwise and rotation in (0, 3)):
-            for check_index in range(len(result)):
-                result[check_index][0] *= -1
-
-        return result
 
     def try_rotate_SRS(self, clockwise: bool = True):
         OLD_PIECE_POS: tuple[int, int] = tuple(self.piece.pos)
@@ -340,7 +321,19 @@ class Game2D:
 
         self.rotate(clockwise)
 
-        for check in self.SRS_rotation_checks(OLD_PIECE_ROTATION, clockwise):
+        PIECE_MATRIX_SIZE = 0
+
+        if self.piece.all_rotations[0] == I[0]:
+            PIECE_MATRIX_SIZE = 4
+        elif self.piece.all_rotations[0] in (
+            J[0], L[0], S[0], T[0], Z[0]
+        ):
+            PIECE_MATRIX_SIZE = 3
+        elif self.piece.all_rotations[0] == O[0]:
+            return [[0, 0]]
+            # O doesn't need any kicks
+
+        for check in SRS_CHECKS[PIECE_MATRIX_SIZE][OLD_PIECE_ROTATION][clockwise]:
 
             self.piece.pos[0] += check[0]
             self.piece.pos[1] += check[1]
