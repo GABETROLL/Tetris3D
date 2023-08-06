@@ -60,7 +60,7 @@ for piece_num, piece in enumerate(game.pieces):
 
                 game.rotate(clockwise=clockwise)
 
-                print(f"{piece.rotation = }")
+                # print(f"{piece.rotation = }")
 
                 # print(piece.pos)
 
@@ -96,6 +96,8 @@ class TestBag(unittest.TestCase):
 
     def test_7bag(self):
         instance = game_2d.Game2D()
+
+        print(dir(instance))
 
         old_next_bag: list = None
 

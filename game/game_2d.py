@@ -223,14 +223,14 @@ class Game2D:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
 
-        self.piece = None
+        self.piece: Piece2D = None
 
-        self.next_pieces = Queue(maxsize=7)
-        self.next_bag = LifoQueue(maxsize=7)
+        self.next_pieces: Queue = Queue(maxsize=7)
+        self.next_bag: LifoQueue = LifoQueue(maxsize=7)
 
         self.spawn_next_piece()
 
-        self.score_manager = Score()
+        self.score_manager: Score = Score()
 
         self.board = {}
         # {pos: color}
@@ -245,7 +245,7 @@ class Game2D:
         """
 
     @property
-    def next_piece(self):
+    def next_piece(self) -> Piece2D:
         for piece in self.next_pieces.queue:
             return piece
 
