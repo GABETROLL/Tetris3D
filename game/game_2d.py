@@ -8,6 +8,7 @@ the 2D game's current and next pieces, and the amount of lines cleared the previ
 import random
 from game.score import Score
 from game.SRS_checks import SRS_CHECKS
+from queue import Queue, LifoQueue
 
 START_POS = [3, 0]
 
@@ -222,8 +223,12 @@ class Game2D:
     def __init__(self):
         self.pieces = [I, J, L, O, S, T, Z]
 
-        self.piece = Piece2D(random.choice(self.pieces))
-        self.next_piece = Piece2D(random.choice(self.pieces))
+        self.piece = None
+
+        self.next_pieces = Queue(maxsize=7)
+        self.next_bag = LifoQueue(maxsize=7)
+
+        self.spawn_next_piece()
 
         self.score_manager = Score()
 
@@ -239,9 +244,52 @@ class Game2D:
         in the same game step/frame.
         """
 
-    def init_random_piece(self):
-        self.piece = self.next_piece
-        self.next_piece = Piece2D(random.choice(self.pieces))
+    @property
+    def next_piece(self):
+        for piece in self.next_pieces.queue:
+            return piece
+
+    def handle_random_piece(self):
+        """
+        Post the next piece from 'self.next_pieces' into 'self.piece',
+        and queues in another random piece into 'self.next_pieces'.
+
+        If the 'self.next_pieces' queue is empty, this method replenishes it
+        with a "truly random" piece sequence.
+
+        Doesn't use 'self.next_bag'.
+        """
+        if self.next_pieces.empty():
+            self.next_pieces.queue = [Piece2D(random.choice(self.pieces)) for _ in range(self.next_pieces.maxsize)]
+
+        self.piece = self.next_pieces.get_nowait()
+        self.next_pieces.put_nowait(Piece2D(random.choice(self.pieces)))
+
+    def handle_7bag(self):
+        """
+        Pops the next piece from 'self.current_bag' into 'self.piece',
+        and queues the next piece from 'self.next_bag' into 'self.current_bag'.
+
+        If 'self.next_bag' is empty, this method replenishes it with
+        a new shuffled version of 'self.pieces'.
+        """
+
+        def replenish_bag(bag: Queue | LifoQueue):
+            for piece in random.sample(self.pieces, len(self.pieces)):
+                bag.put_nowait(Piece2D(piece))
+
+        if self.next_pieces.empty():
+            replenish_bag(self.next_pieces)
+
+        if self.next_bag.empty():
+            replenish_bag(self.next_bag)
+
+        self.piece = self.next_pieces.get_nowait()
+        self.next_pieces.put_nowait(self.next_bag.get_nowait())
+
+    @property
+    def spawn_next_piece(self):
+        return self.handle_7bag
 
     def move_piece_down(self):
         self.piece.pos[1] += 1
@@ -400,7 +448,7 @@ class Game2D:
         if self.landed():
             self.set_down()
             self.clear_lines(self.piece)
-            self.init_random_piece()
+            self.spawn_next_piece()
 
     def clear_lines(self, previous_piece: Piece2D) -> int:
         """
@@ -473,7 +521,7 @@ class Game2D:
         if self.landed():
             self.set_down()
             self.clear_lines(self.piece)
-            self.init_random_piece()
+            self.spawn_next_piece()
 
             if any(
                 block in self.board

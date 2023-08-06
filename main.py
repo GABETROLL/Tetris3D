@@ -1132,7 +1132,7 @@ class Window:
         self._draw_piece2D(self.controls.game.piece, BLOCK_WIDTH, BOARD_POS)
 
         # draw next piece in its own little box beside the board
-        NEXT_PIECE: game.game_2d.Piece = self.controls.game.next_piece
+        NEXT_PIECE: game.game_2d.Piece = self.controls.game.spawn_next_piece
 
         NEXT_PIECE_BOX_HEIGHT = NEXT_PIECE.piece_height * BLOCK_WIDTH
         NEXT_PIECE_BOX_WIDTH = NEXT_PIECE.piece_height * BLOCK_WIDTH
@@ -1159,7 +1159,7 @@ class Window:
         next_piece_square_surface = pygame.Surface((BLOCK_WIDTH, BLOCK_WIDTH))
         next_piece_square_surface.fill(NEXT_PIECE.color)
 
-        for square_position in self.controls.game.next_piece.relative_square_positions():
+        for square_position in self.controls.game.spawn_next_piece.relative_square_positions():
             SQUARE_POSITION_IN_BOX = square_position[0] * BLOCK_WIDTH, square_position[1] * BLOCK_WIDTH
             next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
         
@@ -1281,16 +1281,16 @@ class Window:
         # add next_piece blocks to 'slices'
         NEXT_PIECE_DISPLAY_POSITION = (
             5,
-            (game.game_3d.FLOOR_WIDTH >> 1) - (self.controls.game.next_piece.blocks.shape[1] >> 1),
-            (game.game_3d.FLOORS >> 1) - (self.controls.game.next_piece.blocks.shape[2] >> 1)
+            (game.game_3d.FLOOR_WIDTH >> 1) - (self.controls.game.spawn_next_piece.blocks.shape[1] >> 1),
+            (game.game_3d.FLOORS >> 1) - (self.controls.game.spawn_next_piece.blocks.shape[2] >> 1)
         )
-        OLD_NEXT_PIECE_POS = self.controls.game.next_piece.pos
+        OLD_NEXT_PIECE_POS = self.controls.game.spawn_next_piece.pos
         # temporarily change the next piece's pos to store its block positions
         # (I CHANGE IT BACK AT THE BOTTOM OF THIS FUNCTION)
-        self.controls.game.next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
+        self.controls.game.spawn_next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
         # store the next piece's block positions
-        for block_pos_in_game in self.controls.game.next_piece.block_positions():
-            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.next_piece.color
+        for block_pos_in_game in self.controls.game.spawn_next_piece.block_positions():
+            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.spawn_next_piece.color
 
         FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
         DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
@@ -1596,12 +1596,12 @@ class Window:
             SLICES_LATTICE_POINTS_IN_SCREEN[0][0][
                 max(
                     block_pos[Z_AXIS]
-                    for block_pos in self.controls.game.next_piece.block_positions()
+                    for block_pos in self.controls.game.spawn_next_piece.block_positions()
                 )
             ][1]
         )
         # HERE we change the next piece's pos back to normal.
-        self.controls.game.next_piece.pos = OLD_NEXT_PIECE_POS
+        self.controls.game.spawn_next_piece.pos = OLD_NEXT_PIECE_POS
 
         # print(SLICES_LATTICE_POINTS_IN_SCREEN)
         # print(NEXT_PIECE_TEXT_POS)
