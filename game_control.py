@@ -320,6 +320,11 @@ class GameControl2D(GameControl):
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
+
+        if key_down_keys.intersection(controls_keys["HOLD"]):
+            # ADD SOUND RESULT HERE
+
+            self.game.try_hold()
         
         return result
 

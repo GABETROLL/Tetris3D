@@ -228,6 +228,9 @@ class Game2D:
         self.next_pieces: Queue = Queue(maxsize=7)
         self.next_bag: LifoQueue = LifoQueue(maxsize=7)
 
+        self.held_piece: Piece2D = None
+        self.already_held_now: bool = False
+
         self.spawn_next_piece()
 
         self.score_manager: Score = Score()
@@ -290,6 +293,36 @@ class Game2D:
     @property
     def spawn_next_piece(self):
         return self.handle_7bag
+
+    def try_hold(self) -> bool:
+        """
+        Makes 'self.held_piece' be 'self.piece',
+        and makes 'self.piece' be the piece that's in 'self.held_piece' if there is one there,
+        or queues in the next piece (in 'self.next_pieces') into 'self.piece', if there isn't.
+
+        After this, this method sets 'self.already_held_now' to True.
+        If 'self.already_held_now' is already True, this method won't hold.
+
+        Returns weather or not hold succeeded.
+        """
+        if self.already_held_now:
+            return False
+
+        if self.held_piece:
+            self.piece, self.held_piece = self.held_piece, self.piece
+
+            # RESET THE POSITION OF THE HELD PIECE, VERY IMPORTANT:
+            self.piece.pos = [
+                (COLUMNS >> 1) - (self.piece.piece_width >> 1),
+                0
+            ]
+        else:
+            self.held_piece = self.piece
+            self.spawn_next_piece()
+
+        self.already_held_now = True
+
+        return True
 
     def move_piece_down(self):
         self.piece.pos[1] += 1
@@ -522,6 +555,8 @@ class Game2D:
             self.set_down()
             self.clear_lines(self.piece)
             self.spawn_next_piece()
+
+            self.already_held_now = False
 
             if any(
                 block in self.board
