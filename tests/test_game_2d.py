@@ -22,7 +22,7 @@ PIECE_COLUMNS = 10
 game = game_2d.Game2D()
 
 PIECES = game.pieces
-PIECES.remove(game_2d.O)
+PIECES.remove(game_2d.O_2D)
 
 
 for piece_num, piece in enumerate(game.pieces):

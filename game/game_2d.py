@@ -10,9 +10,8 @@ from game.score import Score
 from game.SRS_checks import SRS_CHECKS
 from queue import Queue, LifoQueue
 
-START_POS = [3, 0]
-
-I = (["    ",
+I_2D = (
+    (["    ",
       "####",
       "    ",
       "    "],
@@ -30,12 +29,10 @@ I = (["    ",
      [" #  ",
       " #  ",
       " #  ",
-      " #  "],
+      " #  "]),
+    (0, 255, 255))
 
-     START_POS,
-     (0, 255, 255))
-
-J = (["#  ",
+J_2D = ((["#  ",
       "###",
       "   "],
 
@@ -49,12 +46,10 @@ J = (["#  ",
 
      [" # ",
       " # ",
-      "## "],
-
-     START_POS,
+      "## "]),
      (0, 0, 255))
 
-L = (["  #",
+L_2D = ((["  #",
       "###",
       "   "],
 
@@ -68,18 +63,14 @@ L = (["  #",
 
      ["## ",
       " # ",
-      " # "],
-
-     START_POS,
+      " # "]),
      (255, 128, 0))
 
-O = (["##",
-      "##"],
-
-     [4, 0],
+O_2D = ((["##",
+      "##"],),
      (255, 255, 0))
 
-S = ([" ##",
+S_2D = (([" ##",
       "## ",
       "   "],
 
@@ -93,12 +84,10 @@ S = ([" ##",
 
      ["#  ",
       "## ",
-      " # "],
-
-     START_POS,
+      " # "]),
      (0, 255, 0))
 
-T = ([" # ",
+T_2D = (([" # ",
       "###",
       "   "],
 
@@ -112,12 +101,10 @@ T = ([" # ",
 
      [" # ",
       "## ",
-      " # "],
-
-     START_POS,
+      " # "]),
      (128, 0, 255))
 
-Z = (["## ",
+Z_2D = ((["## ",
       " ##",
       "   "],
 
@@ -131,11 +118,11 @@ Z = (["## ",
 
      [" # ",
       "## ",
-      "#  "],
-
-     START_POS,
+      "#  "]),
      (255, 0, 0))
-# Pieces data. Line-by-line data of piece's squares. Start positions and colors.
+# Pieces data: blocks of pieces (top->bottom, left->right),
+#   in all rotation configurations, clockwise,
+# and their colors.
 
 ROWS = 20
 COLUMNS = 10
@@ -151,19 +138,23 @@ class Piece2D:
     made with # characters representing blocks, and " " characters
     representing space.
     """
-    def __init__(self, piece: tuple):
+    def __init__(self, piece_data: tuple[tuple[list[list[str]]], tuple[int, int, int]]):
         """
-        'piece' should be I, J, L, O, S, T or Z.
+        'piece_data' should be like the ones above, like
+        I_2D, J_2D, L_2D, S_2D, T_2D or Z_2D:
 
-        The rotation configurations must be matrices of list[str],
-        made with # characters representing blocks, and " " characters
-        representing space.
+        all rotation configurations, IN CLOCKWISE ORDER, and their color,
+        IN RGB FORMAT, IN RANGE 0 - 255.
         """
-        piece = list(piece)
-        self.pos = list(piece.pop(-2))
-        self.color = piece.pop(-1)
-        self.all_rotations = piece
+        self.all_rotations: tuple[list[list[str]]] = piece_data[0]
         self.rotation = 0
+
+        print(self.all_rotations[0])
+
+        self.pos: list = [0, 0]
+        self.reset_pos()
+
+        self.color: tuple[int, int, int] = piece_data[1]
 
     @property
     def piece(self):
@@ -180,6 +171,9 @@ class Piece2D:
     def piece_height(self):
         return len(self.piece)
     
+    def reset_pos(self) -> None:
+        self.pos = [(COLUMNS >> 1) - (self.piece_width >> 1), 0]
+
     def relative_square_positions(self):
         """
         Returns the list of the positions of the squares
@@ -221,7 +215,7 @@ class Piece2D:
 
 class Game2D:
     def __init__(self):
-        self.pieces = [I, J, L, O, S, T, Z]
+        self.pieces = [I_2D, J_2D, L_2D, O_2D, S_2D, T_2D, Z_2D]
 
         self.piece: Piece2D = None
 
@@ -404,13 +398,13 @@ class Game2D:
 
         PIECE_MATRIX_SIZE = 0
 
-        if self.piece.all_rotations[0] == I[0]:
+        if self.piece.all_rotations[0] == I_2D[0][0]:
             PIECE_MATRIX_SIZE = 4
         elif self.piece.all_rotations[0] in (
-            J[0], L[0], S[0], T[0], Z[0]
+            J_2D[0][0], L_2D[0][0], S_2D[0][0], T_2D[0][0], Z_2D[0][0]
         ):
             PIECE_MATRIX_SIZE = 3
-        elif self.piece.all_rotations[0] == O[0]:
+        elif self.piece.all_rotations[0] == O_2D[0][0]:
             return [[0, 0]]
             # O doesn't need any kicks
 

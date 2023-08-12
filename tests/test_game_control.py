@@ -2,11 +2,11 @@ import game_control
 import pygame
 from json import load as load_from_json
 from game.move_data import *
-from game.game_2d import I, J, L, O, S, T, Z, Piece2D
+from game.game_2d import I_2D, J_2D, L_2D, O_2D, S_2D, T_2D, Z_2D, Piece2D
 import unittest
 
 
-PIECES_2D = (I, J, L, O, S, T, Z)
+PIECES_2D = (I_2D, J_2D, L_2D, O_2D, S_2D, T_2D, Z_2D)
 
 
 class TestCustomControls(unittest.TestCase):
@@ -118,12 +118,12 @@ class TestDirectionInputs(unittest.TestCase):
         THIS TEST USES THE I PIECE, BECAUSE I THOUGHT IT'S INTUITIVE TO USE FOR A TUCK TEST.
         """
         instance_2D = game_control.GameControl2D()
-        instance_2D.game.piece = Piece2D(I)
+        instance_2D.game.piece = Piece2D(I_2D)
         # Make sure that the I piece works I expect it to for this test
         # This position should be the same each time I create a new 'instance_2d',
         # which I must to reset the DAS, so that the test doesn't get falsified.
         self.assertEqual(
-            I[0],
+            I_2D[0],
             [
                 "    ",
                 "####",
@@ -152,7 +152,7 @@ class TestDirectionInputs(unittest.TestCase):
         for frames_waiting_for_tuck in range(MAX_FRAMES_WAITING_FOR_TUCK - 1):
             # Reset instance for next iteration
             instance_2D = game_control.GameControl2D()
-            instance_2D.game.piece = Piece2D(I)
+            instance_2D.game.piece = Piece2D(I_2D)
             instance_2D.game.board = {(X_POS_LEFT_OF_I, 1): (128, 128, 128)}
 
             for frame_waiting_for_tuck in range(frames_waiting_for_tuck):
@@ -214,12 +214,12 @@ class TestDirectionInputs(unittest.TestCase):
             """
             # Set-up GAME for tuck test
             instance_2D = game_control.GameControl2D()
-            instance_2D.game.piece = Piece2D(I)
+            instance_2D.game.piece = Piece2D(I_2D)
             # Make sure that the I piece works I expect it to for this test
             # This position should be the same each time I create a new 'instance_2d',
             # which I must to reset the DAS, so that the test doesn't get falsified.
             self.assertEqual(
-                I[0],
+                I_2D[0],
                 [
                     "    ",
                     "####",
@@ -280,12 +280,12 @@ class TestDirectionInputs(unittest.TestCase):
             """
             # Set-up game for tuck test
             instance_2D = game_control.GameControl2D()
-            instance_2D.game.piece = Piece2D(I)
+            instance_2D.game.piece = Piece2D(I_2D)
             # Make sure that the I piece works I expect it to for this test
             # This position should be the same each time I create a new 'instance_2d',
             # which I must to reset the DAS, so that the test doesn't get falsified.
             self.assertEqual(
-                I[0],
+                I_2D[0],
                 [
                     "    ",
                     "####",

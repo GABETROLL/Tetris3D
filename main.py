@@ -187,13 +187,13 @@ class Window:
         PIECE_COLORS = tuple(
             piece_data[-1]
             for piece_data in (
-                game.game_2d.I,
-                game.game_2d.J,
-                game.game_2d.L,
-                game.game_2d.O,
-                game.game_2d.S,
-                game.game_2d.T,
-                game.game_2d.Z
+                game.game_2d.I_2D,
+                game.game_2d.J_2D,
+                game.game_2d.L_2D,
+                game.game_2d.O_2D,
+                game.game_2d.S_2D,
+                game.game_2d.T_2D,
+                game.game_2d.Z_2D
             )
         )
 
