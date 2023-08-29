@@ -149,8 +149,6 @@ class Piece2D:
         self.all_rotations: tuple[list[list[str]]] = piece_data[0]
         self.rotation = 0
 
-        print(self.all_rotations[0])
-
         self.pos: list = [0, 0]
         self.reset_pos()
 
@@ -172,7 +170,7 @@ class Piece2D:
         return len(self.piece)
     
     def reset_pos(self) -> None:
-        self.pos = [(COLUMNS >> 1) - (self.piece_width >> 1), 0]
+        self.pos = [(COLUMNS >> 1) - ((self.piece_width + 1) >> 1), 0]
 
     def relative_square_positions(self):
         """
