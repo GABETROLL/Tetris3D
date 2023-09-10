@@ -1276,7 +1276,7 @@ class Window:
         for block_pos_in_game, block_front_color in self.controls.game.board.items():
             slices[block_pos_in_game[1]][block_pos_in_game] = block_front_color
         # add piece blocks 'slices'
-        for block_pos_in_game in self.controls.game.piece.block_positions():
+        for block_pos_in_game in self.controls.game.piece.square_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
         # add next_piece blocks to 'slices'
         NEXT_PIECE_DISPLAY_POSITION = (
@@ -1289,7 +1289,7 @@ class Window:
         # (I CHANGE IT BACK AT THE BOTTOM OF THIS FUNCTION)
         self.controls.game.next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
         # store the next piece's block positions
-        for block_pos_in_game in self.controls.game.next_piece.block_positions():
+        for block_pos_in_game in self.controls.game.next_piece.square_positions():
             slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.next_piece.color
 
         FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
@@ -1596,7 +1596,7 @@ class Window:
             SLICES_LATTICE_POINTS_IN_SCREEN[0][0][
                 max(
                     block_pos[Z_AXIS]
-                    for block_pos in self.controls.game.next_piece.block_positions()
+                    for block_pos in self.controls.game.next_piece.square_positions()
                 )
             ][1]
         )
