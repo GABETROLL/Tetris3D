@@ -1,234 +1,242 @@
 """
-Module with all of the 2D piece's data (blocks, starting position, color),
+Module with all of the 2D game's objects:
+
+2D piece's data (<numpy 2D ndarray>, <color>)
 the Piece2D class, meant to hold the pieces' data, rotate the piece and move the piece,
 and the Game2D class, which contains the 2D game's score, the 2D game's board,
 the 2D game's current and next pieces, and the amount of lines cleared the previous
 "game step" (Look in 'Game2D.__init__').
+
+The AXII INDEXES IN 'Game2D' and 'Piece2D' ARE DEFINED AS:
+0: x: left->right
+1: y: top-> bottom
 """
+from numpy import ndarray, rot90, matrix
 import random
 from game.score import Score
-from game.SRS_checks import SRS_CHECKS
-from queue import Queue, LifoQueue
+from game.move_data import *
 
 I_2D = (
-    (["    ",
-      "####",
-      "    ",
-      "    "],
+    matrix(
+        [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    ).A,
+    (0, 255, 255)
+)
 
-     ["  # ",
-      "  # ",
-      "  # ",
-      "  # "],
+L_2D = (
+    matrix(
+        [
+            [0, 0, 1],
+            [1, 1, 1],
+            [0, 0, 0]
+        ]
+    ).A,
+    (255, 128, 0)
+)
 
-     ["    ",
-      "    ",
-      "####",
-      "    "],
+J_2D = (
+    matrix(
+        [
+            [1, 0, 0],
+            [1, 1, 1],
+            [0, 0, 0]
+        ]
+    ).A,
+    (0, 0, 255)
+)
 
-     [" #  ",
-      " #  ",
-      " #  ",
-      " #  "]),
-    (0, 255, 255))
+O_2D = (
+    matrix(
+        [
+            [1, 1],
+            [1, 1]
+        ]
+    ).A,
+    (255, 255, 0)
+)
 
-J_2D = ((["#  ",
-      "###",
-      "   "],
+S_2D = (
+    matrix(
+        [
+            [0, 1, 1],
+            [1, 1, 0],
+            [0, 0, 0]
+        ]
+    ).A,
+    (0, 255, 0)
+)
 
-     [" ##",
-      " # ",
-      " # "],
+T_2D = (
+    matrix(
+        [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 0, 0]
+        ]
+    ).A,
+    (255, 128, 0)
+)
 
-     ["   ",
-      "###",
-      "  #"],
+Z_2D = (
+    matrix(
+        [
+            [1, 1, 0],
+            [0, 1, 1],
+            [0, 0, 0]
+        ]
+    ).A,
+    (255, 0, 0)
+)
 
-     [" # ",
-      " # ",
-      "## "]),
-     (0, 0, 255))
+PIECES_2D: list[ndarray, tuple[int, int, int]] = [I_2D, L_2D, J_2D, O_2D, S_2D, T_2D, Z_2D]
+"""
+All of the classic 2D Tetrominos:
 
-L_2D = ((["  #",
-      "###",
-      "   "],
+A list of tuples of a numpy.ndarray of 1's and 0's
 
-     [" # ",
-      " # ",
-      " ##"],
+(the 1's representing the piece's blocks,
+and the 0's representing empty space)
 
-     ["   ",
-      "###",
-      "#  "],
+and their colors (a tuple of 3 0 <= ints <= 255 )
+"""
 
-     ["## ",
-      " # ",
-      " # "]),
-     (255, 128, 0))
-
-O_2D = ((["##",
-      "##"],),
-     (255, 255, 0))
-
-S_2D = (([" ##",
-      "## ",
-      "   "],
-
-     [" # ",
-      " ##",
-      "  #"],
-
-     ["   ",
-      " ##",
-      "## "],
-
-     ["#  ",
-      "## ",
-      " # "]),
-     (0, 255, 0))
-
-T_2D = (([" # ",
-      "###",
-      "   "],
-
-     [" # ",
-      " ##",
-      " # "],
-
-     ["   ",
-      "###",
-      " # "],
-
-     [" # ",
-      "## ",
-      " # "]),
-     (128, 0, 255))
-
-Z_2D = ((["## ",
-      " ##",
-      "   "],
-
-     ["  #",
-      " ##",
-      " # "],
-
-     ["   ",
-      "## ",
-      " ##"],
-
-     [" # ",
-      "## ",
-      "#  "]),
-     (255, 0, 0))
-# Pieces data: blocks of pieces (top->bottom, left->right),
-#   in all rotation configurations, clockwise,
-# and their colors.
-
-ROWS = 20
 COLUMNS = 10
+ROWS = 20
+
+X_AXIS = 0
+Y_AXIS = 1
+AXII = [X_AXIS, Y_AXIS]
 
 
 class Piece2D:
     """
-    2D piece class with all of its rotation configurations,
-    position in the board (at the top left of the piece's matrix)
-    and its color.
+    'initial_rotation': a numpy 2D ndarray with 1's representing a block
+    and 0's representing empty space. This should be how the piece spawns,
+    when the player hasn't rotated it yet.
 
-    The rotation configurations must be matrices of list[str],
-    made with # characters representing blocks, and " " characters
-    representing space.
+    The 'initial_rotation' coordinate system works like this:
+    initial_rotation[relative_x_pos (left->right), relative_y_pos (top->bottom)]
+
+    'color': pygame color for screen display (aka: tuple[int, int, int])
+
+    'pos': the position of the left-front-top corner of the 'initial_rotation' matrix
+    in the Game2D board. (scroll down)
     """
-    def __init__(self, piece_data: tuple[tuple[list[list[str]]], tuple[int, int, int]]):
+    def __init__(self, initial_rotation: ndarray, color: tuple[int, int, int]) -> None:
         """
-        'piece_data' should be like the ones above, like
-        I_2D, J_2D, L_2D, S_2D, T_2D or Z_2D:
-
-        all rotation configurations, IN CLOCKWISE ORDER, and their color,
-        IN RGB FORMAT, IN RANGE 0 - 255.
+        Copies the parameters,
+        BUT CHECKS THAT 'initial_rotation' IS A 2D 'numpy.ndarray',
+        AND THROWS AN ERROR IF IT ISNT.
         """
-        self.all_rotations: tuple[list[list[str]]] = piece_data[0]
-        self.rotation = 0
 
-        self.pos: list = [0, 0]
-        self.reset_pos()
+        self.pos = [((COLUMNS - 1) >> 1) - (len(initial_rotation) >> 1), 0]
+        """left-top"""
 
-        self.color: tuple[int, int, int] = piece_data[1]
+        if not isinstance(initial_rotation, ndarray) or len(initial_rotation.shape) != 2:
+            raise TypeError(f"'initial_rotation' argument isn't a 2D 'numpy.ndarray'!")
+
+        self.initial_rotation: ndarray = initial_rotation
+        self.rotation: int = 0
+
+        self.color: tuple[int, int, int] = color
+
+    def __str__(self) -> str:
+        return f"Piece(pos={self.pos}, initial_rotation={self.initial_rotation}, color={self.color=})"
 
     @property
-    def piece(self):
-        """
-        The current rotation configuration of 'self'.
-        """
-        return self.all_rotations[self.rotation]
-
-    @property    
-    def piece_width(self):
-        return len(self.piece[0])
+    def blocks(self) -> ndarray:
+        return rot90(self.initial_rotation, self.rotation)
 
     @property
-    def piece_height(self):
-        return len(self.piece)
-    
-    def reset_pos(self) -> None:
-        self.pos = [(COLUMNS >> 1) - ((self.piece_width + 1) >> 1), 0]
+    def piece_width(self) -> int:
+        return self.blocks.shape[X_AXIS]
 
-    def relative_square_positions(self):
+    @property
+    def piece_height(self) -> int:
+        return self.blocks.shape[Y_AXIS]
+
+    def rotate(self, clockwise: bool) -> None:
         """
-        Returns the list of the positions of the squares
-        in 'self.piece', IF 'self' WHERE IN THE TOP LEFT
-        OF THE BOARD (aka, the "relative position")
+        Changes 'self.rotation' to represent the new rotation
+        state of 'self'.
 
-        THE POSITIONS ARE RETURNED (x, y), NOT (y, x)
+        The 4 rotation states are represented by:
+            0, 1, 2, 3;
+        where 0 is 'self.initial_rotation',
+        1 is 'self.initial_rotation' rotated clockwise,
+        2 is 'self.initial_rotation' rotated clockwise twice
+        and 3 is 'self.initial_rotation' rotated clockwise 3 times.
+        
+        of 'self.initial_rotation' (clockwise): 
+        """
+        self.rotation += 1 if clockwise else -1
+        self.rotation = abs(self.rotation % (POSSIBLE_ROTATIONS := 4))
+
+    def square_positions(self) -> list[tuple[int, int]]:
+        """
+        Returns all of 'self's blocks' positions
+        relative to the board.
+        (aka: 'self.pos' + block_pos, as 2D vectors)
         """
         positions = []
 
-        for ri, row in enumerate(self.piece):
-            for ci, square in enumerate(row):
+        for x_pos, column in enumerate(self.blocks):
+            for y_pos, block in enumerate(column):
 
-                if square == "#":
-                    position = (ci, ri)
-                    # They're "backwards" because the ci is the x position,
-                    # and ri is the y position, and that's the order
-                    # of a coordinate here, and in the window display
-                    positions.append(position)
+                    if block:
+                        positions.append(
+                            (x_pos + self.pos[0], y_pos + self.pos[1])
+                        )
         return positions
 
-    def square_positions(self):
+    def relative_square_positions(self) -> list[tuple[int, int]]:
         """
-        Returns the list of the OBJECTIVE position all the squares of
-        'self', the tetromino.
-
-        THE POSITIONS ARE RETURNED (x, y), NOT (y, x)
+        Returns all of the block's positions relative
+        to the PIECE position, AKA the top-left-front position
         """
         positions = []
 
-        for ri, row in enumerate(self.piece):
-            for ci, square in enumerate(row):
+        for x_pos, column in enumerate(self.blocks):
+            for y_pos, block in enumerate(column):
 
-                if square == "#":
-                    position = (self.pos[0] + ci, self.pos[1] + ri)
-                    positions.append(position)
+                    if block:
+                        positions.append(
+                            (x_pos, y_pos)
+                        )
         return positions
 
 
 class Game2D:
+    """
+    2D current and next pieces,
+    a ScoreManager instance, and a board dictionary
+    that functions in this format: {2D_pos: color}
+
+    The 2D current and next pieces are NOT PART OF THE BOARD,
+    and are placed IN the board WHEN THEY LAND.
+
+    The 'self.board' has tuple[int, int] as coordinate keys
+    and tuple[int, int, int] as the colors
+    (of "garbage" left by the other pieces)
+
+    THE AXII IN THIS BOARD ARE DEFINED AS THE FOLLOWING:
+
+    x axis: LEFT to RIGHT (0 -> COLUMNS)
+    y axis: UP to DOWN (0 -> ROWS)
+    """
     def __init__(self):
-        self.pieces = [I_2D, J_2D, L_2D, O_2D, S_2D, T_2D, Z_2D]
+        self.piece = Piece2D(*random.choice(PIECES_2D))
+        self.next_piece = Piece2D(*random.choice(PIECES_2D))
 
-        self.piece: Piece2D = None
-
-        self.next_pieces: Queue = Queue(maxsize=7)
-        self.next_bag: LifoQueue = LifoQueue(maxsize=7)
-
-        self.held_piece: Piece2D = None
-        self.already_held_now: bool = False
-
-        self.spawn_next_piece()
-
-        self.score_manager: Score = Score()
+        self.score_manager = Score()
 
         self.board = {}
-        # {pos: color}
+        # {2D_pos: color}
 
         self.amount_of_levels_cleared: int = 0
         """
@@ -239,127 +247,91 @@ class Game2D:
         in the same game step/frame.
         """
 
-    @property
-    def next_piece(self) -> Piece2D:
-        for piece in self.next_pieces.queue:
-            return piece
-
-    def handle_random_piece(self):
+    def _init_random_piece(self) -> None:
         """
-        Post the next piece from 'self.next_pieces' into 'self.piece',
-        and queues in another random piece into 'self.next_pieces'.
+        Makes 'self.piece' to be 'self.next_piece'
+        and initializes a random new 'self.next_piece',
 
-        If the 'self.next_pieces' queue is empty, this method replenishes it
-        with a "truly random" piece sequence.
-
-        Doesn't use 'self.next_bag'.
+        with the UNPACKED data in 'PIECES_2D'.
+        (higher up in the file)
         """
-        if self.next_pieces.empty():
-            self.next_pieces.queue = [Piece2D(random.choice(self.pieces)) for _ in range(self.next_pieces.maxsize)]
+        self.piece = self.next_piece
+        self.next_piece = Piece2D(*random.choice(PIECES_2D))
 
-        self.piece = self.next_pieces.get_nowait()
-        self.next_pieces.put_nowait(Piece2D(random.choice(self.pieces)))
-
-    def handle_7bag(self):
+    def _move_piece_down(self) -> None:
         """
-        Pops the next piece from 'self.current_bag' into 'self.piece',
-        and queues the next piece from 'self.next_bag' into 'self.current_bag'.
+        Moves 'self.piece' one row down
+        (AKA: adds 1 to 'self.piece.pos[Y_AXIS]'
+            ('Y_AXIS' is 1, ldefined above in this file)
+        )
 
-        If 'self.next_bag' is empty, this method replenishes it with
-        a new shuffled version of 'self.pieces'.
+        If 'self.piece' overlaps any block in self.board,
+        this method raises ValueError.
         """
+        self.piece.pos[Y_AXIS] += 1
 
-        def replenish_bag(bag: Queue | LifoQueue):
-            for piece in random.sample(self.pieces, len(self.pieces)):
-                bag.put_nowait(Piece2D(piece))
+        if any(
+            block in self.board
+            for block in self.piece.square_positions()
+        ):
+            raise ValueError(f"Moved piece down, overlapping board block! {self.board=} {self.piece=}")
 
-        if self.next_pieces.empty():
-            replenish_bag(self.next_pieces)
-
-        if self.next_bag.empty():
-            replenish_bag(self.next_bag)
-
-        self.piece = self.next_pieces.get_nowait()
-        self.next_pieces.put_nowait(self.next_bag.get_nowait())
-
-    @property
-    def spawn_next_piece(self):
-        return self.handle_7bag
-
-    def try_hold(self) -> bool:
+    def try_move(self, move: str) -> bool:
         """
-        Makes 'self.held_piece' be 'self.piece',
-        and makes 'self.piece' be the piece that's in 'self.held_piece' if there is one there,
-        or queues in the next piece (in 'self.next_pieces') into 'self.piece', if there isn't.
+        Tries to move piece in 'move' direction.
+        The direction options are defined in
+        'game.move_data.py', in this folder.
 
-        After this, this method sets 'self.already_held_now' to True.
-        If 'self.already_held_now' is already True, this method won't hold.
+        If the piece were to overlap another square, or have any of its
+        squares outside the position ranges of the board,
+        THE MOVE FAILS.
 
-        Returns weather or not hold succeeded.
+        OTHERWISE, THE MOVE SUCCEEDS.
+
+        AND THE AXII DIRECTION ARE DEFINED IN THIS CLASS'
+        DOCSTRING!
         """
-        if self.already_held_now:
-            return False
+        # SUGGESTION: PLEASE MANAGE YOUR INDEXES, POSITIONS AND MOVES BETTER!
+        # I HAD TO SWAP TONS OF VALUES AROUND TO GET THE PIECES
+        # TO BEHAVE IN THE CORRECT POSITIONS!
 
-        if self.held_piece:
-            self.piece, self.held_piece = self.held_piece, self.piece
+        if move not in MOVES_2D:
+            raise ValueError(
+                f"Invalid 2D Game move! Expected: {' or '.join(MOVES_2D)}. Got: {move}"
+            )
 
-            # RESET THE POSITION OF THE HELD PIECE, VERY IMPORTANT:
-            self.piece.pos = [
-                (COLUMNS >> 1) - (self.piece.piece_width >> 1),
-                0
-            ]
-        else:
-            self.held_piece = self.piece
-            self.spawn_next_piece()
-
-        self.already_held_now = True
-
-        return True
-
-    def move_piece_down(self):
-        self.piece.pos[1] += 1
-
-    def try_move(self, move):
-        """Tries to move piece down, and returns
-        weather or not it was successfully moved.
-
-        A piece can be successfully moved if it's
-        next position (SHOULD always be one over...) 
-        doesn't overlap any existing blocks in the board.
-
-        Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP.
-        """
-
-        if move == "l":
+        # All these paths jump to the end of this method after they finish,
+        # and return True,
+        # or fail and return False RIGHT THERE.
+        if move == LEFT:
             for x_pos, y_pos in self.piece.square_positions():
                 if self.board.get((x_pos - 1, y_pos)) or \
                         x_pos == 0:
                     return False
-            self.piece.pos[0] -= 1
-            return True
+            self.piece.pos[X_AXIS] -= 1
 
-        if move == "r":
+        elif move == RIGHT:
             for x_pos, y_pos in self.piece.square_positions():
                 if self.board.get((x_pos + 1, y_pos)) or \
                         x_pos == COLUMNS - 1:
                     return False
-            self.piece.pos[0] += 1
-            return True
+            self.piece.pos[X_AXIS] += 1
 
-        if move == "h":
-            # If the move is a hard drop,
+        elif move == HARD_DROP:
             while not self.landed():
-                self.move_piece_down()
-            return True
-            # We move the piece down until it lands.
+                self._move_piece_down()
+            # move the piece down until it lands.
 
-        elif move == "s" and not self.landed():
-            # If the move is a soft drop, and we haven't landed,
-            self.move_piece_down()
-            return True
-            # We move down once.
+        elif move == SOFT_DROP:
+            if self.landed():
+                return False
+            # can't move the piece down if it has already landed
 
-    def set_down(self):
+            self._move_piece_down()
+
+        return True
+
+    def set_down(self) -> None:
         """
         Makes piece 'inbeded' in board.
         AKA: "puts" the squares of the piece
@@ -368,163 +340,105 @@ class Game2D:
         for square_pos in self.piece.square_positions():
             self.board[square_pos] = self.piece.color
 
-    def try_move_up(self):
+    def try_rotate(self, clockwise: bool = True) -> bool:
         """
-        Moves 'self'ss current piece up unless a square above it blocks it.
-        Returns weather or not it was able to move up.
+        Rotates 'self.piece' in the direction 'clockwise' specifies
+        (True if clockwise, False if counter-clockwise).
+
+        If the piece can't rotate because it goes outside of the 2D board,
+        or any block  of the piece overlaps a block in the 2D board,
+        this method CANCELS THE ROTATION.
+
+        Returns weather or not the rotation succeeded.
         """
-        for x_pos, y_pos in self.piece.square_positions():
-            if self.board.get((x_pos, y_pos - 1)):
-                return False
 
-        self.piece.pos[1] -= 1
-        return True
-
-    def rotate(self, clockwise=True):
-        self.piece.rotation += 1 if clockwise else -1
-        self.piece.rotation = abs(self.piece.rotation % len(self.piece.all_rotations))
-        # Loops trough rotations in self.complete piece.
-
-        # Uses mod operator to loop through piece rotations,
-        # absolutes value in case they rotated counter-clockwise
-
-    def try_rotate_SRS(self, clockwise: bool = True):
-        OLD_PIECE_POS: tuple[int, int] = tuple(self.piece.pos)
-        OLD_PIECE_ROTATION: int = self.piece.rotation
-
-        self.rotate(clockwise)
-
-        PIECE_MATRIX_SIZE = 0
-
-        if self.piece.all_rotations[0] == I_2D[0][0]:
-            PIECE_MATRIX_SIZE = 4
-        elif self.piece.all_rotations[0] in (
-            J_2D[0][0], L_2D[0][0], S_2D[0][0], T_2D[0][0], Z_2D[0][0]
-        ):
-            PIECE_MATRIX_SIZE = 3
-        elif self.piece.all_rotations[0] == O_2D[0][0]:
-            return [[0, 0]]
-            # O doesn't need any kicks
-
-        for check in SRS_CHECKS[PIECE_MATRIX_SIZE][OLD_PIECE_ROTATION][clockwise]:
-
-            self.piece.pos[0] += check[0]
-            self.piece.pos[1] += check[1]
-
-            if not any(
-                pos in self.board
-                or pos[0] not in range(COLUMNS)
-                or pos[1] not in range(ROWS)
-                for pos in self.piece.square_positions()
-            ):
-                return True
-
-            self.piece.pos = list(OLD_PIECE_POS)
-
-        self.rotate(not clockwise)
-        return False
-
-    def try_rotate_raw(self, clockwise=True) -> bool:
-        """
-        Rotates 'self.piece'. If the piece overlaps the outside of the board
-        or a square in the board, the rotation is cancelled.
-
-        Returns True if rotation succeeded, and False if the rotation
-        needed to be cancelled.
-        """
-        self.rotate(clockwise)
+        self.piece.rotate(clockwise)
+        # rotate
 
         if any(
-            pos in self.board
-            or pos[0] not in range(COLUMNS)
-            or pos[1] not in range(ROWS)
-            for pos in self.piece.square_positions()
+            piece_block_pos in self.board
+            or piece_block_pos[X_AXIS] not in range(COLUMNS)
+            or piece_block_pos[Y_AXIS] not in range(ROWS)
+            for piece_block_pos in self.piece.square_positions()
         ):
-            self.rotate(not clockwise)
-
+            # if any block in self.piece.block_positions
+            # is aleady occupied by self.board,
+            # or is outside the board,
+            # undo
+            self.piece.rotate(not clockwise)
             return False
         return True
 
-    @property
-    def try_rotate(self):
-        return self.try_rotate_SRS
-
-    def landed(self):
+    def landed(self) -> bool:
         """
         Checks if 'self's current piece landed.
         A piece has landed if the floor or
         another square is EXACTLY one square below
         one of the piece's squares.
         """
-        for square_pos in reversed(self.piece.square_positions()):
-            # 'self.piece.square_positions' returns all of the squares
+        for block_x_pos, block_y_pos in reversed(self.piece.square_positions()):
+            # 'self.piece.block_positions' returns all of the squares
             # in order: up->down, left->right.
             # We want to scan down->up.
-            if self.board.get((square_pos[0], square_pos[1] + 1)) or \
-                    square_pos[1] == ROWS - 1:
-                # If there's a block or the wall underneath it...
+            if self.board.get((block_x_pos, block_y_pos + 1)) or \
+                    block_y_pos == ROWS - 1:
+                # If there's a block or the floor underneath it...
                 # Return True.
                 return True
         return False
 
-    def landing_handler(self):
-        """If a piece landed, marks it at the previous piece,
-        makes it part of the board, and spawns a new one."""
-        if self.landed():
-            self.set_down()
-            self.clear_lines(self.piece)
-            self.spawn_next_piece()
-
-    def clear_lines(self, previous_piece: Piece2D) -> int:
-        """
-        Finds every row in 'previous_piece', ASSUMING THAT
-        'previous_piece' IS THE PIECE THAT JUST LANDED,
-        and clears all of the lines it completes.
-
-        Stores the amount of lines the player just cleared
-        in 'self.amount_of_lines_cleared'.
-        """
+    def _clear_lines(self, previous_piece: Piece2D) -> None:
         # time: O(n), where n is: height of piece
         # space: O(n), where n is: height of piece
-        deleted_rows = set()
+        cleared_lines = set()
 
-        for y_pos, row in zip(range(len(previous_piece.piece), 0, -1), previous_piece.piece):
-            # look at each row in the dropped piece
-            square_y_pos = self.piece.pos[1] + len(self.piece.piece) - y_pos
+        # Look at each line 'previous_piece' landed in
+        # (assuming it's 'self.piece', that just landed)
+        # and add the line index to 'deleted_lines' if the line
+        # was completed
+        PREVIOUS_PIECE_HEIGHT = previous_piece.blocks.shape[Y_AXIS]
+        PREVIOUS_PIECE_Y_POS = previous_piece.pos[Y_AXIS]
 
-            for x_pos in range(COLUMNS):
-                if not ((x_pos, square_y_pos) in self.board):
-                    break
-            else:
-                # If the whole row in the board is filled
+        for y_pos in range(PREVIOUS_PIECE_Y_POS, PREVIOUS_PIECE_Y_POS + PREVIOUS_PIECE_HEIGHT):
+            # look at each line in the dropped piece
+
+            if all(
+                (x_pos, y_pos) in self.board
+                for x_pos in range(COLUMNS)
+            ):
+                # If the whole line in the board is filled
                 for x_pos in range(COLUMNS):
-                    self.board.pop((x_pos, square_y_pos))
-                # remove that row
-                deleted_rows.add(square_y_pos)
-                # keep track of that row
+                    self.board.pop((x_pos, y_pos))
+                # remove that line
+                cleared_lines.add(y_pos)
+                # keep track of that line
 
-        landing_row = 0
-        for row in deleted_rows:
-            if row > landing_row:
-                landing_row = row
-        # lowest deleted row is where all the rows with gunk in them will 'land' on.
+        if not cleared_lines:
+            return
+        # no cleared lines, so no "landing" of lines either.
 
-        gunk_row = landing_row - 1
-        while gunk_row > -1:
-            if not (gunk_row in deleted_rows):
-                # if row has gunk in it
+        landing_line = max(cleared_lines)
+        # lowest deleted line is where all the lines with gunk in them will 'land' on.
+
+        # print(f"{deleted_lines=} {landing_line=}")
+        # make board's rows higher than the cleared rows "land"
+        # in that space
+        gunk_line = landing_line - 1
+        for gunk_line in range(landing_line, -1, -1):
+
+            if gunk_line not in cleared_lines:
+                # if line has gunk in it
                 for x_pos in range(COLUMNS):
-                    if (x_pos, gunk_row) in self.board:
-                        self.board[(x_pos, landing_row)] = self.board.pop((x_pos, gunk_row))
-                # move that row down to the landing row
+                    if (x_pos, gunk_line) in self.board:
+                        self.board[(x_pos, landing_line)] = self.board.pop((x_pos, gunk_line))
+                # move that line down to the landing line
 
-                landing_row -= 1
-            gunk_row -= 1
-        
-        self.amount_of_levels_cleared = len(deleted_rows)
+                landing_line -= 1
+
+        self.amount_of_levels_cleared = len(cleared_lines)
         self.score_manager.score(self.amount_of_levels_cleared)
 
-    def play(self):
+    def play(self) -> bool:
         """
         Plays Tetris for one "step" (where the piece goes one down),
         and returns True if the game can continue,
@@ -545,10 +459,8 @@ class Game2D:
         """
         if self.landed():
             self.set_down()
-            self.clear_lines(self.piece)
-            self.spawn_next_piece()
-
-            self.already_held_now = False
+            self._clear_lines(self.piece)
+            self._init_random_piece()
 
             if any(
                 block in self.board
@@ -556,6 +468,6 @@ class Game2D:
             ):
                 return False
         else:
-            self.move_piece_down()
+            self._move_piece_down()
 
         return True
