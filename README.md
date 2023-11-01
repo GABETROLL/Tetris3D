@@ -23,7 +23,7 @@ Tetris3D is a Python, Pygame and Numpy script of 2D and 3D Tetris games. It's si
 
 ## Creator
 Hello, I'm Gabriel Fernandez, the creator of this project. I first started programming in Python, in late 2019, and made my first small games in Pygame, from YouTube tutorials. I then started Holberton in September 2022, and chose Web Development as my Holberton Specialization.
-
+### My Contacts
 <a href="https://www.linkedin.com/in/gabriel-fernandez-415609278/" target="_blank">
 <img src=https://img.shields.io/badge/linkedin-%231E77B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white alt=LinkedIn style="margin-bottom: 5px;" />
 </a>
@@ -32,7 +32,8 @@ Hello, I'm Gabriel Fernandez, the creator of this project. I first started progr
 <img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" />
 </a>
 
-[Portfolio Project](https://github.com/GABETROLL/Tetris3D/)
+My Portfolio Project
+https://github.com/GABETROLL/Tetris3D/
 
 ## Story for Building this Project
 ### Inspiration
