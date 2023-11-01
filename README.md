@@ -3,9 +3,23 @@
 # Tetris3D!
 Tetris3D is a Python, Pygame and Numpy script of 2D and 3D Tetris games. It's similar to NES Tetris but it's mixed with modernity. It first started as a personal project of Tetris in just 2D, then became my Portfolio Project for Holberton. It uses no 3D projection library, aand instead, does all of the 3D rendering with pygame and math alone.
 
-It has a 2D and 3D mode, NES controls, point systems and 
 <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/2D_game.png?raw=true" alt="2D game mode screenshot" width=40%>
 <img src="https://github.com/GABETROLL/Tetris3D/blob/master/images/3D_game.png?raw=true" alt="3D game mode screenshot" width=40%>
+
+## Features
+- 2D and 3D modes
+- NES point systems
+- NES controls (mostly similar, since keyboards allow left+right)
+- my own piece speeds and timeouts
+- customizeable keyboard controls
+- (bad) sounds
+- modern piece colors.
+
+## Anti-Features
+- hold queue
+- multiple next pieces
+- modern gameplay
+- fancy rendering techniques, like ray-tracing/marching or even rasterizing, but instead, is rendered in my own style. 
 
 ## Creator
 Hello, I'm Gabriel Fernandez, the creator of this project. I first started programming in Python, in late 2019, and made my first small games in Pygame, from YouTube tutorials. I then started Holberton in September 2022, and chose Web Development as my Holberton Specialization.
@@ -21,12 +35,13 @@ Hello, I'm Gabriel Fernandez, the creator of this project. I first started progr
 [Portfolio Project](https://github.com/GABETROLL/Tetris3D/)
 
 ## Story for Building this Project
+### Inspiration
 I started playing Tetris in 2018, after discovering it online. I first played it on mobile, but was quite terrible at it. After a little while, I found NES Tetris, and worked really hard to improve in it for a while in 9th grade, until 2019. Then, in summer 2019, I played Tetris99 for another little while. After that, I lost touch, but I still liked it.
 
 In November 2019, I started programming with Pygame. Before that, I had only ever used Python, and only ever did text programs. I made my series of small programs there for 2 years in my Dad's desktop PC, with no knowledge of Git or GitHub, only using YouTube tutorials as my learning source. My first Pygame project was Snake.
 
 For my Holberton Portfolio Project, I remembered my Snake project, and wanted to re-live Python+Pygame programming, but Snake would be too boring for a final project. Then, I remember my love for Tetris. I needed a twist for the game, and as I was discussing this with my classmates, I suddenly had the idea to make it 3D... I was only brainstorming, and said it half-jokingly, but I eventualy went with making it 3D. 2 months later, this project was finished!
-
+### 
 ## Requirements
 <a href="https://www.python.org/"><img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo" width=25%></a>
 
