@@ -52,7 +52,10 @@ class TestPiece3D(unittest.TestCase):
                 for direction in (True, False):
                     piece.rotate(rotation_axis, direction)
                     expected_piece_blocks = rot90(
-                        piece.blocks, 1 if direction else 3, (axis for axis in range(3) if axis != rotation_axis))
+                        piece.blocks,
+                        1 if direction else 3,
+                        (axis for axis in range(3) if axis != rotation_axis)
+                    )
                     self.assertTrue(
                         all(
                             block in piece.blocks
@@ -83,7 +86,13 @@ class TestPiece3D(unittest.TestCase):
             # make sure all of the positions are 1's
             for relative_cube_pos in BLOCK_POSITIONS:
                 self.assertEqual(
-                    piece.blocks[relative_cube_pos[0], relative_cube_pos[1], relative_cube_pos[2]], 1)
+                    piece.blocks[
+                        relative_cube_pos[0],
+                        relative_cube_pos[1],
+                        relative_cube_pos[2]
+                    ],
+                    1
+                )
 
             self.assertEqual(len(BLOCK_POSITIONS), sum(nditer(piece.blocks)))
 
@@ -136,11 +145,12 @@ class TestGame3D(unittest.TestCase):
     - AND check that a piece CAN NEVER MOVE UP. TODO
 
     And there's a few expected inputs and outputs:
-    - 'try_move' should output True when the piece move (mentioned above)               DONE
+    - 'try_move' should output True when the piece move (mentioned above) DONE
         succeeds, and False when it fails
-    - 'landed' should output True if anything (block or floor) is below                 DONE
+    - 'landed' should output True if anything (block or floor) is below   DONE
         the game's current piece
-    - 'play' should return True if the game can continue, or False if the game is over  TODO
+    - 'play' should return True if the game can continue,                 TODO
+        or False if the game is over
     """
 
     def __init__(self, *args, **kwargs):
@@ -188,7 +198,8 @@ class TestGame3D(unittest.TestCase):
         Otherwise, 'self.game.try_move' should return False, and the piece's
         position should be the same as before.
 
-        The piece's position, no matter what, SHOULD ALWAYS be inside the board,
+        The piece's position, no matter what,
+        SHOULD ALWAYS be inside the board,
         and SHOULD NEVER overlap any blocks in the board.
 
         TESTS:
@@ -196,9 +207,11 @@ class TestGame3D(unittest.TestCase):
         is going to move, then try to move the piece in that direction.
         THE MOVE SHOULD FAIL.
 
-        move the piece until it reaches each face in the board (EXCEPT ABOVE),
-        and check that the piece move SUCCEEDS when the piece can move in that direction
-        without going outsite the board, and FAILS when the piece could leave.
+        Move the piece until it reaches each face in the board (EXCEPT ABOVE).
+        Check that the piece move SUCCEEDS,
+        when the piece can move in that direction,
+        without going outsite the board.
+        Check that the piece move FAILS when the piece could leave.
         """
         MOVES = ((game_3d.RIGHT, game_3d.LEFT),
                  (game_3d.BACK, game_3d.FRONT), (game_3d.SOFT_DROP))
@@ -216,11 +229,17 @@ class TestGame3D(unittest.TestCase):
 
             # note that some of these blocks "in the way" of the piece's moves
             # may actually be outisde the board! This shouldn't matter, though,
-            # because we'll test that the pieces can't go outside the board either.
+            # because we'll test that the pieces
+            # can't go outside the board either.
             for axis, moves in enumerate(MOVES):
-                for reverse, direction, move in zip((True, False), (1, -1), moves):
-                    SORTED_PIECE_BLOCKS = sorted(self.game.piece.block_positions(
-                    ), key=lambda block_pos: block_pos[axis], reverse=reverse)
+                for reverse, direction, move in zip((True, False),
+                                                    (1, -1),
+                                                    moves):
+                    SORTED_PIECE_BLOCKS = sorted(
+                        self.game.piece.block_positions(),
+                        key=lambda block_pos: block_pos[axis],
+                        reverse=reverse
+                    )
 
                     EDGE_MOST_BLOCKS = (
                         block_pos
@@ -228,8 +247,8 @@ class TestGame3D(unittest.TestCase):
                         if block_pos[axis] == SORTED_PIECE_BLOCKS[0][axis]
                     )
                     """
-                    All of the blocks right in front of the piece, in the direction
-                    we'll try to move it
+                    all of the blocks right in front of the piece,
+                    in the direction we'll try to move it
                     """
 
                     for edge_most_block in EDGE_MOST_BLOCKS:
@@ -294,7 +313,8 @@ class TestGame3D(unittest.TestCase):
 
                         if PIECE_WOULD_LEAVE:
                             self.assertFalse(MOVE_RESULT)
-                            # a failed move in 'self.game.try_move' should return False.
+                            # a failed move in 'self.game.try_move'
+                            # should return False.
                             self.assertEqual(
                                 PREVIOUS_PIECE_POS, self.game.piece.pos)
                             # assert the piece never moved,
@@ -306,12 +326,15 @@ class TestGame3D(unittest.TestCase):
                             self.assertTrue(MOVE_RESULT)
                             self.assertNotEqual(
                                 PREVIOUS_PIECE_POS, self.game.piece.pos)
-                            # a successful move in 'self.game.try_move' should return True,
+                            # a successful move in 'self.game.try_move'
+                            # should return True,
                             # and change the piece's position
-                            EXPECTED_PIECE_DESTINATION = PREVIOUS_PIECE_POS.copy()
+                            EXPECTED_PIECE_DESTINATION = \
+                                PREVIOUS_PIECE_POS.copy()
                             EXPECTED_PIECE_DESTINATION[axis] += direction
                             self.assertEqual(
-                                self.game.piece.pos, EXPECTED_PIECE_DESTINATION)
+                                self.game.piece.pos, EXPECTED_PIECE_DESTINATION
+                            )
                             # assert piece moved to its expected destination
 
             # test HARD_DROP
@@ -343,8 +366,9 @@ class TestGame3D(unittest.TestCase):
             the rotation FAILS when the piece leaves the board after
             rotating
         - filling the board with a grey block in each
-            position the piece would rotate into (exculsively), then checking that
-            the rotation failed, and that the board and piece stayed the same.
+            position the piece would rotate into (exculsively),
+            then checking that the rotation failed,
+            and that the board and piece stayed the same.
         """
         for piece in game_3d.PIECES_3D:
             self.game.board = {}
@@ -367,15 +391,21 @@ class TestGame3D(unittest.TestCase):
 
                         self.assertTrue(
                             self.game.try_rotate(axis, clockwise),
-                            msg=f"{self.game.piece.color=} {axis=} {clockwise=} {self.game.board=}"
+                            msg=f"{self.game.piece.color=} "
+                            + f" {axis=} "
+                            + f"{clockwise=} "
+                            + f"{self.game.board=}"
                         )
 
             self.game.piece = game_3d.Piece3D(*piece)
             # reset piece to prevent tests being falsified
 
-            # ALL OF THESE MOVES ARE ALSO TESTED, LOOK ABOVE
-            # move all of the pieces to each face edge and corner (except the ones above the board)
-            for perpendicular_faces_moves in ((game_3d.LEFT, game_3d.RIGHT), (game_3d.FRONT, game_3d.BACK), (game_3d.HARD_DROP)):
+            # ALL OF THESE MOVES ARE ALSO TESTED, LOOK ABOVE.
+            # Try to move all of the pieces to each face, edge and corner
+            # (except the ones above the board).
+            for perpendicular_faces_moves in ((game_3d.LEFT, game_3d.RIGHT),
+                                              (game_3d.FRONT, game_3d.BACK),
+                                              (game_3d.HARD_DROP)):
                 for face_move in perpendicular_faces_moves:
                     # move piece to face
                     # (if we're moving the piece to the second face,
@@ -399,17 +429,22 @@ class TestGame3D(unittest.TestCase):
                                     x_pos not in range(game_3d.FLOOR_WIDTH)
                                     or y_pos not in range(game_3d.FLOOR_WIDTH)
                                     or z_pos not in range(game_3d.FLOORS)
-                                    for x_pos, y_pos, z_pos in self.game.piece.block_positions()
+                                    for x_pos, y_pos, z_pos
+                                    in self.game.piece.block_positions()
                                 )
                                 self.game.piece.rotate(axis, not clockwise)
-                                # rotate, then undo to see if the rotation would make the piece
+                                # rotate the PIECE, then undo
+                                # to see if the rotation would make the piece
                                 # leave the board
 
                                 if PIECE_WOULD_LEAVE_BOARD:
-                                    PREVIOUS_PIECE_BLOCKS = self.game.piece.block_positions()
+                                    PREVIOUS_PIECE_BLOCKS = \
+                                        self.game.piece.block_positions()
                                     self.game.try_rotate(axis, clockwise)
                                     self.assertEqual(
-                                        PREVIOUS_PIECE_BLOCKS, self.game.piece.block_positions())
+                                        PREVIOUS_PIECE_BLOCKS,
+                                        self.game.piece.block_positions()
+                                    )
 
             self.game.board = {}
             # empty board to prevent tests being falsified
@@ -423,7 +458,8 @@ class TestGame3D(unittest.TestCase):
                         for pos in self.game.piece.block_positions()
                         if pos not in PIECE_BLOCK_POSITIONS
                     )
-                    # all of the blocks would stop the piece's currently tested rotation,
+                    # all of the blocks would stop the piece's
+                    # currently tested rotation,
                     # that don't interfere with the piece's current position
                     # (we rotate and un-rotate to figure these blocks out)
                     self.game.piece.rotate(axis, not clockwise)
@@ -433,7 +469,8 @@ class TestGame3D(unittest.TestCase):
                         PRE_ROTATION_BOARD = self.game.board.copy()
 
                         self.assertFalse(self.game.try_rotate(axis, clockwise))
-                        # rotation must fail, if we put all the blocks properly.
+                        # rotation must fail,
+                        # if we put all the blocks properly.
                         self.assertEqual(PIECE_BLOCK_POSITIONS,
                                          self.game.piece.block_positions())
                         # if the rotation fails, its blocks must stay the same.
@@ -459,16 +496,23 @@ class TestGame3D(unittest.TestCase):
         has a cube that's directly above a cube in 'self.game.board',
         or the board's floor.
 
-        It does that by placing a GREY (placeholder value) block in 'self.game.board',
-        one cube below each cube in 'self.game.piece' that's the lowest in its piece in its column,
+        It does that by placing a GREY (placeholder value) block
+        in 'self.game.board',
+        one cube below each cube in 'self.game.piece'
+        that's the lowest in its piece in its column,
         then checking that 'self.game.landed()' == True.
         """
         for piece in game_3d.PIECES_3D:
             self.game.piece = game_3d.Piece3D(*piece)
 
-            # Test that 'self.game.landed()' returns True when the piece is at the bottom of the board:
-            # (while loop moves the piece to the bottom of the board)
-            while not any(z_pos == game_3d.FLOORS - 1 for (_, _, z_pos) in self.game.piece.block_positions()):
+            # Test that 'self.game.landed()'
+            # returns True when the piece is at the bottom of the board
+            # (while loop moves the piece to the bottom of the board):
+            while not any(
+                z_pos == game_3d.FLOORS - 1
+                for (_, _, z_pos)
+                in self.game.piece.block_positions()
+            ):
                 self.game._move_piece_down()  # already tested, scroll up
             # assert
             self.assertTrue(self.game.landed())
@@ -476,7 +520,9 @@ class TestGame3D(unittest.TestCase):
             PIECE_BLOCKS = set(self.game.piece.block_positions())
 
             for block_pos in PIECE_BLOCKS:
-                LANDING_BLOCK_POS = block_pos[0], block_pos[1], block_pos[2] + 1
+                LANDING_BLOCK_POS = (block_pos[0],
+                                     block_pos[1],
+                                     block_pos[2] + 1)
 
                 if LANDING_BLOCK_POS in PIECE_BLOCKS:
                     continue

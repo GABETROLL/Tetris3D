@@ -48,17 +48,23 @@ class TestSoftDrop(unittest.TestCase):
 class TestDirectionInputs(unittest.TestCase):
     def test_only_left_simplest(self):
         """
-        DAS, or delayed auto shift, is responsible for moving the pieces at a certain speed,
+        DAS, or delayed auto shift,
+        is responsible for moving the pieces at a certain speed,
         without having to lift the finger.
 
         When the player first presses a direction key,
         the key should move one block in that direction immediately,
-        then should wait for 'GameControl.FIRST_DELAY' frames before moving another block.
-        After this point is reached, if the player continues to hold the direction key,
-        the piece should move in intervals of 'GameControl.SECOND_DELAY' frames.
+        then should wait for 'GameControl.FIRST_DELAY' frames
+        before moving another block.
+        After this point is reached,
+        if the player continues to hold the direction key,
+        the piece should move in intervals of
+        'GameControl.SECOND_DELAY' frames.
 
-        If the first frame move fails, the frame counter should continue increasing,
-        until it reaches 'GameControl.FIRST_DELAY' + 1, or until the piece finally succeeded moving,
+        If the first frame move fails,
+        the frame counter should continue increasing,
+        until it reaches 'GameControl.FIRST_DELAY' + 1,
+        or until the piece finally succeeded moving,
         then should proceed normally, like above.
 
         This is to prevent the piece from going too fast,
@@ -74,7 +80,8 @@ class TestDirectionInputs(unittest.TestCase):
         this method EMULATES holding LEFT in the game,
         then checks that the piece moved at frame #0,
         frame #GameControl.FIRST_DEALY and frame #GameControl.SECOND_DELAY,
-        IN A WAY THAT PREVENTS THE PIECE FROM HITTING THE WALL, AND FALSIFYING THE TEST.
+        IN A WAY THAT PREVENTS THE PIECE FROM HITTING THE WALL,
+        AND FALSIFYING THE TEST.
         """
 
         # WE DO NOT NEED TO TEST IT IN 3D,
@@ -90,9 +97,12 @@ class TestDirectionInputs(unittest.TestCase):
 
                 if frame == 0 \
                         or frame == game_control.GameControl.FIRST_DELAY \
-                or frame == game_control.GameControl.FIRST_DELAY + game_control.GameControl.SECOND_DELAY:
+                        or frame == game_control.GameControl.FIRST_DELAY \
+                        + game_control.GameControl.SECOND_DELAY:
                     self.assertTrue(
-                        FRAME_SUCCESSFUL, msg=f"{frame=} {gc2D.game.piece=} {gc2D.game.board=}")
+                        FRAME_SUCCESSFUL,
+                        msg=f"{frame=} {gc2D.game.piece=} {gc2D.game.board=}"
+                    )
                 else:
                     self.assertFalse(FRAME_SUCCESSFUL, msg=str(frame))
 
@@ -110,20 +120,25 @@ class TestDirectionInputs(unittest.TestCase):
 
         This behavior will be tested
         by holding left into a block with the I piece
-        for an amount of frames from 0 and {GameControl.FIRST_DELAY - GameControl.SECOND_DELAY}
+        for an amount of frames
+        from 0 and {GameControl.FIRST_DELAY - GameControl.SECOND_DELAY}
         (excluding that number),
         then moving the piece down once and checking again,
         to make sure that the moved was post-poned.
 
         WHILE THE DAS CHARGE HASN'T REACHED .
 
-        THIS TEST USES THE I PIECE, BECAUSE I THOUGHT IT'S INTUITIVE TO USE FOR A TUCK TEST.
+        THIS TEST USES THE I PIECE,
+        BECAUSE I (the programmer)
+        THOUGHT IT'S INTUITIVE TO USE FOR A TUCK TEST.
         """
         instance_2D = game_control.GameControl2D()
         instance_2D.game.piece = Piece2D(I)
         # Make sure that the I piece works I expect it to for this test
-        # This position should be the same each time I create a new 'instance_2d',
-        # which I must to reset the DAS, so that the test doesn't get falsified.
+        # This position should be
+        # the same each time I create a new 'instance_2d',
+        # which I must to reset the DAS,
+        # so that the test doesn't get falsified.
         self.assertEqual(
             I[0],
             [
@@ -146,8 +161,9 @@ class TestDirectionInputs(unittest.TestCase):
         """
         self.assertIsInstance(X_POS_LEFT_OF_I, int)
 
-        MAX_FRAMES_WAITING_FOR_TUCK: int = game_control.GameControl.FIRST_DELAY - \
-            game_control.GameControl.SECOND_DELAY
+        MAX_FRAMES_WAITING_FOR_TUCK: int = \
+            game_control.GameControl.FIRST_DELAY \
+            - game_control.GameControl.SECOND_DELAY
         """
         At this frame, the game should do something different (scroll down)
         """
@@ -171,8 +187,8 @@ class TestDirectionInputs(unittest.TestCase):
                 # (throughout all of these frames waiting for the tuck),
                 # and the charge should now be 'frame_waiting_for_tuck + 1',
                 # since that's the amount of frames the simulated player
-                # would have been holding LEFT, and have the charge should go up
-                # by one each frame.
+                # would have been holding LEFT,
+                # and have the charge should go up by one each frame.
                 self.assertEqual(
                     instance_2D.das[LEFT],
                     game_control.DASSettings(True, frame_waiting_for_tuck + 1),
@@ -203,10 +219,12 @@ class TestDirectionInputs(unittest.TestCase):
                 msg=f"{frames_waiting_for_tuck=}"
             )
 
-        def test_buffered_tuck_after_first_delay_minus_second_delay_before_second_delay(self):
+        def test_buffered_tuck_between(self):
             """
             Tests that if the player presses LEFT while
-            GameControl.FIRST_DELAY - GameControl.SECOND_DELAY <= LEFT's DAS charge < GameControl.FIRST_DELAY,
+            GameControl.FIRST_DELAY - GameControl.SECOND_DELAY
+                <= LEFT's DAS charge
+                < GameControl.FIRST_DELAY,
             the DAS charge jumps to 'GameControl.SECOND_DELAY'.
 
             This is so that the piece doesn't reach GameControl.FIRST_DELAY,
@@ -219,8 +237,10 @@ class TestDirectionInputs(unittest.TestCase):
             instance_2D = game_control.GameControl2D()
             instance_2D.game.piece = Piece2D(I)
             # Make sure that the I piece works I expect it to for this test
-            # This position should be the same each time I create a new 'instance_2d',
-            # which I must to reset the DAS, so that the test doesn't get falsified.
+            # This position should be
+            # the same each time I create a new 'instance_2d',
+            # which I must to reset the DAS,
+            # so that the test doesn't get falsified.
             self.assertEqual(
                 I[0],
                 [
@@ -248,23 +268,32 @@ class TestDirectionInputs(unittest.TestCase):
             TEST_START_FRAME: int = game_control.GameControl.FIRST_DELAY - \
                 game_control.GameControl.SECOND_DELAY
 
-            for more_frames_waiting_for_tuck in range(game_control.GameControl.FIRST_DELAY - TEST_START_FRAME):
-                # PRETEND THAT THE PLAYER HAS ALREADY BEEN HOLDING THE PIECE FOR THOSE FRAMES
+            for more_frames_waiting_for_tuck in range(
+                game_control.GameControl.FIRST_DELAY - TEST_START_FRAME
+            ):
+                # PRETEND THAT THE PLAYER
+                # HAS ALREADY BEEN HOLDING THE PIECE FOR THOSE FRAMES
                 # (If the test BELOW passes, then this is fine to do)
                 instance_2D.das[LEFT] = game_control.DASSettings(
                     True, TEST_START_FRAME)
 
-                for frame_waiting_for_tuck in range(more_frames_waiting_for_tuck):
+                for frame_waiting_for_tuck in range(
+                    more_frames_waiting_for_tuck
+                ):
                     self.assertFalse(
                         instance_2D.direction_input_handler((LEFT, )),
-                        msg=f"{more_frames_waiting_for_tuck=} {frame_waiting_for_tuck=}"
+                        msg=f"{more_frames_waiting_for_tuck=} "
+                            + f"{frame_waiting_for_tuck=}"
                     )
 
                     self.assertEqual(
                         instance_2D.das[LEFT],
                         game_control.DASSettings(
-                            True, TEST_START_FRAME + more_frames_waiting_for_tuck),
-                        msg=f"{more_frames_waiting_for_tuck=} {frame_waiting_for_tuck=}"
+                            True,
+                            TEST_START_FRAME + more_frames_waiting_for_tuck
+                        ),
+                        msg=f"{more_frames_waiting_for_tuck=} "
+                            + f"{frame_waiting_for_tuck=}"
                     )
 
                 instance_2D.game.piece.pos[game_control.Y_AXIS] += 1
@@ -289,8 +318,10 @@ class TestDirectionInputs(unittest.TestCase):
             instance_2D = game_control.GameControl2D()
             instance_2D.game.piece = Piece2D(I)
             # Make sure that the I piece works I expect it to for this test
-            # This position should be the same each time I create a new 'instance_2d',
-            # which I must to reset the DAS, so that the test doesn't get falsified.
+            # This position should be
+            # the same each time I create a new 'instance_2d',
+            # which I must to reset the DAS,
+            # so that the test doesn't get falsified.
             self.assertEqual(
                 I[0],
                 [
@@ -315,8 +346,9 @@ class TestDirectionInputs(unittest.TestCase):
 
             # Finished setting up for tuck test
 
-            for frame_waiting_for_tuck in range(game_control.GameControl.FIRST_DELAY):
-
+            for frame_waiting_for_tuck in range(
+                game_control.GameControl.FIRST_DELAY
+            ):
                 # The I piece shouldn't move LEFT if there's a block there
                 self.assertFalse(
                     instance_2D.direction_input_handler((LEFT, )),
