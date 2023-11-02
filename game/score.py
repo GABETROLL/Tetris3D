@@ -22,7 +22,13 @@ class Score:
         self.points += (self.level + 1) * score_per_line[cleared_lines]
         next_lines = self.lines + cleared_lines
 
-        if self.transitioned and 0 in (n % 10 for n in range(self.lines + 1, next_lines + 1)) and cleared_lines:
+        if self.transitioned and 0 in (
+            n %
+            10 for n in range(
+                self.lines +
+                1,
+                next_lines +
+                1)) and cleared_lines:
             # If we passed or are in a multiple of 10 after transition...
             self.level += 1
 

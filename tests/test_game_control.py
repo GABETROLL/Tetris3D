@@ -17,7 +17,8 @@ class TestCustomControls(unittest.TestCase):
 
     # (amlost?) REDUNDANT
     def test_loaded_controls(self):
-        CONTROLS_KEYS_NAMES = load_from_json(open(game_control.CONTROL_KEYS_FILE))
+        CONTROLS_KEYS_NAMES = load_from_json(
+            open(game_control.CONTROL_KEYS_FILE))
 
         self.assertTrue(isinstance(CONTROLS_KEYS_NAMES, dict))
 
@@ -89,8 +90,9 @@ class TestDirectionInputs(unittest.TestCase):
 
                 if frame == 0 \
                         or frame == game_control.GameControl.FIRST_DELAY \
-                    or frame == game_control.GameControl.FIRST_DELAY + game_control.GameControl.SECOND_DELAY:
-                        self.assertTrue(FRAME_SUCCESSFUL, msg=f"{frame=} {gc2D.game.piece=} {gc2D.game.board=}")
+                or frame == game_control.GameControl.FIRST_DELAY + game_control.GameControl.SECOND_DELAY:
+                    self.assertTrue(
+                        FRAME_SUCCESSFUL, msg=f"{frame=} {gc2D.game.piece=} {gc2D.game.board=}")
                 else:
                     self.assertFalse(FRAME_SUCCESSFUL, msg=str(frame))
 
@@ -102,10 +104,10 @@ class TestDirectionInputs(unittest.TestCase):
         However, if the player starts trying to move a piece
         into a wall, where the piece can't move to yet,
         frame #0 won't actually move the piece!
-        
+
         Instead, that movement SHOULD BE POST-PONED
         TO WHEN THE PIECE FINALLY GETS ROOM TO MOVE IN THAT DIRECTION.
-        
+
         This behavior will be tested
         by holding left into a block with the I piece
         for an amount of frames from 0 and {GameControl.FIRST_DELAY - GameControl.SECOND_DELAY}
@@ -144,7 +146,8 @@ class TestDirectionInputs(unittest.TestCase):
         """
         self.assertIsInstance(X_POS_LEFT_OF_I, int)
 
-        MAX_FRAMES_WAITING_FOR_TUCK: int = game_control.GameControl.FIRST_DELAY - game_control.GameControl.SECOND_DELAY
+        MAX_FRAMES_WAITING_FOR_TUCK: int = game_control.GameControl.FIRST_DELAY - \
+            game_control.GameControl.SECOND_DELAY
         """
         At this frame, the game should do something different (scroll down)
         """
@@ -199,7 +202,7 @@ class TestDirectionInputs(unittest.TestCase):
                 game_control.DASSettings(False, frames_waiting_for_tuck + 1),
                 msg=f"{frames_waiting_for_tuck=}"
             )
-        
+
         def test_buffered_tuck_after_first_delay_minus_second_delay_before_second_delay(self):
             """
             Tests that if the player presses LEFT while
@@ -242,13 +245,15 @@ class TestDirectionInputs(unittest.TestCase):
 
             # Finished setting up GAME for tuck test
 
-            TEST_START_FRAME: int = game_control.GameControl.FIRST_DELAY - game_control.GameControl.SECOND_DELAY
+            TEST_START_FRAME: int = game_control.GameControl.FIRST_DELAY - \
+                game_control.GameControl.SECOND_DELAY
 
             for more_frames_waiting_for_tuck in range(game_control.GameControl.FIRST_DELAY - TEST_START_FRAME):
                 # PRETEND THAT THE PLAYER HAS ALREADY BEEN HOLDING THE PIECE FOR THOSE FRAMES
                 # (If the test BELOW passes, then this is fine to do)
-                instance_2D.das[LEFT] = game_control.DASSettings(True, TEST_START_FRAME)
-                
+                instance_2D.das[LEFT] = game_control.DASSettings(
+                    True, TEST_START_FRAME)
+
                 for frame_waiting_for_tuck in range(more_frames_waiting_for_tuck):
                     self.assertFalse(
                         instance_2D.direction_input_handler((LEFT, )),
@@ -257,10 +262,11 @@ class TestDirectionInputs(unittest.TestCase):
 
                     self.assertEqual(
                         instance_2D.das[LEFT],
-                        game_control.DASSettings(True, TEST_START_FRAME + more_frames_waiting_for_tuck),
+                        game_control.DASSettings(
+                            True, TEST_START_FRAME + more_frames_waiting_for_tuck),
                         msg=f"{more_frames_waiting_for_tuck=} {frame_waiting_for_tuck=}"
                     )
-                
+
                 instance_2D.game.piece.pos[game_control.Y_AXIS] += 1
 
                 self.assertTrue(
@@ -269,7 +275,8 @@ class TestDirectionInputs(unittest.TestCase):
                 )
 
                 self.assertEqual(
-                    instance_2D.das[LEFT], game_control.DASSettings(False, game_control.GameControl.FIRST_DELAY)
+                    instance_2D.das[LEFT], game_control.DASSettings(
+                        False, game_control.GameControl.FIRST_DELAY)
                 )
 
         def test_buffered_tuck_at_first_delay(self):
@@ -317,9 +324,10 @@ class TestDirectionInputs(unittest.TestCase):
                 )
 
                 self.assertEqual(
-                    instance_2D.das[LEFT], game_control.DASSettings(True, frame_waiting_for_tuck + 1)
+                    instance_2D.das[LEFT], game_control.DASSettings(
+                        True, frame_waiting_for_tuck + 1)
                 )
-            
+
             # The I piece should still not be able to move,
             # but LEFT's DAS charge should remain at 'GameControl.FIRST_DELAY'.
             self.assertFalse(
@@ -328,7 +336,8 @@ class TestDirectionInputs(unittest.TestCase):
             )
 
             self.assertEqual(
-                instance_2D.das[LEFT], game_control.DASSettings(True, game_control.GameControl.FIRST_DELAY)
+                instance_2D.das[LEFT], game_control.DASSettings(
+                    True, game_control.GameControl.FIRST_DELAY)
             )
 
             # The I piece shouldn't move LEFT if there's a block there
@@ -338,5 +347,6 @@ class TestDirectionInputs(unittest.TestCase):
             )
 
             self.assertEqual(
-                instance_2D.das[LEFT], game_control.DASSettings(True, game_control.GameControl.FIRST_DELAY)
+                instance_2D.das[LEFT], game_control.DASSettings(
+                    True, game_control.GameControl.FIRST_DELAY)
             )

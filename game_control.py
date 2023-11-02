@@ -18,8 +18,8 @@ pygame.init()
 CONTROL_KEYS_FILE = "keyboard_settings.json"
 
 controls_keys: dict[str, list[int]] = {
-                action: [pygame.key.key_code(key_name) for key_name in key_names]
-            for action, key_names in load_from_json(open(CONTROL_KEYS_FILE)).items()
+    action: [pygame.key.key_code(key_name) for key_name in key_names]
+    for action, key_names in load_from_json(open(CONTROL_KEYS_FILE)).items()
 }
 """
 Dict of modes and their actions,
@@ -65,15 +65,18 @@ class GameControl:
     """
     FIRST_DELAY = 15
     """
-    The amount of frames the player must wait before moving a piece in the game,
-    after the first frame of pressing the direction, in order to prevent the player
-    from accidentally moving the piece more than once, when trying to move it
-    a single block
+    The first frame the player presses a direction,
+    the piece immediately moves one block.
+    Then, the piece won't move, even if the player holds that same
+    direction, until this amount of frames have passed.
+    Prevents the player from accidentally moving the piece too far
+    when they only intend to move it one block over.
     """
     SECOND_DELAY = 6
     """
-    The amount of frames the player must wait before moving a piece in the game,
-    in order to prevent the piece from going too fast
+    The amount of frames the player must hold a direction
+    before the piece actually moves.
+    Prevents the piece from going too fast.
     """
 
     def __init__(self, directions: Sequence[str]):
@@ -102,7 +105,7 @@ class GameControl:
     @staticmethod
     def fall_rate(level):
         return int(49 / 1.1 ** level) + 1
-    
+
     def direction_input_handler(self, pressed_directions: set[str]) -> bool:
         """
         Calls 'self.game.try_move' with the directions corresponding
@@ -113,23 +116,28 @@ class GameControl:
         (LEFT, RIGHT BACK, FRONT) that the player is currently
         holding down in their keyboard.
 
-        BUT only if the player has already been holding those direction key(s) down
-        for a certain amount of frames. The first time the player holds
-        a direction down on a cold start, the first frame, its
-        "self.game.try_move(<direction>)" will be called.
-        then, this object will count up to 'GameControl.FIRST_DELAY'
+        BUT only if the player
+        has already been holding those direction key(s) down
+        for a certain amount of frames.
+        The first time the player holds a direction down on a cold start,
+        the first frame, its "self.game.try_move(<direction>)" will be called.
+        Then, if the player keeps holding that direction,
+        this object will count up to 'GameControl.FIRST_DELAY'
         before the piece actually gets moved again.
 
         This is to prevent the player from accidentally moving the piece
-        more than one block, when the player is quickly tapping the direction key(s).
+        more than one block,
+        when the player is quickly tapping the direction key(s).
 
         After that press, the player will have to keep waiting
         'GameControl.SECOND_DELAY' frames before the next direction press.
-        This is to make the piece move at a reasonable speed, unlike the framerate,
+        This is to make the piece move at a reasonable speed,
+        unlike the framerate,
         which may be 60FPS, causing the piece to fly into the wall
         at the slightest tap.
 
-        This should work well, IF THE FIRST DELAY IS BIGGER THAN THE SECOND DELAY,
+        This should work well,
+        IF THE FIRST DELAY IS BIGGER THAN THE SECOND DELAY,
         AND IF THEIR SPEEDS ARE REASONABLE.
 
         Plays 'self.game' with 'directions',
@@ -159,7 +167,8 @@ class GameControl:
 
                 if self.das[direction].charge == 0:
                     direction_moved = self.game.try_move(direction)
-                    self.das[direction].first_move_pending = not direction_moved
+                    self.das[direction].first_move_pending \
+                        = not direction_moved
 
                     self.das[direction].charge += 1
                 elif self.das[direction].charge == GameControl.FIRST_DELAY:
@@ -168,8 +177,9 @@ class GameControl:
 
                     if direction_moved:
                         self.das[direction].charge += 1
-                
-                elif self.das[direction].charge == GameControl.FIRST_DELAY + GameControl.SECOND_DELAY:
+
+                elif self.das[direction].charge == \
+                        GameControl.FIRST_DELAY + GameControl.SECOND_DELAY:
                     direction_moved = self.game.try_move(direction)
                     self.das[direction].first_move_pending = False
 
@@ -180,10 +190,15 @@ class GameControl:
 
                 elif self.das[direction].first_move_pending:
                     direction_moved = self.game.try_move(direction)
-                    self.das[direction].first_move_pending = not direction_moved
+                    self.das[direction].first_move_pending = \
+                        not direction_moved
 
-                    if 0 < GameControl.FIRST_DELAY - self.das[direction].charge <= GameControl.SECOND_DELAY:
-                        self.das[direction].charge = GameControl.FIRST_DELAY + 1
+                    if 0 \
+                            < GameControl.FIRST_DELAY \
+                            - self.das[direction].charge \
+                            <= GameControl.SECOND_DELAY:
+                        self.das[direction].charge = \
+                            GameControl.FIRST_DELAY + 1
                         self.das[direction].first_move_pending = False
                     else:
                         self.das[direction].charge += 1
@@ -218,7 +233,8 @@ class GameControl:
         """
         raise NotImplementedError
 
-    def play_game_step(self, key_down_keys: set[int]) -> tuple[SuccessfulActions, bool]:
+    def play_game_step(
+            self, key_down_keys: set[int]) -> tuple[SuccessfulActions, bool]:
         """
         Counts the amount of frames before playing next game step
         in 'self.frame_count'
@@ -236,8 +252,9 @@ class GameControl:
         result is always True.
         """
         self.frame_count += 1
-        
-        succeessful_actions: SuccessfulActions = self.input_handler(key_down_keys)
+
+        succeessful_actions: SuccessfulActions = self.input_handler(
+            key_down_keys)
 
         if not self.game_can_continue:
             return succeessful_actions, False
@@ -281,31 +298,39 @@ class GameControl2D(GameControl):
             pressed_directions.add(LEFT)
         if any(keys[key] for key in controls_keys["RIGHT"]):
             pressed_directions.add(RIGHT)
-        
+
         if LEFT in pressed_directions and RIGHT in pressed_directions:
             pressed_directions.remove(LEFT)
             pressed_directions.remove(RIGHT)
 
-        result.moving_in_das_direction = GameControl.direction_input_handler(self, pressed_directions)
+        result.moving_in_das_direction = GameControl.direction_input_handler(
+            self, pressed_directions)
 
         if pressed_directions == set():
-            assert result.moving_in_das_direction == False
+            assert result.moving_in_das_direction is False
 
+        # Handling rotation controls
+
+        # Rotations should ONLY happen the frist frame the key is held,
+        # to spamming the rotation every frame.
+        # That's why I'm using 'key_down_keys', which SHOULD BE
+        # the keys from the pygame.KEYDOWN event,
+        # which only cares about the first frame.
         if key_down_keys.intersection(controls_keys["rotate_cw_y"]):
             result.rotating = self.game.try_rotate()
 
         if key_down_keys.intersection(controls_keys["rotate_ccw_y"]):
             result.rotating = self.game.try_rotate(False)
-        # ANY rotation key STARTING TO BE PRESSED this frame should rotate the piece,
-        # EVEN if there's MORE THAN ONE rotation key being pressed at the same time.
-        # there should only be ONE ROTATION!!!
+        # ANY rotation key STARTING TO BE PRESSED this frame
+        # should rotate the piece,
+        # EVEN if there's MORE THAN ONE rotation key
+        # being pressed at the same time.
+        # I **think** all of the rotations will be added to eachother,
+        # in the order the code specifies,
+        # and I **think** the order doesn't matter.
 
-        # Rotations should ONLY happen the frist frame the key is held,
-        # to spamming the rotation every frame.
-
-        if any(
-            keys[key] for key in controls_keys["SOFT_DROP"] + controls_keys["DOWN"]
-        ) and not self.game.landed():
+        if any(keys[key] for key in controls_keys["SOFT_DROP"] +
+                controls_keys["DOWN"]) and not self.game.landed():
             result.moving_one_block_down = self.game.try_move(SOFT_DROP)
 
             if self.game.landed():
@@ -320,7 +345,7 @@ class GameControl2D(GameControl):
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
-        
+
         return result
 
 
@@ -354,21 +379,22 @@ class GameControl3D(GameControl):
             pressed_directions.add(LEFT)
         if any(keys[key] for key in controls_keys["RIGHT"]):
             pressed_directions.add(RIGHT)
-        
+
         if LEFT in pressed_directions and RIGHT in pressed_directions:
             pressed_directions.remove(LEFT)
             pressed_directions.remove(RIGHT)
-        
+
         if any(keys[key] for key in controls_keys["UP"]):
             pressed_directions.add(BACK)
         if any(keys[key] for key in controls_keys["DOWN"]):
             pressed_directions.add(FRONT)
-        
+
         if BACK in pressed_directions and FRONT in pressed_directions:
             pressed_directions.remove(BACK)
             pressed_directions.remove(FRONT)
 
-        result.moving_in_das_direction = GameControl.direction_input_handler(self, pressed_directions)
+        result.moving_in_das_direction = GameControl.direction_input_handler(
+            self, pressed_directions)
 
         if any(keys[key] for key in controls_keys["SOFT_DROP"]):
             result.moving_one_block_down = self.game.try_move(SOFT_DROP)
@@ -385,13 +411,17 @@ class GameControl3D(GameControl):
 
             self.frame_count = self.fall_rate(self.game.score_manager.level)
             # If we hard dropped, the dropping cycle of the pieces will reset.
-        
+
         for axis, axis_name in enumerate("xyz"):
             for clockwise in (True, False):
-                ROTATION_NAME = f"rotate_{'cw' if clockwise else 'ccw'}_{axis_name}"
+
+                ROTATION_NAME = \
+                    f"rotate_{'cw' if clockwise else 'ccw'}_{axis_name}"
+
                 if key_down_keys.intersection(controls_keys[ROTATION_NAME]):
 
-                    ROTATION_SUCCESS: bool = self.game.try_rotate(axis, clockwise)
+                    ROTATION_SUCCESS: bool = self.game.try_rotate(
+                        axis, clockwise)
 
                     if ROTATION_SUCCESS:
                         result.rotating = True

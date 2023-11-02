@@ -1,9 +1,14 @@
 """
 Module with all of the 2D piece's data (blocks, starting position, color),
-the Piece2D class, meant to hold the pieces' data, rotate the piece and move the piece,
-and the Game2D class, which contains the 2D game's score, the 2D game's board,
-the 2D game's current and next pieces, and the amount of lines cleared the previous
-"game step" (Look in 'Game2D.__init__').
+the Piece2D class, meant to hold:
+    the pieces' data,
+    rotate the piece and move the piece,
+and the Game2D class, which contains:
+    the 2D game's score,
+    the 2D game's board,
+    the 2D game's current and next pieces,
+    and the amount of lines the player cleared during the previous "game step"
+        (Look in 'Game2D.__init__').
 """
 import random
 from game.score import Score
@@ -133,7 +138,8 @@ Z = (["## ",
 
      START_POS,
      (255, 0, 0))
-# Pieces data. Line-by-line data of piece's squares. Start positions and colors.
+# Pieces data. Line-by-line data of piece's squares. Start positions and
+# colors.
 
 ROWS = 20
 COLUMNS = 10
@@ -142,13 +148,14 @@ COLUMNS = 10
 class Piece2D:
     """
     2D piece class with all of its rotation configurations,
-    position in the board (at the top left of the piece's matrix)
+    position in the board (at the top left of the piece's matrix),
     and its color.
 
     The rotation configurations must be matrices of list[str],
     made with # characters representing blocks, and " " characters
     representing space.
     """
+
     def __init__(self, piece: tuple):
         """
         'piece' should be I, J, L, O, S, T or Z.
@@ -170,14 +177,14 @@ class Piece2D:
         """
         return self.all_rotations[self.rotation]
 
-    @property    
+    @property
     def piece_width(self):
         return len(self.piece[0])
 
     @property
     def piece_height(self):
         return len(self.piece)
-    
+
     def relative_square_positions(self):
         """
         Returns the list of the positions of the squares
@@ -231,8 +238,8 @@ class Game2D:
 
         self.amount_of_levels_cleared: int = 0
         """
-        Amount of levels (lines/floors, IN THIS CASE, LINES) the player cleared when the last piece
-        landed
+        Amount of levels (lines/floors, IN THIS CASE, LINES)
+        the player cleared when the last piece landed.
 
         Set by 'self.clear_lines', which is called RIGHT AFTER a piece lands,
         in the same game step/frame.
@@ -250,7 +257,7 @@ class Game2D:
         weather or not it was successfully moved.
 
         A piece can be successfully moved if it's
-        next position (SHOULD always be one over...) 
+        next position (SHOULD always be one over...)
         doesn't overlap any existing blocks in the board.
 
         Moves can be: LEFT, RIGHT, SOFT_DROP or HARD_DROP.
@@ -308,7 +315,9 @@ class Game2D:
 
     def rotate(self, clockwise=True):
         self.piece.rotation += 1 if clockwise else -1
-        self.piece.rotation = abs(self.piece.rotation % len(self.piece.all_rotations))
+        self.piece.rotation = abs(
+            self.piece.rotation % len(
+                self.piece.all_rotations))
         # Loops trough rotations in self.complete piece.
 
         # Uses mod operator to loop through piece rotations,
@@ -374,7 +383,8 @@ class Game2D:
         # space: O(n), where n is: height of piece
         deleted_rows = set()
 
-        for y_pos, row in zip(range(len(previous_piece.piece), 0, -1), previous_piece.piece):
+        for y_pos, row in zip(
+                range(len(previous_piece.piece), 0, -1), previous_piece.piece):
             # look at each row in the dropped piece
             square_y_pos = self.piece.pos[1] + len(self.piece.piece) - y_pos
 
@@ -393,7 +403,8 @@ class Game2D:
         for row in deleted_rows:
             if row > landing_row:
                 landing_row = row
-        # lowest deleted row is where all the rows with gunk in them will 'land' on.
+        # lowest deleted row is where all the rows with gunk in them will
+        # 'land' on.
 
         gunk_row = landing_row - 1
         while gunk_row > -1:
@@ -401,12 +412,13 @@ class Game2D:
                 # if row has gunk in it
                 for x_pos in range(COLUMNS):
                     if (x_pos, gunk_row) in self.board:
-                        self.board[(x_pos, landing_row)] = self.board.pop((x_pos, gunk_row))
+                        self.board[(x_pos, landing_row)] = self.board.pop(
+                            (x_pos, gunk_row))
                 # move that row down to the landing row
 
                 landing_row -= 1
             gunk_row -= 1
-        
+
         self.amount_of_levels_cleared = len(deleted_rows)
         self.score_manager.score(self.amount_of_levels_cleared)
 
@@ -421,7 +433,7 @@ class Game2D:
         we set it down using 'self.set_down',
         clear any lines the piece completed with 'self.clear_lines'
         and makes a new piece.
-        
+
         If the new piece spawns where it immediately lands,
         the game is over.
 

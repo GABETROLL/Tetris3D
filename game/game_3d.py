@@ -2,10 +2,15 @@
 Module with all of the 3D game's objects:
 
 3D piece's data (<numpy cube matrix>, <color>)
-the Piece3D class, meant to hold the pieces' data, rotate the piece and move the piece,
-and the Game3D class, which contains the 3D game's score, the 3D game's board,
-the 3D game's current and next pieces, and the amount of lines cleared the previous
-"game step" (Look in 'Game3D.__init__').
+the Piece3D class,
+    meant to hold the pieces' data,
+    rotate the piece, and move the piece,
+and the Game3D class,
+    which contains the 3D game's score,
+    the 3D game's board,
+    the 3D game's current and next pieces,
+    and the amount of lines the player cleared during the previous
+        "game step" (Look in 'Game3D.__init__').
 
 The AXII INDEXES IN 'Game3D' and 'Piece3D' ARE DEFINED AS:
 0: x: left->right
@@ -127,24 +132,38 @@ AXII = [X_AXIS, Y_AXIS, Z_AXIS]
 
 class Piece3D:
     """
-    'blocks': a numpy 3D ndarray cube with 1's representing a block
+    'self.blocks': a numpy 3D ndarray cube with 1's representing a block
     and 0's representing empty space
 
-    The 'blocks' coordinate system works like this:
-    blocks[relative_x_pos (left->right), relative_y_pos (front->back), relative_z_pos (top->bottom)]
+    The 'self.blocks' coordinate system works like this:
+    self.blocks[
+        relative_x_pos (left->right),
+        relative_y_pos (front->back),
+        relative_z_pos (top->bottom)
+    ]
 
-    'color': pygame color for screen display (aka: tuple[int, int, int])
-    'pos': the position of the left-front-top corner of the 'blocks' matrix
+    'self.color': pygame color for screen display (aka: tuple[int, int, int])
+    'self.pos': the position of the left-front-top corner
+        ...of the 'self.blocks' matrix
     in the Game3D board. (scroll down)
-
     """
+
     def __init__(self, blocks: ndarray, color: tuple[int, int, int]) -> None:
         """
         Copies the parameters,
         BUT CHECKS THAT 'blocks' IS A 3D ARRAY,
         AND THROWS AN ERROR IF IT ISNT.
         """
-        self.pos = [FLOOR_WIDTH // 2 - len(blocks) // 2, FLOOR_WIDTH // 2 - len(blocks) // 2, 0]
+        self.pos = [
+            FLOOR_WIDTH //
+            2 -
+            len(blocks) //
+            2,
+            FLOOR_WIDTH //
+            2 -
+            len(blocks) //
+            2,
+            0]
         """top-left-front"""
 
         if len(blocks.shape) != 3:
@@ -154,8 +173,9 @@ class Piece3D:
         self.color = color
 
     def __str__(self):
-        return f"Piece(pos={self.pos}, blocks={self.blocks}, color={self.color=})"
-    
+        return "Piece(" \
+            + "pos={self.pos}, blocks={self.blocks}, color={self.color=})"
+
     def rotate(self, axis: int, clockwise: bool):
         """
         Rotates self's blocks AROUND 'axis'
@@ -167,16 +187,25 @@ class Piece3D:
         rotation_axii = [X_AXIS, Y_AXIS, Z_AXIS]
 
         if axis not in AXII:
-            raise ValueError(f"Rotation axis 'axis' can only be 'X_AXIS, 'Y_AXIS' or 'Z_AXIS'.\nGot: {axis}")
+            raise ValueError(
+                "Rotation axis 'axis'"
+                + "can only be 'X_AXIS, 'Y_AXIS' or 'Z_AXIS'.\n"
+                + f"Got: {axis}"
+            )
 
         rotation_axii.remove(axis)
 
         if axis == Z_AXIS or axis == X_AXIS:
             clockwise = not clockwise
-        # numpy matrix rotation is flipped in the Y axis, according to our description
-        # of the piece
+        # numpy matrix rotation is flipped in the Y axis,
+        # according to our description of the piece,
+        # so we must account for it, by flipping the Y axis'
+        # rotation's direction here.
 
-        self.blocks = rot90(self.blocks, 1 if clockwise else 3, tuple(rotation_axii))
+        self.blocks = rot90(
+            self.blocks,
+            1 if clockwise else 3,
+            tuple(rotation_axii))
 
     def block_positions(self):
         """
@@ -190,9 +219,11 @@ class Piece3D:
             for y_pos, column in enumerate(vertical_slice):
                 for z_pos, block in enumerate(column):
                     if block:
-                        positions.append(
-                            (x_pos + self.pos[0], y_pos + self.pos[1], z_pos + self.pos[2])
-                        )
+                        positions.append((
+                            x_pos + self.pos[0],
+                            y_pos + self.pos[1],
+                            z_pos + self.pos[2]
+                        ))
         return positions
 
     def relative_block_positions(self):
@@ -233,6 +264,7 @@ class Game3D:
     y axis: FRONT to BACK (0 -> FLOOR_WIDTH)
     z axis: UP to DOWN (0 -> FLOORS)
     """
+
     def __init__(self):
         self.piece = Piece3D(*random.choice(PIECES_3D))
         self.next_piece = Piece3D(*random.choice(PIECES_3D))
@@ -251,13 +283,13 @@ class Game3D:
 
         self.amount_of_levels_cleared: int = 0
         """
-        Amount of levels (lines/floors, IN THIS CASE, FLOORS) the player cleared when the last piece
-        landed
+        Amount of levels (lines/floors, IN THIS CASE, FLOORS)
+        the player cleared when the last piece landed.
 
         Set by 'self.clear_floors', which is called RIGHT AFTER a piece lands,
         in the same game step/frame.
         """
-    
+
     def _init_random_piece(self) -> None:
         """
         Makes 'self.piece' to be 'self.next_piece'
@@ -273,7 +305,7 @@ class Game3D:
         self.next_piece.rotate(Y_AXIS, True)
         # To make pieces "face the player",
         # perhaps in a more familiar way.
-    
+
     def _move_piece_down(self) -> None:
         """
         Moves 'self.piece' one floor down
@@ -288,7 +320,10 @@ class Game3D:
             block in self.board
             for block in self.piece.block_positions()
         ):
-            raise ValueError(f"Moved piece down, overlapping board block! {self.board=} {self.piece=}")
+            raise ValueError(
+                "Moved piece down,"
+                + f"overlapping board block! {self.board=} {self.piece=}"
+            )
 
     def try_move(self, move: str) -> bool:
         """
@@ -311,7 +346,8 @@ class Game3D:
 
         if move not in MOVES_3D:
             raise ValueError(
-                f"Invalid 3D Game move! Expected: {' or '.join(MOVES_3D)}. Got: {move}"
+                "Invalid 3D Game move!"
+                + f"Expected: {' or '.join(MOVES_3D)}. Got: {move}"
             )
 
         # All these paths return True after they finish,
@@ -369,15 +405,21 @@ class Game3D:
 
     def try_rotate(self, axis: int, clockwise: bool) -> bool:
         """
-        Rotates 'self.piece' AROUND the 'axis' DEFINED AT THE TOP OF THIS CLASS.
+        Rotates 'self.piece' AROUND the 'axis'
+        DEFINED AT THE TOP OF THIS CLASS.
+
         If the piece can't rotate because it goes outside of the 3D board,
-        or a block is already in a position where the piece's block will end up in,
+        or a block is already in a position
+        where the piece's block will end up in,
         this method CANCELS THE ROTATION.
 
         Returns weather or not the rotation succeeded.
         """
         if axis not in (X_AXIS, Y_AXIS, Z_AXIS):
-            raise ValueError(f"Invalid rotation axis! Expected: X_AXIS, Y_AXIS or Z_AXIS. Got: {axis}")
+            raise ValueError(
+                "Invalid rotation axis! "
+                + f"Expected: X_AXIS, Y_AXIS or Z_AXIS. Got: {axis}"
+            )
         self.piece.rotate(axis, clockwise)
         # rotate
 
@@ -403,7 +445,8 @@ class Game3D:
         another square is EXACTLY one square below
         one of the piece's squares.
         """
-        for block_x_pos, block_y_pos, block_z_pos in reversed(self.piece.block_positions()):
+        for block_x_pos, block_y_pos, block_z_pos in reversed(
+                self.piece.block_positions()):
             # 'self.piece.block_positions' returns all of the squares
             # in order: up->down, left->right.
             # We want to scan down->up.
@@ -425,7 +468,10 @@ class Game3D:
         # was completed
         PREVIOUS_PIECE_HEIGHT = previous_piece.blocks.shape[2]
         PREVIOUS_PIECE_Z_POS = previous_piece.pos[2]
-        for z_pos in range(PREVIOUS_PIECE_Z_POS, PREVIOUS_PIECE_Z_POS + PREVIOUS_PIECE_HEIGHT):
+        for z_pos in range(
+                PREVIOUS_PIECE_Z_POS,
+                PREVIOUS_PIECE_Z_POS +
+                PREVIOUS_PIECE_HEIGHT):
             # look at each floor in the dropped piece
 
             if all(
@@ -440,13 +486,14 @@ class Game3D:
                 # remove that floor
                 deleted_floors.add(z_pos)
                 # keep track of that floor
-        
+
         if not deleted_floors:
             return
         # no cleared floors, so no "landing" of floors either.
 
         landing_floor = max(deleted_floors)
-        # lowest deleted floor is where all the floors with gunk in them will 'land' on.
+        # lowest deleted floor is where all the floors with gunk in them will
+        # 'land' on.
 
         # print(f"{deleted_floors=} {landing_floor=}")
         # make board's rows higher than the cleared rows "land"
@@ -459,7 +506,8 @@ class Game3D:
                 for x_pos in range(FLOOR_WIDTH):
                     for y_pos in range(FLOOR_WIDTH):
                         if (x_pos, y_pos, gunk_floor) in self.board:
-                            self.board[(x_pos, y_pos, landing_floor)] = self.board.pop((x_pos, y_pos, gunk_floor))
+                            self.board[(x_pos, y_pos, landing_floor)] = \
+                                self.board.pop((x_pos, y_pos, gunk_floor))
                 # move that floor down to the landing floor
 
                 landing_floor -= 1
@@ -478,7 +526,7 @@ class Game3D:
         we set it down using 'self.set_down',
         clear any floors the piece completed with 'self.clear_floors'
         and makes a new piece.
-        
+
         If the new piece spawns where it immediately lands,
         the game is over.
 

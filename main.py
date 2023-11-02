@@ -48,7 +48,7 @@ class Menu:
     @property
     def option(self):
         return self.options[self.option_index]
-    
+
     @option.setter
     def option(self, value):
         if value not in self.options:
@@ -74,7 +74,8 @@ class Window:
     """
 
     def __init__(self, board_height: int, font: pygame.font.Font):
-        # We have to make sure the board )and the next piece) can fit in the window.
+        # We have to make sure the board (and the next piece)
+        # can fit in the window.
         # So, we define the window size later
         self.BOARD_HEIGHT = board_height
 
@@ -129,7 +130,7 @@ class Window:
         'self.handle_game_over_screen_frame'
         """
 
-        self.game_over_menu =  Menu(("Back to title screen", "Quit"))
+        self.game_over_menu = Menu(("Back to title screen", "Quit"))
 
         while self.running:
             self.clock.tick(self.fps)
@@ -167,7 +168,7 @@ class Window:
         'self.BOARD_HEIGHT // game.game_2d.ROWS'
         """
         return self.BOARD_HEIGHT // game.game_2d.ROWS
-    
+
     @property
     def colored_border_pixel_width(self):
         """
@@ -180,7 +181,7 @@ class Window:
         """
         Fills 'self.border_blocks' with random-colored blocks, to fulfill
         the promis in its docstring.
-        
+
         Put this code here, since it would be too long to put in the __init__.
         Shouldn't be used for anything more than just the __init__.
         """
@@ -205,9 +206,13 @@ class Window:
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
         for ri in range(game.game_2d.ROWS):
-            for ci in range(game.game_2d.ROWS - (self.COLORED_BORDER_BLOCK_WIDTH - 1), game.game_2d.ROWS):
+            for ci in range(game.game_2d.ROWS -
+                            (self.COLORED_BORDER_BLOCK_WIDTH -
+                             1), game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
-        for ri in range(game.game_2d.ROWS - (self.COLORED_BORDER_BLOCK_WIDTH - 1), game.game_2d.ROWS):
+        for ri in range(game.game_2d.ROWS -
+                        (self.COLORED_BORDER_BLOCK_WIDTH -
+                         1), game.game_2d.ROWS):
             for ci in range(game.game_2d.ROWS):
                 self.border_blocks[(ri, ci)] = random_choice(PIECE_COLORS)
 
@@ -242,12 +247,13 @@ class Window:
         font = pygame.font.SysFont(font_name, font_size)
 
         return font
-    
-    def _draw_piece2D(self, piece: game.game_2d.Piece2D, block_width: int, board_pos: tuple[int, int]):
+
+    def _draw_piece2D(self, piece: game.game_2d.Piece2D,
+                      block_width: int, board_pos: tuple[int, int]):
         """
         Draws 2D piece in 'self.window' in its correct position in the board,
-        which should be located in the window at 'board_pos', and have its blocks'
-        widths AND HEIGHTS be 'block_width.
+        which should be located in the window at 'board_pos',
+        and have its blocks' widths AND HEIGHTS be 'block_width.
         """
         for ci, ri in piece.square_positions():
             pygame.draw.rect(
@@ -295,10 +301,10 @@ class Window:
         # TODO: USE self._draw_piece2D(piece, BLOCK_WIDTH, BORDER_BOARD_POS)
 
     def _handle_button(
-            self,
-            button_rect: pygame.Rect,
-            text_str: str
-        ) -> bool:
+        self,
+        button_rect: pygame.Rect,
+        text_str: str
+    ) -> bool:
         """
         Renders button with 'text' as its text,
         with 'consolas' font and with 'WHITE' color;
@@ -353,13 +359,15 @@ class Window:
 
         When this method is running,
         the user can click a control, causing it to display "Press any key...".
-        The user can then press a key in their keyboard to set the new control setting,
+        The user can then press a key in their keyboard
+        to set the new control setting,
         or press the 'controls_keys["toggle_controls_screen"]' to un-select it,
         or click on another control to select that one instead.
 
-        They can also press the 'controls_keys["toggle_controls_screen"]' to exit
-        this screen, and go back to the main loop if they don't have
-        a selected control.
+        They can also press the 'controls_keys["toggle_controls_screen"]'
+        to exit this screen,
+        and go back to the main loop
+        if they don't have a selected control.
 
         This method has its own window loop and pygame event loop,
         which controls the entire screen,
@@ -392,17 +400,20 @@ class Window:
                 if event.type == pygame.QUIT:
                     self.running = False
                     # terminate ENTIRE program
-                
+
                 if event.type == pygame.KEYDOWN:
 
                     if CLICKED_ACTION is not None:
 
                         # USER SET CONTROL KEY!!!
-                        if event.key not in controls_keys["toggle_controls_screen"]:
+                        if event.key not in \
+                                controls_keys["toggle_controls_screen"]:
+
                             controls_keys[CLICKED_ACTION] = [event.key]
                             # Save the key LOCALLY, IN THE CURRENT SESSION
 
-                            dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
+                            dump_as_json(self.key_controls_names,
+                                         open(CONTROL_KEYS_FILE, "w"))
                             # Save ALL of the key settings, IN THE JSON FILE,
                             # WHEN ANY KEY IS MODIFIED.
 
@@ -423,19 +434,21 @@ class Window:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     STARTED_CLICKING_THIS_FRAME = True
 
-            assert type(controls_keys) == dict
-            assert type(self.key_controls_names) == dict
+            assert isinstance(controls_keys, dict)
+            assert isinstance(self.key_controls_names, dict)
 
             self.window.fill(BLACK)
 
             self._draw_design_border()
 
-            WIDTH_INSIDE_BORDER = self.WIDTH - (self.colored_border_pixel_width << 1)
+            WIDTH_INSIDE_BORDER = self.WIDTH - \
+                (self.colored_border_pixel_width << 1)
 
             CONTROLS_FONT_HEIGHT = self.block_width_2D
             CONTROLS_FONT = self.text_font_fit_to_screen(
                 max(
-                    list(self.key_controls_names.keys()) + list(self.key_controls_names.values()),
+                    list(self.key_controls_names.keys()) +
+                    list(self.key_controls_names.values()),
                     key=lambda control_string: len(control_string)
                 ),
                 WIDTH_INSIDE_BORDER >> 1,
@@ -455,12 +468,17 @@ class Window:
             ):
                 TEXT_COLOR = WHITE
 
-                if self.colored_border_pixel_width < MOUSE_POS[0] < self.WIDTH - self.colored_border_pixel_width \
-                        and blit_y_pos < MOUSE_POS[1] < blit_y_pos + CONTROLS_FONT_HEIGHT:
+                if self.colored_border_pixel_width \
+                        < MOUSE_POS[0] \
+                        < self.WIDTH - self.colored_border_pixel_width \
+                        and blit_y_pos \
+                        < MOUSE_POS[1] \
+                        < blit_y_pos + CONTROLS_FONT_HEIGHT:
                     TEXT_COLOR = YELLOW
 
                     if PREVIOUSLY_HOVERED_ACTION != action:
-                        sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
+                        sound.SFX_CHANNEL.play(
+                            sound.SCROLLING_OVER_MENU_OPTION)
 
                     if STARTED_CLICKING_THIS_FRAME:
 
@@ -480,28 +498,31 @@ class Window:
 
                 LEFT_COLUMN_X_POS = self.colored_border_pixel_width
                 # aka the LEFT EDGE of the LEFT HALF inside the border
-                RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + (WIDTH_INSIDE_BORDER >> 1)
+                RIGHT_COLUMN_X_POS = self.colored_border_pixel_width + \
+                    (WIDTH_INSIDE_BORDER >> 1)
                 # aka the LEFT EDGE of the RIGHT HALF inside the border
 
                 ACTION_TEXT = CONTROLS_FONT.render(action, False, TEXT_COLOR)
 
-                ACTION_KEYS_NAMES = (pygame.key.name(key) for key in action_keys)
+                ACTION_KEYS_NAMES = (pygame.key.name(key)
+                                     for key in action_keys)
                 ACTION_KEYS_STR = f": {' | '.join(ACTION_KEYS_NAMES)}"
 
                 KEYS_TEXT = CONTROLS_FONT.render(
-                    "Press any key..." if action == CLICKED_ACTION else ACTION_KEYS_STR,
+                    "Press any key..."
+                    if action == CLICKED_ACTION
+                    else ACTION_KEYS_STR,
                     False,
-                    TEXT_COLOR
-                )
+                    TEXT_COLOR)
 
                 self.window.blit(ACTION_TEXT, (LEFT_COLUMN_X_POS, blit_y_pos))
 
                 self.window.blit(KEYS_TEXT, (RIGHT_COLUMN_X_POS, blit_y_pos))
-            
+
             PREVIOUSLY_HOVERED_ACTION = CURRENTLY_HOVERED_ACTION
 
             pygame.display.update()
-        
+
         dump_as_json(self.key_controls_names, open(CONTROL_KEYS_FILE, "w"))
         # SAVE ONCE MORE AT THE END OF THE LOOP FOR SAFETY
 
@@ -527,7 +548,8 @@ class Window:
         # DRAW TITLE AND BORDER, THEN HANDLE & DRAW MENU AT THE SAME TIME:
         self._draw_design_border()
 
-        WIDTH_INSIDE_BORDER: int = self.WIDTH - 2 * self.colored_border_pixel_width
+        WIDTH_INSIDE_BORDER: int = \
+            self.WIDTH - 2 * self.colored_border_pixel_width
 
         TITLE_Y_POS: int = self.colored_border_pixel_width
         """
@@ -574,9 +596,11 @@ class Window:
         and ALL OF THEM will have ONE TILE OF HEIGHT.
         """
 
-        # PREPARE FONT for menu sub-titles and chosen options, with their < > arrows
+        # PREPARE FONT for menu sub-titles and chosen options, with their < >
+        # arrows
         ALL_POSSIBLE_OPTION_STRINGS = sum(
-            ([str(option) for option in menu.options] for menu in self.game_options_menu.options),
+            ([str(option) for option in menu.options]
+             for menu in self.game_options_menu.options),
             start=[]
         )
         SUB_TITLE_STRINGS = "Starting level:", "Game mode:"
@@ -584,17 +608,18 @@ class Window:
 
         MENU_FONT = self.text_font_fit_to_screen(
             max(
-                ALL_MENU_STRINGS := ALL_POSSIBLE_OPTION_STRINGS + list(SUB_TITLE_STRINGS),
-                key=lambda any_menu_str: len(any_menu_str)
-            ),
+                ALL_MENU_STRINGS := ALL_POSSIBLE_OPTION_STRINGS +
+                list(SUB_TITLE_STRINGS),
+                key=lambda any_menu_str: len(any_menu_str)),
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
-            "consolas"
-        )
+            "consolas")
         # The font for all things in the menu string (except the title)
-        # NEEDS to be small enough for the biggest string ("static" text or chosen option)
-        # to fit withing one tile of height, and between the borders of the screen
-        # (drawn near the top of this function)
+        # NEEDS to be small enough for the biggest string
+        # ("static" text or chosen option)
+        # to fit withing one tile of height,
+        # and between the borders of the screen
+        # (drawn near the top of this function).
 
         LEFT_INSIDE_BORDER: int = self.colored_border_pixel_width
         """
@@ -630,7 +655,7 @@ class Window:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 STARTED_CLICKING_THIS_FRAME = True
 
@@ -674,7 +699,7 @@ class Window:
                 self.game_options_menu.option.move_to_next()
             elif SCROLLING_DOWN:
                 self.game_options_menu.option.move_to_previous()
-            
+
             if SCROLLING_UP or SCROLLING_DOWN:
                 sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
 
@@ -706,10 +731,16 @@ class Window:
             # COMPUTE POSITIONS for < > arrows and option text
             # AND RENDER option text
 
-            OPTION_COLOR = YELLOW if menu is self.game_options_menu.option else WHITE
+            OPTION_COLOR = YELLOW \
+                if menu is self.game_options_menu.option \
+                else WHITE
             # depending on if the option is selected or not
 
-            LEFT_ARROW_RECT = pygame.Rect(LEFT_INSIDE_BORDER, y_blit_pos, self.block_width_2D, self.block_width_2D)
+            LEFT_ARROW_RECT = pygame.Rect(
+                LEFT_INSIDE_BORDER,
+                y_blit_pos,
+                self.block_width_2D,
+                self.block_width_2D)
 
             CHOSEN_OPTION_STR = str(menu.option)
             CHOSEN_OPTION_TEXT = MENU_FONT.render(
@@ -724,20 +755,29 @@ class Window:
             RIGHT_ARROW_RECT.x = CHOSEN_OPTION_RECT.right
 
             # RENDER < > arrows and BLIT option text
-            pygame.draw.polygon(self.window, OPTION_COLOR, (LEFT_ARROW_RECT.midleft, LEFT_ARROW_RECT.topright, LEFT_ARROW_RECT.bottomright))
+            pygame.draw.polygon(
+                self.window,
+                OPTION_COLOR,
+                (LEFT_ARROW_RECT.midleft,
+                 LEFT_ARROW_RECT.topright,
+                 LEFT_ARROW_RECT.bottomright))
             self.window.blit(CHOSEN_OPTION_TEXT, CHOSEN_OPTION_RECT.topleft)
-            pygame.draw.polygon(self.window, OPTION_COLOR, (RIGHT_ARROW_RECT.bottomleft, RIGHT_ARROW_RECT.topleft, RIGHT_ARROW_RECT.midright))
+            pygame.draw.polygon(
+                self.window,
+                OPTION_COLOR,
+                (RIGHT_ARROW_RECT.bottomleft,
+                 RIGHT_ARROW_RECT.topleft,
+                 RIGHT_ARROW_RECT.midright))
 
-            # Hovering over the options and their arrows, automatically highlighting them,
-            # as if the user were scrolling through them with W/S,
-            # would be quite nice!
+            # automatically highlighting the options and their arrows
+            # While the user is hovering over them.
             if LEFT_ARROW_RECT.collidepoint(*MOUSE_POS) \
                     or CHOSEN_OPTION_RECT.collidepoint(*MOUSE_POS) \
                     or RIGHT_ARROW_RECT.collidepoint(*MOUSE_POS):
                 if self.game_options_menu.option_index != index:
-                    # ...BUT WE ONLY NEED to PLAY THE SCROLLING SFX and change the menu option
-                    # IF we currenty don't have this option,
-                    # the option with index 'index', as selected.
+                    # If the user is already "at" the option,
+                    # playing the scrolling SFX would be unnecessary
+                    # and a bit annoying.
                     self.game_options_menu.option_index = index
 
                     sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
@@ -781,8 +821,14 @@ class Window:
         # Draw controls strings: (last thing to do here)
         CONTROLS_STRINGS = (
             "Controls:",
-            f"{'/'.join(self.key_controls_names['UP'])}/{'/'.join(self.key_controls_names['DOWN'])}: move down",
-            f"{'/'.join(self.key_controls_names['LEFT'])}/{'/'.join(self.key_controls_names['RIGHT'])}: change option",
+            '/'.join(self.key_controls_names['UP'])
+            + "/"
+            + f"{'/'.join(self.key_controls_names['DOWN'])}: move down",
+
+            "{'/'.join(self.key_controls_names['LEFT'])}"
+            + "/"
+            + f"{'/'.join(self.key_controls_names['RIGHT'])}: change option",
+
             f"{'/'.join(self.key_controls_names['menu_submit'])}: play",
         )
 
@@ -829,18 +875,20 @@ class Window:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 STARTED_CLICKING_THIS_FRAME = True
             # neither should the controls button click
-        
+
         CONTROLS_BUTTON_HEIGHT: int = self.block_width_2D
         CONTROLS_BUTTON_Y_POS: int = self.HEIGHT - CONTROLS_BUTTON_HEIGHT
 
         STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_button(
-            pygame.Rect(0, CONTROLS_BUTTON_Y_POS, 4 * self.block_width_2D, CONTROLS_BUTTON_HEIGHT),
+            pygame.Rect(0, CONTROLS_BUTTON_Y_POS, 4 *
+                        self.block_width_2D, CONTROLS_BUTTON_HEIGHT),
             "Controls"
         ) and STARTED_CLICKING_THIS_FRAME
 
         if any(
             toggle_controls_screen_key in key_down_keys
-            for toggle_controls_screen_key in controls_keys["toggle_controls_screen"]
+            for toggle_controls_screen_key in
+            controls_keys["toggle_controls_screen"]
         ) or STARTED_CLICKING_CONTROLS_BUTTON:
 
             sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
@@ -852,7 +900,8 @@ class Window:
             self.draw_2d(CONTROLS_BUTTON_Y_POS)
         self.draw_score()
 
-        SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(key_down_keys)
+        SUCCESSFUL_ACTIONS, GAME_CONTINUES = self.controls.play_game_step(
+            key_down_keys)
 
         SOUND_CURRENTLY_PLAYING = sound.SFX_CHANNEL.get_sound()
 
@@ -862,11 +911,12 @@ class Window:
                     if SOUND_CURRENTLY_PLAYING is not sound.ROTATING_PIECE:
 
                         if SUCCESSFUL_ACTIONS.moving_in_das_direction:
-                            sound.SFX_CHANNEL.play(sound.SCROLLING_OVER_MENU_OPTION)
-            
+                            sound.SFX_CHANNEL.play(
+                                sound.SCROLLING_OVER_MENU_OPTION)
+
                     if SUCCESSFUL_ACTIONS.rotating:
                         sound.SFX_CHANNEL.play(sound.ROTATING_PIECE)
-            
+
                 if SUCCESSFUL_ACTIONS.hard_dropping:
                     sound.SFX_CHANNEL.play(sound.HARD_DROPPING_PIECE)
 
@@ -933,7 +983,11 @@ class Window:
         # so the new text pos should be 3 tiles below.
 
         SCORE_STR = f"Score: {self.controls.game.score_manager.points}"
-        SCORE_FONT = self.text_font_fit_to_screen(SCORE_STR, GAME_OVER_TEXT.get_width(), GAME_OVER_TEXT.get_height(), FONT_NAME)
+        SCORE_FONT = self.text_font_fit_to_screen(
+            SCORE_STR,
+            GAME_OVER_TEXT.get_width(),
+            GAME_OVER_TEXT.get_height(),
+            FONT_NAME)
         SCORE_TEXT = SCORE_FONT.render(SCORE_STR, False, WHITE)
 
         text_pos[0] = (self.WIDTH >> 1) - (SCORE_TEXT.get_width() >> 1)
@@ -947,9 +1001,11 @@ class Window:
         # to click the menu options.
 
         OPTION_FONT = self.text_font_fit_to_screen(
-            max(self.game_over_menu.options, key=lambda option: len(str(option))),
+            max(self.game_over_menu.options,
+                key=lambda option: len(str(option))),
             # To make sure both menu options fit the screen's width,
-            # the longest option string is the one we must try to fit in 'WIDTH_INSIDE_BORDER'.
+            # the longest option string is the one we must try to fit in
+            # 'WIDTH_INSIDE_BORDER'.
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             FONT_NAME
@@ -957,7 +1013,8 @@ class Window:
 
         mouse_hovered_option_index: int = None
 
-        for option_index, option_rect in enumerate(self.game_over_menu.options):
+        for option_index, option_rect in enumerate(
+                self.game_over_menu.options):
             OPTION_TEXT = OPTION_FONT.render(
                 option_rect,
                 False,
@@ -993,7 +1050,7 @@ class Window:
             self.window.blit(OPTION_TEXT, text_pos)
 
             text_pos[1] += self.block_width_2D
-        
+
         STARTED_CLICKING_THIS_FRAME: bool = False
 
         for event in pygame.event.get():
@@ -1001,7 +1058,7 @@ class Window:
             # (or red buton in Mac)
             if event.type == pygame.QUIT:
                 self.running = False
-            
+
             option_chosen: bool = False
 
             if event.type == pygame.KEYDOWN:
@@ -1027,14 +1084,17 @@ class Window:
                     option_chosen = True
                     sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
-            if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and pygame.mouse.get_pressed()[0]:
                 STARTED_CLICKING_THIS_FRAME = True
 
-                # HANDLE CLICK, CHOOSE OPTION IF (left)-CLICKED USER CLICKED AN OPTION
+                # HANDLE CLICK, CHOOSE OPTION IF USER LEFT-CLICKED,
+                # AND LEFT-CLICKED OVER AN OPTION.
                 # (we know if the user clicked one, and which one the clicked,
-                # if 'mouse_hovered_option_index' is not None.)
+                # if 'mouse_hovered_option_index' is not None)
                 if mouse_hovered_option_index is not None:
-                    self.game_over_menu.option_index = mouse_hovered_option_index
+                    self.game_over_menu.option_index = \
+                        mouse_hovered_option_index
                     option_chosen = True
                     sound.SFX_CHANNEL.play(sound.SUBMITED_IN_MENU)
 
@@ -1045,7 +1105,7 @@ class Window:
                     # quit
                 else:  # elif menu.option == "Back to title screen"
                     self.frame_handler = self.handle_title_screen_frame
-        
+
         STARTED_CLICKING_CONTROLS_BUTTON: bool = self._handle_button(
             pygame.Rect(
                 (self.COLORED_BORDER_BLOCK_WIDTH - 1) * self.block_width_2D,
@@ -1060,17 +1120,24 @@ class Window:
 
         CONTROLS_STRINGS = (
             "Controls:",
-            f"{'/'.join(self.key_controls_names['UP'] + self.key_controls_names['DOWN'])}: scroll through menu",
-            f"{'/'.join(self.key_controls_names['menu_submit'])}: choose option"
+            '/'.join(self.key_controls_names['UP']
+                     + self.key_controls_names['DOWN'])
+            + ": scroll through menu",
+
+            '/'.join(self.key_controls_names['menu_submit'])
+            + ": choose option"
         )
         CONTROLS_FONT = self.text_font_fit_to_screen(
-            max(CONTROLS_STRINGS, key=lambda control_string: len(control_string)),
+            max(CONTROLS_STRINGS,
+                key=lambda control_string: len(control_string)),
             WIDTH_INSIDE_BORDER,
             self.block_width_2D,
             FONT_NAME
         )
 
-        BOTTOM_INSIDE_BORDER: int = self.HEIGHT - self.colored_border_pixel_width
+        BOTTOM_INSIDE_BORDER: int = \
+            self.HEIGHT - self.colored_border_pixel_width
+
         text_pos = [self.colored_border_pixel_width, BOTTOM_INSIDE_BORDER]
 
         for control_string in reversed(CONTROLS_STRINGS):
@@ -1084,36 +1151,49 @@ class Window:
         """
         Draws the 'self.game_control.game' board, piece
         and next piece, IF THE GAME MODE IS 2D
-        
+
         IF 'self.game_control' is 3D, a TypeError
         will be raised.
 
         The board is drawn in the middle of the screen.
         The board's blocks and the current piece's blocks are drawn
-        as squares (or almost squares, since math is done to check the blocks' size) in the board.
-        The next piece is drawn in a little box beside the board
+        as squares (or almost squares,
+        since math is done to check the blocks' size) in the board.
+
+        The next piece is drawn in a little box beside the board.
 
         Also draws the controls for the 2D game
         (found in 'self.controls', which MUST be a 'GameControl2D' instance,
         otherwise this method raises a TypeError),
         at the very left of the screen,
-        RIGHT ABOVE the CONTROLS SCREEN BUTTON, ASSUMING THAT 'controls_button_y_pos'
+        RIGHT ABOVE the CONTROLS SCREEN BUTTON,
+        ASSUMING THAT 'controls_button_y_pos'
         IS THE BUTTONS' TOP SIDES's Y-POS.
         """
-        if type(self.controls) != GameControl2D:
+        if not isinstance(self.controls, GameControl2D):
             raise TypeError("Can't render in 2D while game mode is not 2D!")
-        
-        BOARD_WIDTH = int(self.BOARD_HEIGHT * (game.game_2d.COLUMNS / game.game_2d.ROWS))
+
+        BOARD_WIDTH = int(self.BOARD_HEIGHT *
+                          (game.game_2d.COLUMNS / game.game_2d.ROWS))
         BLOCK_WIDTH = BOARD_WIDTH // game.game_2d.COLUMNS
-        BOARD_POS = self.WIDTH // 2 - BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
+        BOARD_POS = self.WIDTH // 2 - \
+            BOARD_WIDTH // 2, self.HEIGHT // 2 - self.BOARD_HEIGHT // 2
         # to draw board
 
         # DRAW BOARD:
 
         # board outline
-        NEXT_PIECE_OUTLINE = pygame.Surface((BOARD_WIDTH + (Window.GREY_BORDER_WIDTH << 1), self.BOARD_HEIGHT + (Window.GREY_BORDER_WIDTH << 1)))
+        NEXT_PIECE_OUTLINE = pygame.Surface(
+            (BOARD_WIDTH + (Window.GREY_BORDER_WIDTH << 1),
+             self.BOARD_HEIGHT + (Window.GREY_BORDER_WIDTH << 1))
+        )
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
-        self.window.blit(NEXT_PIECE_OUTLINE, (BOARD_POS[0] - Window.GREY_BORDER_WIDTH, BOARD_POS[1] - Window.GREY_BORDER_WIDTH))
+        self.window.blit(
+            NEXT_PIECE_OUTLINE,
+            (BOARD_POS[0] -
+             Window.GREY_BORDER_WIDTH,
+             BOARD_POS[1] -
+             Window.GREY_BORDER_WIDTH))
 
         # board background
         board = pygame.Surface((BOARD_WIDTH, self.BOARD_HEIGHT))
@@ -1127,7 +1207,7 @@ class Window:
                                          piece[1] * BLOCK_WIDTH + BOARD_POS[1],
                                          BLOCK_WIDTH,
                                          BLOCK_WIDTH))
-    
+
         # draw piece
         self._draw_piece2D(self.controls.game.piece, BLOCK_WIDTH, BOARD_POS)
 
@@ -1147,27 +1227,37 @@ class Window:
         NEXT_PIECE_OUTLINE.fill(BRIGHT_GREY)
         NEXT_PIECE_OUTLINE_POS = (
             BOARD_RIGHT,
-            BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (NEXT_PIECE_OUTLINE.get_height() >> 1),
+            BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) -
+            (NEXT_PIECE_OUTLINE.get_height() >> 1),
         )
 
         # The plan here is to make a "next piece box" surface,
         # display the 'NEXT_PIECE' here,
         # then blit this surface into the main window.
-        next_piece_box = pygame.Surface((NEXT_PIECE_BOX_WIDTH, NEXT_PIECE_BOX_HEIGHT))
+        next_piece_box = pygame.Surface(
+            (NEXT_PIECE_BOX_WIDTH, NEXT_PIECE_BOX_HEIGHT))
         next_piece_box.fill(BLACK)
 
         next_piece_square_surface = pygame.Surface((BLOCK_WIDTH, BLOCK_WIDTH))
         next_piece_square_surface.fill(NEXT_PIECE.color)
 
-        for square_position in self.controls.game.next_piece.relative_square_positions():
-            SQUARE_POSITION_IN_BOX = square_position[0] * BLOCK_WIDTH, square_position[1] * BLOCK_WIDTH
-            next_piece_box.blit(next_piece_square_surface, SQUARE_POSITION_IN_BOX)
-        
+        for square_position in self \
+                .controls \
+                .game \
+                .next_piece \
+                .relative_square_positions():
+
+            SQUARE_POSITION_IN_BOX = square_position[0] * \
+                BLOCK_WIDTH, square_position[1] * BLOCK_WIDTH
+            next_piece_box.blit(next_piece_square_surface,
+                                SQUARE_POSITION_IN_BOX)
+
         NEXT_PIECE_BOX_POS = (
             BOARD_RIGHT + Window.GREY_BORDER_WIDTH,
-            BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) - (next_piece_box.get_height() >> 1)
+            BOARD_POS[1] + (self.BOARD_HEIGHT >> 1) -
+            (next_piece_box.get_height() >> 1)
         )
-        
+
         NEXT_PIECE_TEXT = self.font.render("Next", False, WHITE)
 
         # Next box rendering complete, now it's time to blit the next box.
@@ -1243,9 +1333,11 @@ class Window:
 
         The slices are drawn FIRST by drawing each of the slices' block's
         backs and sides, then each of the blocks' front sides,
-        in order to avoid wrong overlapping order, since the front side is supposed
-        to be on top of every other side by default, and since
-        drawing a plygon into the pygame window overrides any other pixels there.
+        in order to avoid wrong overlapping order,
+        since the front side is supposed
+        to be on top of every other side by default,
+        and since drawing a plygon into the pygame window
+        overrides the pixels there.
 
         The slice's tops should all be aligned, as if the camera were
         looking from the very top, in order to help the player
@@ -1255,8 +1347,10 @@ class Window:
         at a certain amount of blocks away from it.
         (For now I've chosen 1 block of distance)
 
-        Also draws the controls for the 3D game, at the very left of the screen,
-        RIGHT ABOVE the CONTROLS SCREEN BUTTON, ASSUMING THAT 'controls_button_y_pos'
+        Also draws the controls for the 3D game,
+        at the very left of the screen,
+        RIGHT ABOVE the CONTROLS SCREEN BUTTON,
+        ASSUMING THAT 'controls_button_y_pos'
         IS THE BUTTONS' TOP SIDES's Y-POS.
         """
 
@@ -1265,7 +1359,8 @@ class Window:
 
         slices = [{} for slice_pos in range(game.game_3d.FLOOR_WIDTH)]
         """
-        Each FRONT-FACING SLICE of the board, AS IF IT INCLUDED THE PIECE'S BLOCKS,
+        Each FRONT-FACING SLICE of the board,
+        AS IF IT INCLUDED THE PIECE'S BLOCKS,
         as dictionaries of 3D positions and colors.
 
         It also contains the game's next piece's blocks, as if the piece were
@@ -1273,33 +1368,49 @@ class Window:
         without needing to repeat much code.
         """
         # add board blocks to 'slices'
-        for block_pos_in_game, block_front_color in self.controls.game.board.items():
-            slices[block_pos_in_game[1]][block_pos_in_game] = block_front_color
+        for block_pos_in_game, block_front_color \
+                in self.controls.game.board.items():
+            slices[block_pos_in_game[1]][block_pos_in_game] = \
+                block_front_color
         # add piece blocks 'slices'
         for block_pos_in_game in self.controls.game.piece.block_positions():
-            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.piece.color
+            slices[block_pos_in_game[1]][block_pos_in_game] = \
+                self.controls.game.piece.color
         # add next_piece blocks to 'slices'
         NEXT_PIECE_DISPLAY_POSITION = (
             5,
-            (game.game_3d.FLOOR_WIDTH >> 1) - (self.controls.game.next_piece.blocks.shape[1] >> 1),
-            (game.game_3d.FLOORS >> 1) - (self.controls.game.next_piece.blocks.shape[2] >> 1)
+            (game.game_3d.FLOOR_WIDTH >> 1) -
+            (self.controls.game.next_piece.blocks.shape[1] >> 1),
+            (game.game_3d.FLOORS >> 1) -
+            (self.controls.game.next_piece.blocks.shape[2] >> 1)
         )
         OLD_NEXT_PIECE_POS = self.controls.game.next_piece.pos
         # temporarily change the next piece's pos to store its block positions
         # (I CHANGE IT BACK AT THE BOTTOM OF THIS FUNCTION)
         self.controls.game.next_piece.pos = NEXT_PIECE_DISPLAY_POSITION
         # store the next piece's block positions
-        for block_pos_in_game in self.controls.game.next_piece.block_positions():
-            slices[block_pos_in_game[1]][block_pos_in_game] = self.controls.game.next_piece.color
+        for block_pos_in_game in self \
+                .controls \
+                .game \
+                .next_piece \
+                .block_positions():
 
-        FRONT_SLICE_FRONT_WIDTH = int(self.BOARD_HEIGHT * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS))
-        DISTANCE_TO_FRONT_SLICE_FRONT = max((game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
+            slices[block_pos_in_game[1]][block_pos_in_game] = \
+                self.controls.game.next_piece.color
+
+        FRONT_SLICE_FRONT_WIDTH = int(
+            self.BOARD_HEIGHT
+            * (game.game_3d.FLOOR_WIDTH / game.game_3d.FLOORS)
+        )
+        DISTANCE_TO_FRONT_SLICE_FRONT = max(
+            (game.game_3d.FLOOR_WIDTH, game.game_3d.FLOORS))
         """
         Arbitrary value, meant to represent the imagined distance
         from the "camera" to front of the board,
         A.K.A, the front side of the cubes in the front side of the board.
         """
-        DISTANCE_TO_BACK_SLICE_BACK = DISTANCE_TO_FRONT_SLICE_FRONT + len(slices) - 1
+        DISTANCE_TO_BACK_SLICE_BACK = DISTANCE_TO_FRONT_SLICE_FRONT + \
+            len(slices) - 1
 
         SLICES_LATTICE_POINTS_IN_SCREEN = []
         """
@@ -1307,19 +1418,24 @@ class Window:
         of all of the lattice points
         of all of the slices of the board.
         AKA:
-        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game] -> slice lattice points
-        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game] -> slice lattice point (row? column?)
-        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game][z_in_game] -> slice lattice point
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game]
+            -> slice lattice points
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game]
+            -> slice lattice point (row? column?)
+        SLICES_LATTICE_POINTS_IN_SCREEN[y_in_game][x_in_game][z_in_game]
+            -> slice lattice point
 
-        The points are the (x_in_screen, y_in_screen) pixel positions of the slices' lattice points,
-        projected by perspective.
+        The points are the (x_in_screen, y_in_screen) pixel positions
+        of the slices' lattice points, projected by perspective.
         """
-        # SLICES_LATTICE_POINTS_IN_SCREEN[y, x, z] = slice's (aka y) lattice point (aka (x, y)) in screen
+        # SLICES_LATTICE_POINTS_IN_SCREEN[y, x, z] = slice's (aka y) lattice
+        # point (aka (x, y)) in screen
 
         for y_pos_in_game in range(game.game_3d.FLOOR_WIDTH + 1):
             DISTANCE_TO_SLICE = DISTANCE_TO_FRONT_SLICE_FRONT + y_pos_in_game
 
-            PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / DISTANCE_TO_SLICE
+            PERSPECTIVE_FACTOR = \
+                DISTANCE_TO_FRONT_SLICE_FRONT / DISTANCE_TO_SLICE
             # every front-facing square's side-length APPEARS 1 / distance
             # of the square from the camera, if the distance is measured
             # by the side-length of the square.
@@ -1328,29 +1444,40 @@ class Window:
             # to be MAX_SLICE_SIDE >> 1 from the camera, to achive a BALANCE
             # between super-warped perspective, and very flat perspective.
 
-            # BUT, since we need the front-most slice to remain our pre-determined
-            # size, we need to multiply the factor by 'MAX_SLICE_SIDE'.
-            SLICE_FRONT_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * PERSPECTIVE_FACTOR)
-            BLOCK_FRONT_WIDTH_IN_SCREEN = SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
-            # since 'SLICE_FRONT_WIDTH_IN_SCREEN' is the slice's width IN THE SCREEN,
-            # and the slice's width is just the sum of all of the block's widths in the slice,
+            # BUT, since we need the front-most slice
+            # to remain our pre-determined size,
+            # we need to multiply the factor by 'MAX_SLICE_SIDE'.
+            SLICE_FRONT_WIDTH_IN_SCREEN = int(
+                FRONT_SLICE_FRONT_WIDTH * PERSPECTIVE_FACTOR)
+            BLOCK_FRONT_WIDTH_IN_SCREEN = \
+                SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+            # since 'SLICE_FRONT_WIDTH_IN_SCREEN'
+            # is the slice's width IN THE SCREEN,
+            # and the slice's width is just the sum of
+            # all of the block's widths in the slice,
             # which is 'game.game_3d.FLOOR_WIDTH',
             # the slice's front and back display size are these.
-            SLICE_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2, 0
+            SLICE_POS_IN_SCREEN = (
+                self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2,
+                0
+            )
             # positions of the slice's BACKS, IN SCREEN,
             # aligned in the slices' and screen's center in the X axis,
-            # aligned at the top for the Y axis for easier perspective in the gameplay.
+            # aligned at the top for the Y axis for easier perspective in the
+            # gameplay.
 
             SLICES_LATTICE_POINTS_IN_SCREEN.append(
                 list(
                     list(
-                    (
-                        SLICE_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_x_pos,
-                        SLICE_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_z_pos
+                        (
+                            SLICE_POS_IN_SCREEN[0] +
+                            BLOCK_FRONT_WIDTH_IN_SCREEN * block_x_pos,
+                            SLICE_POS_IN_SCREEN[1] +
+                            BLOCK_FRONT_WIDTH_IN_SCREEN * block_z_pos
+                        )
+                        for block_z_pos in range(game.game_3d.FLOORS + 1)
                     )
-                    for block_z_pos in range(game.game_3d.FLOORS + 1)
-                )
-                for block_x_pos in range(game.game_3d.FLOOR_WIDTH + 1)
+                    for block_x_pos in range(game.game_3d.FLOOR_WIDTH + 1)
                 )
             )
 
@@ -1363,18 +1490,26 @@ class Window:
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][0],
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][game.game_3d.FLOORS]
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [x_pos]
+                                               [0],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [x_pos]
+                                               [game.game_3d.FLOORS]
             )
         # draw back side horizontal grid lines
         for z_pos in range(game.game_3d.FLOORS + 1):
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][0][z_pos],
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][game.game_3d.FLOOR_WIDTH][z_pos]
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [0]
+                                               [z_pos],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [z_pos]
             )
-        
+
         # draw sides' vertical grid lines
         for y_pos in range(game.game_3d.FLOOR_WIDTH):
             # left
@@ -1388,8 +1523,12 @@ class Window:
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][0],
-                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][game.game_3d.FLOORS]
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [0],
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [game.game_3d.FLOORS]
             )
         # draw sides' horizontal grid lines
         for z_pos in range(game.game_3d.FLOORS):
@@ -1398,36 +1537,51 @@ class Window:
                 self.window,
                 BRIGHT_GREY,
                 SLICES_LATTICE_POINTS_IN_SCREEN[0][0][z_pos],
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][0][z_pos]
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [0]
+                                               [z_pos]
             )
             # right
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[0][game.game_3d.FLOOR_WIDTH][z_pos],
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][game.game_3d.FLOOR_WIDTH][z_pos]
+                SLICES_LATTICE_POINTS_IN_SCREEN[0]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [z_pos],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [z_pos]
             )
-        
+
         # draw floor's horizontal grid lines
         for x_pos in range(game.game_3d.FLOOR_WIDTH):
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[0][x_pos][game.game_3d.FLOORS],
-                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH][x_pos][game.game_3d.FLOORS]
+                SLICES_LATTICE_POINTS_IN_SCREEN[0]
+                                               [x_pos]
+                                               [game.game_3d.FLOORS],
+                SLICES_LATTICE_POINTS_IN_SCREEN[game.game_3d.FLOOR_WIDTH]
+                                               [x_pos]
+                                               [game.game_3d.FLOORS]
             )
         # draw floor's "vertical" grid lines
         for y_pos in range(game.game_3d.FLOOR_WIDTH):
             pygame.draw.line(
                 self.window,
                 BRIGHT_GREY,
-                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][0][game.game_3d.FLOORS],
-                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos][game.game_3d.FLOOR_WIDTH][game.game_3d.FLOORS]
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos]
+                                               [0][game.game_3d.FLOORS],
+                SLICES_LATTICE_POINTS_IN_SCREEN[y_pos]
+                                               [game.game_3d.FLOOR_WIDTH]
+                                               [game.game_3d.FLOORS]
             )
 
-        # IMPORTANT: IF THE GAME LAGS, YOU COULD JUST USE THE LATTICE POINTS STORED IN
+        # IMPORTANT: IF THE GAME LAGS,
+        # YOU COULD JUST USE THE LATTICE POINTS STORED IN
         # 'SLICES_LATTICE_POINTS' CONSTANT, IN THIS METHOD SCOPE,
-        # TO AVOID HAVING TO CALCULATE ALL OF THE BLOCK POLYGON PIXEL POSITIONS!
+        # TO AVOID HAVING TO CALCULATE ALL OF THE BLOCK POLYGON PIXEL
+        # POSITIONS!
 
         # for each slice in the board (BACK->FRONT),
         # because drawing a rectangle on the screen
@@ -1435,28 +1589,38 @@ class Window:
         # We achieve blocks at the front "blocking"
         # the view from the ones behind.
         for distance_to_slice_front, slice \
-            in zip(
-                range(DISTANCE_TO_BACK_SLICE_BACK, DISTANCE_TO_FRONT_SLICE_FRONT - 1, -1),
-                reversed(slices)
-        ):
+                in zip(
+                    range(DISTANCE_TO_BACK_SLICE_BACK,
+                          DISTANCE_TO_FRONT_SLICE_FRONT - 1, -1),
+                    reversed(slices)
+                ):
             distance_to_slice_back = distance_to_slice_front + 1
-            BACK_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_back
-            
-            FRONT_PERSPECTIVE_FACTOR = DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_front
+            BACK_PERSPECTIVE_FACTOR = \
+                DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_back
+
+            FRONT_PERSPECTIVE_FACTOR = \
+                DISTANCE_TO_FRONT_SLICE_FRONT / distance_to_slice_front
             # (again with this one)
 
-            SLICE_BACK_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * BACK_PERSPECTIVE_FACTOR)
-            BLOCK_BACK_WIDTH_IN_SCREEN = SLICE_BACK_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
-           
-            SLICE_FRONT_WIDTH_IN_SCREEN = int(FRONT_SLICE_FRONT_WIDTH * FRONT_PERSPECTIVE_FACTOR)
-            BLOCK_FRONT_WIDTH_IN_SCREEN = SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+            SLICE_BACK_WIDTH_IN_SCREEN = int(
+                FRONT_SLICE_FRONT_WIDTH * BACK_PERSPECTIVE_FACTOR)
+            BLOCK_BACK_WIDTH_IN_SCREEN = \
+                SLICE_BACK_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
+
+            SLICE_FRONT_WIDTH_IN_SCREEN = int(
+                FRONT_SLICE_FRONT_WIDTH * FRONT_PERSPECTIVE_FACTOR)
+            BLOCK_FRONT_WIDTH_IN_SCREEN = \
+                SLICE_FRONT_WIDTH_IN_SCREEN // game.game_3d.FLOOR_WIDTH
             # (again with this one)
 
-            SLICE_BACK_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_BACK_WIDTH_IN_SCREEN // 2, 0
-            SLICE_FRONT_POS_IN_SCREEN = self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2, 0
+            SLICE_BACK_POS_IN_SCREEN = \
+                self.WIDTH // 2 - SLICE_BACK_WIDTH_IN_SCREEN // 2, 0
+            SLICE_FRONT_POS_IN_SCREEN = \
+                self.WIDTH // 2 - SLICE_FRONT_WIDTH_IN_SCREEN // 2, 0
             # positions of the slice's fronts and backs IN THE SCREEN,
             # aligned in the slices' and screen's center in the X axis,
-            # aligned at the top for the Y axis for easier perspective in the gameplay.
+            # aligned at the top for the Y axis for easier perspective in the
+            # gameplay.
 
             # DRAWING 3 FACES BEHIND CUBE
             # (the lower face doesn't need to be drawn,
@@ -1464,7 +1628,9 @@ class Window:
             # and therefore won't be visible to the player)
             BRIGHTNESS_DISTANCE = DISTANCE_TO_FRONT_SLICE_FRONT >> 2
 
-            FRONT_BRIGHTNESS_FACTOR = BRIGHTNESS_DISTANCE ** 2 / (distance_to_slice_front - DISTANCE_TO_FRONT_SLICE_FRONT + BRIGHTNESS_DISTANCE) ** 2
+            FRONT_BRIGHTNESS_FACTOR = BRIGHTNESS_DISTANCE ** 2 / \
+                (distance_to_slice_front -
+                 DISTANCE_TO_FRONT_SLICE_FRONT + BRIGHTNESS_DISTANCE) ** 2
             SIDES_BRIGHTNESS_FACTOR = FRONT_BRIGHTNESS_FACTOR * 0.75
 
             for block_pos_in_game, block_color in slice.items():
@@ -1475,42 +1641,55 @@ class Window:
                 )
                 # Meant to simulate how much light should get to the camera,
                 # from the block at a given distance:
-                # just as how a square with side-lengths S that's N units away from a camera
-                # appears to have sides of length S / N, the amount of light recieved from a
-                # square that's N units away from a camera should reflect 1 / N of the light
+                # just as how a square with side-lengths S
+                # that's N units away from a camera
+                # appears to have sides of length S / N,
+                # the amount of light recieved from a
+                # square that's N units away from a camera
+                # should reflect 1 / N of the light
                 # that's recieved from a square one unit away.
 
                 TOP_LEFT_BACK_BLOCK_CORNER_POS = (
-                    SLICE_BACK_POS_IN_SCREEN[0] + BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[0],
-                    SLICE_BACK_POS_IN_SCREEN[1] + BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                    SLICE_BACK_POS_IN_SCREEN[0] +
+                    BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_BACK_POS_IN_SCREEN[1] +
+                    BLOCK_BACK_WIDTH_IN_SCREEN * block_pos_in_game[2]
                 )
                 TOP_RIGHT_BACK_BLOCK_CORNER_POS = (
-                    TOP_LEFT_BACK_BLOCK_CORNER_POS[0] + BLOCK_BACK_WIDTH_IN_SCREEN,
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[0] +
+                    BLOCK_BACK_WIDTH_IN_SCREEN,
                     TOP_LEFT_BACK_BLOCK_CORNER_POS[1]
                 )
                 BOTTOM_LEFT_BACK_BLOCK_CORNER_POS = (
                     TOP_LEFT_BACK_BLOCK_CORNER_POS[0],
-                    TOP_LEFT_BACK_BLOCK_CORNER_POS[1] + BLOCK_BACK_WIDTH_IN_SCREEN 
+                    TOP_LEFT_BACK_BLOCK_CORNER_POS[1] +
+                    BLOCK_BACK_WIDTH_IN_SCREEN
                 )
                 BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS = (
-                    BOTTOM_LEFT_BACK_BLOCK_CORNER_POS[0] + BLOCK_BACK_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_BACK_BLOCK_CORNER_POS[0] +
+                    BLOCK_BACK_WIDTH_IN_SCREEN,
                     BOTTOM_LEFT_BACK_BLOCK_CORNER_POS[1]
                 )
 
                 TOP_LEFT_FRONT_BLOCK_CORNER_POS = (
-                    SLICE_FRONT_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
-                    SLICE_FRONT_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                    SLICE_FRONT_POS_IN_SCREEN[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_FRONT_POS_IN_SCREEN[1] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
                 )
                 TOP_RIGHT_FRONT_BLOCK_CORNER_POS = (
-                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN,
                     TOP_LEFT_FRONT_BLOCK_CORNER_POS[1]
                 )
                 BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS = (
                     TOP_LEFT_FRONT_BLOCK_CORNER_POS[0],
-                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] + BLOCK_FRONT_WIDTH_IN_SCREEN 
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN
                 )
                 BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS = (
-                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN,
                     BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[1]
                 )
 
@@ -1520,29 +1699,26 @@ class Window:
                 pygame.draw.polygon(
                     self.window,
                     block_sides_color,
-                    (
-                        TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
-                        TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS
-                    )
-                )
+                    (TOP_LEFT_BACK_BLOCK_CORNER_POS,
+                     TOP_RIGHT_BACK_BLOCK_CORNER_POS,
+                     TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
+                     TOP_LEFT_FRONT_BLOCK_CORNER_POS))
                 # DRAW LEFT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
                     block_sides_color,
-                    (
-                       TOP_LEFT_BACK_BLOCK_CORNER_POS, TOP_LEFT_FRONT_BLOCK_CORNER_POS,
-                       BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_BACK_BLOCK_CORNER_POS 
-                    )
-                )
+                    (TOP_LEFT_BACK_BLOCK_CORNER_POS,
+                     TOP_LEFT_FRONT_BLOCK_CORNER_POS,
+                     BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS,
+                     BOTTOM_LEFT_BACK_BLOCK_CORNER_POS))
                 # DRAW RIGHT SIDE OF CUBE
                 pygame.draw.polygon(
                     self.window,
                     block_sides_color,
-                    (
-                        TOP_RIGHT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_BACK_BLOCK_CORNER_POS,
-                        BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS, BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS
-                    )
-                )
+                    (TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
+                     TOP_RIGHT_BACK_BLOCK_CORNER_POS,
+                     BOTTOM_RIGHT_BACK_BLOCK_CORNER_POS,
+                     BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS))
 
             for block_pos_in_game, block_front_color in slice.items():
 
@@ -1552,25 +1728,33 @@ class Window:
                 )
                 # Meant to simulate how much light should get to the camera,
                 # from the block at a given distance:
-                # just as how a square with side-lengths S that's N units away from a camera
-                # appears to have sides of length S / N, the amount of light recieved from a
-                # square that's N units away from a camera should reflect 1 / N of the light
+                # just as how a square with side-lengths S
+                # that's N units away from a camera
+                # appears to have sides of length S / N,
+                # the amount of light recieved from a
+                # square that's N units away from a camera
+                # should reflect 1 / N of the light
                 # that's recieved from a square one unit away.
 
                 TOP_LEFT_FRONT_BLOCK_CORNER_POS = (
-                    SLICE_FRONT_POS_IN_SCREEN[0] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
-                    SLICE_FRONT_POS_IN_SCREEN[1] + BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
+                    SLICE_FRONT_POS_IN_SCREEN[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[0],
+                    SLICE_FRONT_POS_IN_SCREEN[1] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN * block_pos_in_game[2]
                 )
                 TOP_RIGHT_FRONT_BLOCK_CORNER_POS = (
-                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN,
                     TOP_LEFT_FRONT_BLOCK_CORNER_POS[1]
                 )
                 BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS = (
                     TOP_LEFT_FRONT_BLOCK_CORNER_POS[0],
-                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] + BLOCK_FRONT_WIDTH_IN_SCREEN 
+                    TOP_LEFT_FRONT_BLOCK_CORNER_POS[1] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN
                 )
                 BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS = (
-                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] + BLOCK_FRONT_WIDTH_IN_SCREEN,
+                    BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[0] +
+                    BLOCK_FRONT_WIDTH_IN_SCREEN,
                     BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS[1]
                 )
 
@@ -1578,15 +1762,15 @@ class Window:
                 pygame.draw.polygon(
                     self.window,
                     block_front_color,
-                    (
-                        TOP_LEFT_FRONT_BLOCK_CORNER_POS, TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
-                        BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS, BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS
-                    )
-                )
+                    (TOP_LEFT_FRONT_BLOCK_CORNER_POS,
+                     TOP_RIGHT_FRONT_BLOCK_CORNER_POS,
+                     BOTTOM_RIGHT_FRONT_BLOCK_CORNER_POS,
+                     BOTTOM_LEFT_FRONT_BLOCK_CORNER_POS))
 
         # Draw "next" text
         NEXT_PIECE_TEXT = self.font.render("Next", False, WHITE)
-        # The text's bottom should be higher than the next piece's highest block,
+        # The text's bottom should be higher than
+        # the next piece's highest block,
         # if that block were in the front-most slice of the board
 
         NEXT_PIECE_TEXT_POS = (
@@ -1596,7 +1780,8 @@ class Window:
             SLICES_LATTICE_POINTS_IN_SCREEN[0][0][
                 max(
                     block_pos[Z_AXIS]
-                    for block_pos in self.controls.game.next_piece.block_positions()
+                    for block_pos
+                    in self.controls.game.next_piece.block_positions()
                 )
             ][1]
         )
@@ -1618,11 +1803,12 @@ class Window:
             f"HARD_DROP: {'/'.join(self.key_controls_names['HARD_DROP'])}",
         ) + sum(
             (
-                (
-                    f"Rotate around {axis_name}:"
-                    f"CW: {'/'.join(self.key_controls_names[f'rotate_cw_{axis_name}'])}",
-                    f"CCW: {'/'.join(self.key_controls_names[f'rotate_ccw_{axis_name}'])}"
-                )
+                (f"Rotate around {axis_name}:"
+                 "CW: "
+                 + '/'.join(self.key_controls_names[f'rotate_cw_{axis_name}']),
+                 "CCW: "
+                 + '/'.join(self.key_controls_names[f'rotate_ccw_{axis_name}'])
+                 )
                 for axis_name in "xyz"
             ),
             start=()
@@ -1647,11 +1833,10 @@ class Window:
     def draw_score(self):
         """Draws score and level text at the top of the board."""
         white = WHITE
-        text = self.font.render(f"Score: {self.controls.game.score_manager.points}, "
-                                f"Level: {self.controls.game.score_manager.level}, "
-                                f"Lines: {self.controls.game.score_manager.lines}",
-                                True,
-                                white)
+        text = self.font.render(
+            f"Score: {self.controls.game.score_manager.points}, "
+            f"Level: {self.controls.game.score_manager.level}, "
+            f"Lines: {self.controls.game.score_manager.lines}", True, white)
         position = self.WIDTH // 2 - text.get_width() // 2, 10
         self.window.blit(text, position)
 
