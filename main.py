@@ -825,7 +825,7 @@ class Window:
             + "/"
             + f"{'/'.join(self.key_controls_names['DOWN'])}: move down",
 
-            "{'/'.join(self.key_controls_names['LEFT'])}"
+            '/'.join(self.key_controls_names['LEFT'])
             + "/"
             + f"{'/'.join(self.key_controls_names['RIGHT'])}: change option",
 
