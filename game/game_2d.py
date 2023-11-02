@@ -15,7 +15,7 @@ from game.score import Score
 
 START_POS = [3, 0]
 
-I = (["    ",
+I_2D = (["    ",
       "####",
       "    ",
       "    "],
@@ -38,7 +38,7 @@ I = (["    ",
      START_POS,
      (0, 255, 255))
 
-J = (["#  ",
+J_2D = (["#  ",
       "###",
       "   "],
 
@@ -57,7 +57,7 @@ J = (["#  ",
      START_POS,
      (0, 0, 255))
 
-L = (["  #",
+L_2D = (["  #",
       "###",
       "   "],
 
@@ -76,13 +76,13 @@ L = (["  #",
      START_POS,
      (255, 128, 0))
 
-O = (["##",
+O_2D = (["##",
       "##"],
 
      [4, 0],
      (255, 255, 0))
 
-S = ([" ##",
+S_2D = ([" ##",
       "## ",
       "   "],
 
@@ -101,7 +101,7 @@ S = ([" ##",
      START_POS,
      (0, 255, 0))
 
-T = ([" # ",
+T_2D = ([" # ",
       "###",
       "   "],
 
@@ -120,7 +120,7 @@ T = ([" # ",
      START_POS,
      (128, 0, 255))
 
-Z = (["## ",
+Z_2D = (["## ",
       " ##",
       "   "],
 
@@ -226,7 +226,7 @@ class Piece2D:
 
 class Game2D:
     def __init__(self):
-        self.pieces = [I, J, L, O, S, T, Z]
+        self.pieces = [I_2D, J_2D, L_2D, O_2D, S_2D, T_2D, Z_2D]
 
         self.piece = Piece2D(random.choice(self.pieces))
         self.next_piece = Piece2D(random.choice(self.pieces))
