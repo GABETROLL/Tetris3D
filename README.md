@@ -47,6 +47,10 @@ I didn't want to try to learn new tools, so I ended up having to render the 3D b
 
 When I had first built this project in 2021, I had decided to make the game have some features from NES Tetris, and some features from modern Tetris, but I wasn't thinking. When I started building it in 3D for Holberton, I made it my focus to make the gameplay have, in my opinion, a good balance of challenge, excitement, intensity and fun. **This means this game lacks modern Tetris features.**
 
+### Biggest Challenges
+- merging the 3D branch with the documented branch and the main branch (look at the network graph for June 4, 2023)
+- Rendering the 3D game
+
 ## Requirements
 <a href="https://www.python.org/"><img src="https://www.python.org/static/community_logos/python-logo-generic.svg" alt="Python logo" width=25%></a>
 
